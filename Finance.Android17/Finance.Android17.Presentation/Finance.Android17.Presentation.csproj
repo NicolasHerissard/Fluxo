@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Finance.Android17.Application\Finance.Android17.Application.csproj" />
     <ProjectReference Include="..\Finance.Android17.Domain\Finance.Android17.Domain.csproj" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
 </Project>

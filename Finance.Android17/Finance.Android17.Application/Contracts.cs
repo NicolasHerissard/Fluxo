@@ -40,7 +40,8 @@ public interface ISettingsService
 
 public interface IExportService
 {
-    Task ExportExpensesCsvAsync(IEnumerable<Expense> expenses, CancellationToken cancellationToken = default);
+    /// <summary>Exporte toutes les dépenses actives en CSV et ouvre la feuille de partage.</summary>
+    Task ExportExpensesCsvAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed record OcrTextResult(string Text);

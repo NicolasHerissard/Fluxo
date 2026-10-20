@@ -46,6 +46,36 @@ public sealed class FakeReminderService : IReminderService
     }
 }
 
+public sealed class FakeSecureValueStore : ISecureValueStore
+{
+    public Dictionary<string, string> Values { get; } = [];
+
+    public Task<string?> GetAsync(string key, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Values.TryGetValue(key, out var value) ? value : null);
+
+    public Task SetAsync(string key, string value, CancellationToken cancellationToken = default)
+    {
+        Values[key] = value;
+        return Task.CompletedTask;
+    }
+}
+
+public sealed record SharedFile(string FileName, byte[] Content, string Title);
+
+public sealed class FakeFileExchange : IFileExchange
+{
+    public List<SharedFile> Shared { get; } = [];
+    public byte[]? ToPick { get; set; }
+
+    public Task ShareAsync(string fileName, byte[] content, string title, CancellationToken cancellationToken = default)
+    {
+        Shared.Add(new SharedFile(fileName, content, title));
+        return Task.CompletedTask;
+    }
+
+    public Task<byte[]?> PickAsync(string title, CancellationToken cancellationToken = default) => Task.FromResult(ToPick);
+}
+
 public sealed class FakeAppLock(string? pin = null) : IAppLockService
 {
     public string? Pin { get; private set; } = pin;

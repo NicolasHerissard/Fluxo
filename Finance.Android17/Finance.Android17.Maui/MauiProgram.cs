@@ -32,19 +32,14 @@ public static class MauiProgram
 #if DEBUG
 		builder.Logging.AddDebug();
 #endif
-		builder.Services.AddSingleton<AppSecurityService>();
-		builder.Services.AddSingleton<IAppLockService>(sp => sp.GetRequiredService<AppSecurityService>());
-		builder.Services.AddSingleton<ISecretStore>(sp => sp.GetRequiredService<AppSecurityService>());
-		builder.Services.AddSingleton(TimeProvider.System);
-		builder.Services.AddSingleton(FinanceDatabaseOptions.Default());
-		builder.Services.AddSingleton<IFinanceStore, EncryptedFinanceStore>();
+		builder.Services.AddSingleton<ISecureValueStore, MauiSecureValueStore>();
+		builder.Services.AddSingleton<IFileExchange, MauiFileExchange>();
+		builder.Services.AddInfrastructure();
 		builder.Services.AddSingleton<FinanceService>();
 		builder.Services.AddSingleton<AppSettingsService>();
 		builder.Services.AddSingleton<ISettingsService>(sp => sp.GetRequiredService<AppSettingsService>());
 		builder.Services.AddSingleton<IBiometricService, BiometricService>();
-		builder.Services.AddSingleton<IExportService, CsvExportService>();
 		builder.Services.AddSingleton<IOcrService, OcrService>();
-		builder.Services.AddSingleton<IDataBackupService, EncryptedBackupService>();
 		builder.Services.AddSingleton<IReminderService, ReminderService>();
 		// Les vues MAUI ne doivent jamais être réutilisées après le remplacement de
 		// Window.Page : leur MauiContext Android est alors détruit.

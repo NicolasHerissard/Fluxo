@@ -1,0 +1,24 @@
+using Finance.Android17.Application;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+namespace Finance.Android17.Infrastructure;
+
+public static class InfrastructureServiceCollectionExtensions
+{
+    /// <summary>
+    /// Enregistre la persistance chiffrée, la sécurité (PIN, clé de base), l'export CSV et la sauvegarde chiffrée.
+    /// L'hôte doit fournir <see cref="ISecureValueStore"/> et <see cref="IFileExchange"/> (adaptateurs de plateforme).
+    /// </summary>
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, FinanceDatabaseOptions? database = null)
+    {
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton(database ?? FinanceDatabaseOptions.Default());
+        services.AddSingleton<ISecretStore, DatabaseKeyProvider>();
+        services.AddSingleton<IAppLockService, PinLockService>();
+        services.AddSingleton<IFinanceStore, EncryptedFinanceStore>();
+        services.AddSingleton<IExportService, CsvExportService>();
+        services.AddSingleton<IDataBackupService, EncryptedBackupService>();
+        return services;
+    }
+}

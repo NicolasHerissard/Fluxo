@@ -965,7 +965,7 @@ public partial class SettingsViewModel(
     [RelayCommand]
     private async Task ExportAsync()
     {
-        await export.ExportExpensesCsvAsync(await finance.GetExpensesAsync());
+        await export.ExportExpensesCsvAsync();
         StatusMessage = "Export CSV prêt à être partagé.";
     }
 
