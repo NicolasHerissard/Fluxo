@@ -98,12 +98,7 @@ public sealed class EncryptedFinanceStore(ISecretStore secrets, FinanceDatabaseO
             }
             if (!await db.Categories.AnyAsync(cancellationToken).ConfigureAwait(false))
             {
-                db.Categories.AddRange(
-                    new Category { Name = "Alimentation", Color = "#2E7D32" },
-                    new Category { Name = "Transport", Color = "#1565C0" },
-                    new Category { Name = "Logement", Color = "#6A1B9A" },
-                    new Category { Name = "Loisirs", Color = "#EF6C00" },
-                    new Category { Name = "Autre", Color = "#546E7A" });
+                db.Categories.AddRange(DefaultCategories.CreateInitialSet());
                 await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
         }
@@ -265,38 +260,6 @@ public sealed class EncryptedFinanceStore(ISecretStore secrets, FinanceDatabaseO
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<int> ProcessDueRecurringIncomesAsync(DateTime today, string currencyCode, CancellationToken cancellationToken = default)
-    {
-        await InitializeAsync(cancellationToken).ConfigureAwait(false);
-        await using var db = CreateContext();
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-        var recurringItems = await db.RecurringIncomes.Where(x => x.DeletedAtUtc == null && x.NextOccurrenceDate <= today.Date).ToListAsync(cancellationToken).ConfigureAwait(false);
-        var created = 0;
-        foreach (var recurring in recurringItems)
-        {
-            var interval = Math.Max(1, recurring.IntervalMonths);
-            var dueDates = FinanceService.GetDueDates(recurring.NextOccurrenceDate, interval, today);
-            foreach (var dueDate in dueDates)
-            {
-                db.Incomes.Add(new Income
-                {
-                    AmountMinor = recurring.AmountMinor,
-                    CurrencyCode = string.IsNullOrWhiteSpace(recurring.CurrencyCode) ? currencyCode : recurring.CurrencyCode,
-                    Description = recurring.Name,
-                    OccurredOn = dueDate,
-                    RecurringIncomeId = recurring.Id
-                });
-                created++;
-            }
-            if (dueDates.Count > 0) recurring.NextOccurrenceDate = dueDates[^1].AddMonths(interval);
-            recurring.UpdatedAtUtc = DateTime.UtcNow;
-            recurring.Version = Guid.NewGuid();
-        }
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-        return created;
-    }
-
     public async Task<long> GetInitialBalanceAsync(CancellationToken cancellationToken = default)
     {
         await InitializeAsync(cancellationToken).ConfigureAwait(false);
@@ -389,44 +352,46 @@ public sealed class EncryptedFinanceStore(ISecretStore secrets, FinanceDatabaseO
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<int> ProcessDueSubscriptionsAsync(DateTime today, string currencyCode, CancellationToken cancellationToken = default)
+    public async Task ApplyDueOperationsAsync(DueOperationsPlan plan, CancellationToken cancellationToken = default)
     {
+        if (plan.IsEmpty) return;
         await InitializeAsync(cancellationToken).ConfigureAwait(false);
         await using var db = CreateContext();
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-        var subscriptions = await db.Subscriptions.Where(x => x.DeletedAtUtc == null && x.NextBillingDate <= today.Date).ToListAsync(cancellationToken).ConfigureAwait(false);
-        if (subscriptions.Count == 0) return 0;
-        var category = await db.Categories.FirstOrDefaultAsync(x => x.DeletedAtUtc == null && x.Name == "Abonnements", cancellationToken).ConfigureAwait(false);
-        if (category is null)
+        if (plan.Expenses.Count > 0)
         {
-            category = new Category { Name = "Abonnements", Color = "#7D5260" };
-            db.Categories.Add(category);
-        }
-        var created = 0;
-        foreach (var subscription in subscriptions)
-        {
-            var interval = Math.Max(1, subscription.BillingIntervalMonths);
-            var dueDates = FinanceService.GetDueDates(subscription.NextBillingDate, interval, today);
-            foreach (var dueDate in dueDates)
+            var category = await db.Categories.FirstOrDefaultAsync(x => x.DeletedAtUtc == null && x.Name == DefaultCategories.SubscriptionsName, cancellationToken).ConfigureAwait(false);
+            if (category is null)
             {
-                db.Expenses.Add(new Expense
-                {
-                    AmountMinor = subscription.AmountMinor,
-                    CurrencyCode = string.IsNullOrWhiteSpace(subscription.CurrencyCode) ? currencyCode : subscription.CurrencyCode,
-                    Description = $"Abonnement · {subscription.Name}",
-                    OccurredOn = dueDate,
-                    Category = category,
-                    CategoryId = category.Id
-                });
-                created++;
+                category = DefaultCategories.CreateSubscriptions();
+                db.Categories.Add(category);
             }
-            if (dueDates.Count > 0) subscription.NextBillingDate = dueDates[^1].AddMonths(interval);
+            foreach (var expense in plan.Expenses)
+            {
+                expense.Category = category;
+                expense.CategoryId = category.Id;
+                db.Expenses.Add(expense);
+            }
+        }
+        db.Incomes.AddRange(plan.Incomes);
+        foreach (var advance in plan.SubscriptionAdvances)
+        {
+            var subscription = await db.Subscriptions.FindAsync([advance.Id], cancellationToken).ConfigureAwait(false);
+            if (subscription is null) continue;
+            subscription.NextBillingDate = advance.NextDate.Date;
             subscription.UpdatedAtUtc = DateTime.UtcNow;
             subscription.Version = Guid.NewGuid();
         }
+        foreach (var advance in plan.RecurringIncomeAdvances)
+        {
+            var recurring = await db.RecurringIncomes.FindAsync([advance.Id], cancellationToken).ConfigureAwait(false);
+            if (recurring is null) continue;
+            recurring.NextOccurrenceDate = advance.NextDate.Date;
+            recurring.UpdatedAtUtc = DateTime.UtcNow;
+            recurring.Version = Guid.NewGuid();
+        }
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-        return created;
     }
 
     public async Task<IReadOnlyList<SavingsGoal>> GetSavingsGoalsAsync(CancellationToken cancellationToken = default)
@@ -526,12 +491,7 @@ public sealed class EncryptedFinanceStore(ISecretStore secrets, FinanceDatabaseO
         var profile = await db.FinancialProfiles.SingleAsync(x => x.Id == FinancialProfile.SingletonId, cancellationToken).ConfigureAwait(false);
         profile.InitialBalanceMinor = 0;
         profile.UpdatedAtUtc = DateTime.UtcNow;
-        db.Categories.AddRange(
-            new Category { Name = "Alimentation", Color = "#2E7D32" },
-            new Category { Name = "Transport", Color = "#1565C0" },
-            new Category { Name = "Logement", Color = "#6A1B9A" },
-            new Category { Name = "Loisirs", Color = "#EF6C00" },
-            new Category { Name = "Autre", Color = "#546E7A" });
+        db.Categories.AddRange(DefaultCategories.CreateInitialSet());
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 

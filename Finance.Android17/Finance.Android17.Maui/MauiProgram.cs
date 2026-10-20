@@ -35,7 +35,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ISecureValueStore, MauiSecureValueStore>();
 		builder.Services.AddSingleton<IFileExchange, MauiFileExchange>();
 		builder.Services.AddInfrastructure();
-		builder.Services.AddSingleton<FinanceService>();
+		builder.Services.AddApplication();
 		builder.Services.AddSingleton<AppSettingsService>();
 		builder.Services.AddSingleton<ISettingsService>(sp => sp.GetRequiredService<AppSettingsService>());
 		builder.Services.AddSingleton<IBiometricService, BiometricService>();

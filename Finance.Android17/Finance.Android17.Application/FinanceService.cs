@@ -25,7 +25,6 @@ public sealed class FinanceService(IFinanceStore store)
     public Task UpdateRecurringIncomeAsync(Guid id, string name, long amountMinor, int intervalMonths, DateTime nextOccurrenceDate, string currencyCode = "EUR", CancellationToken cancellationToken = default) =>
         store.UpdateRecurringIncomeAsync(id, name, amountMinor, intervalMonths, nextOccurrenceDate, currencyCode, cancellationToken);
     public Task DeleteRecurringIncomeAsync(Guid id, CancellationToken cancellationToken = default) => store.SoftDeleteRecurringIncomeAsync(id, cancellationToken);
-    public Task<int> ProcessDueRecurringIncomesAsync(DateTime today, string currencyCode, CancellationToken cancellationToken = default) => store.ProcessDueRecurringIncomesAsync(today, currencyCode, cancellationToken);
     public Task<long> GetInitialBalanceAsync(CancellationToken cancellationToken = default) => store.GetInitialBalanceAsync(cancellationToken);
     public Task SetInitialBalanceAsync(long amountMinor, CancellationToken cancellationToken = default) => store.SetInitialBalanceAsync(amountMinor, cancellationToken);
     public Task<IReadOnlyList<SavingsGoal>> GetSavingsGoalsAsync(CancellationToken cancellationToken = default) => store.GetSavingsGoalsAsync(cancellationToken);
@@ -43,7 +42,6 @@ public sealed class FinanceService(IFinanceStore store)
     public Task UpdateSubscriptionAsync(Guid id, string name, long amountMinor, int intervalMonths, DateTime nextDate, string currencyCode = "EUR", CancellationToken cancellationToken = default) =>
         store.UpdateSubscriptionAsync(id, name, amountMinor, intervalMonths, nextDate, currencyCode, cancellationToken);
     public Task DeleteSubscriptionAsync(Guid id, CancellationToken cancellationToken = default) => store.SoftDeleteSubscriptionAsync(id, cancellationToken);
-    public Task<int> ProcessDueSubscriptionsAsync(DateTime today, string currencyCode, CancellationToken cancellationToken = default) => store.ProcessDueSubscriptionsAsync(today, currencyCode, cancellationToken);
     public Task<FinanceBackupSnapshot> CreateBackupSnapshotAsync(CancellationToken cancellationToken = default) => store.CreateBackupSnapshotAsync(cancellationToken);
     public Task RestoreBackupSnapshotAsync(FinanceBackupSnapshot snapshot, CancellationToken cancellationToken = default) => store.RestoreBackupSnapshotAsync(snapshot, cancellationToken);
     public Task DeleteAllDataAsync(CancellationToken cancellationToken = default) => store.DeleteAllDataAsync(cancellationToken);
@@ -54,19 +52,6 @@ public sealed class FinanceService(IFinanceStore store)
         var top = monthly.GroupBy(x => x.Category?.Name ?? "Sans catégorie")
             .OrderByDescending(x => x.Sum(y => y.AmountMinor)).Select(x => x.Key).FirstOrDefault() ?? "—";
         return new(monthly.Sum(x => x.AmountMinor), monthly.Count, top);
-    }
-
-    public static IReadOnlyList<DateTime> GetDueDates(DateTime nextBillingDate, int intervalMonths, DateTime today)
-    {
-        var result = new List<DateTime>();
-        var interval = Math.Max(1, intervalMonths);
-        var date = nextBillingDate.Date;
-        while (date <= today.Date)
-        {
-            result.Add(date);
-            date = date.AddMonths(interval);
-        }
-        return result;
     }
 
     public static FinancialSummary BuildFinancialSummary(

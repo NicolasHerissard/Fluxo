@@ -41,7 +41,7 @@ public partial class ExpenseCategoryOption(Category category) : ObservableObject
     public string SelectionMark => IsSelected ? "✓" : string.Empty;
 }
 
-public partial class LockViewModel(FinanceService finance, IAppLockService appLock, IBiometricService biometrics, ISettingsService settings, IReminderService reminders, TimeProvider clock) : ObservableObject
+public partial class LockViewModel(StartupService startup, IAppLockService appLock, IBiometricService biometrics, ISettingsService settings) : ObservableObject
 {
     private bool _initialized;
     public event EventHandler? Unlocked;
@@ -74,7 +74,7 @@ public partial class LockViewModel(FinanceService finance, IAppLockService appLo
         _initialized = true;
         IsFirstRun = !await appLock.HasPinAsync();
         PinTitle = IsFirstRun ? "Créer votre code PIN" : "Bon retour";
-        PinHelp = IsFirstRun ? "Choisissez 4 à 8 chiffres pour protéger vos données." : "Déverrouillez vos finances personnelles.";
+        PinHelp = IsFirstRun ? $"Choisissez {PinPolicy.MinLength} à {PinPolicy.MaxLength} chiffres pour protéger vos données." : "Déverrouillez vos finances personnelles.";
         CanUseBiometrics = !IsFirstRun && settings.BiometricsEnabled && biometrics.IsAvailable;
     }
 
@@ -83,9 +83,9 @@ public partial class LockViewModel(FinanceService finance, IAppLockService appLo
     {
         if (IsBusy) return;
         ErrorMessage = string.Empty;
-        if (Pin.Length is < 4 or > 8 || Pin.Any(x => !char.IsDigit(x)))
+        if (!PinPolicy.IsValid(Pin))
         {
-            ErrorMessage = "Le PIN doit contenir entre 4 et 8 chiffres.";
+            ErrorMessage = $"Le PIN doit contenir {PinPolicy.RequirementText}.";
             return;
         }
 
@@ -99,7 +99,7 @@ public partial class LockViewModel(FinanceService finance, IAppLockService appLo
                 Pin = string.Empty;
                 return;
             }
-            await PrepareFinanceAsync();
+            await startup.PrepareAsync();
             Pin = string.Empty;
             Unlocked?.Invoke(this, EventArgs.Empty);
         }
@@ -116,7 +116,7 @@ public partial class LockViewModel(FinanceService finance, IAppLockService appLo
         {
             if (await biometrics.AuthenticateAsync("Déverrouiller Mes Finances"))
             {
-                await PrepareFinanceAsync();
+                await startup.PrepareAsync();
                 Unlocked?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -125,17 +125,6 @@ public partial class LockViewModel(FinanceService finance, IAppLockService appLo
     }
 
     [RelayCommand] private void TogglePinVisibility() => IsPinHidden = !IsPinHidden;
-
-    private async Task PrepareFinanceAsync()
-    {
-        await finance.InitializeAsync();
-        if (settings.AutoCreateSubscriptionExpenses)
-            await finance.ProcessDueSubscriptionsAsync(clock.GetLocalNow().Date, settings.CurrencyCode);
-        if (settings.AutoCreateRecurringIncomes)
-            await finance.ProcessDueRecurringIncomesAsync(clock.GetLocalNow().Date, settings.CurrencyCode);
-        if (settings.SubscriptionRemindersEnabled)
-            await reminders.ShowSubscriptionReminderAsync(await finance.GetSubscriptionsAsync(), settings.SubscriptionReminderDays);
-    }
 
     public void Reset()
     {
@@ -704,7 +693,7 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
     private static Guid? ParseCategoryId(string value) => Guid.TryParse(value, out var id) ? id : null;
 }
 
-public partial class SubscriptionsViewModel(FinanceService finance, ISettingsService settings, IReminderService reminders, TimeProvider clock) : ObservableObject
+public partial class SubscriptionsViewModel(FinanceService finance, ISettingsService settings, SubscriptionReminderScheduler reminders, TimeProvider clock) : ObservableObject
 {
     public ObservableCollection<SubscriptionRow> Subscriptions { get; } = [];
     public IReadOnlyList<string> Frequencies { get; } = ["Mensuel", "Trimestriel", "Annuel"];
@@ -734,8 +723,7 @@ public partial class SubscriptionsViewModel(FinanceService finance, ISettingsSer
         MonthlyTotal = settings.HideAmounts ? "•••• / mois" : $"{DashboardViewModel.Money(monthly, settings.CurrencyCode)} / mois";
         AnnualTotal = settings.HideAmounts ? "•••• / an" : $"{DashboardViewModel.Money(monthly * 12, settings.CurrencyCode)} / an";
         IsEmpty = list.Count == 0;
-        if (settings.SubscriptionRemindersEnabled)
-            await reminders.ShowSubscriptionReminderAsync(list, settings.SubscriptionReminderDays);
+        await reminders.RefreshAsync(list);
     }
 
     [RelayCommand]
@@ -955,7 +943,7 @@ public partial class SettingsViewModel(
     private async Task ChangePinAsync()
     {
         if (!await appLock.VerifyPinAsync(CurrentPin)) { StatusMessage = "Le code PIN actuel est incorrect."; return; }
-        if (NewPin.Length is < 4 or > 8 || NewPin.Any(x => !char.IsDigit(x))) { StatusMessage = "Le nouveau PIN doit contenir entre 4 et 8 chiffres."; return; }
+        if (!PinPolicy.IsValid(NewPin)) { StatusMessage = $"Le nouveau PIN doit contenir {PinPolicy.RequirementText}."; return; }
         if (NewPin != ConfirmPin) { StatusMessage = "La confirmation du nouveau PIN ne correspond pas."; return; }
         await appLock.SetPinAsync(NewPin);
         CurrentPin = NewPin = ConfirmPin = string.Empty;

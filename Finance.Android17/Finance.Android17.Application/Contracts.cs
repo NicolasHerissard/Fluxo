@@ -59,7 +59,8 @@ public interface IDataBackupService
 
 public interface IReminderService
 {
-    Task ShowSubscriptionReminderAsync(IReadOnlyList<Subscription> subscriptions, int reminderDays, CancellationToken cancellationToken = default);
+    /// <summary>Programme les alarmes du plan et affiche sa notification du jour (une seule fois par clé).</summary>
+    Task ApplyAsync(ReminderPlan plan, CancellationToken cancellationToken = default);
 }
 
 public sealed record ExpenseFilter(string? Search = null, Guid? CategoryId = null, DateTime? From = null, DateTime? To = null);
@@ -81,7 +82,6 @@ public interface IFinanceStore
     Task AddRecurringIncomeAsync(string name, long amountMinor, int intervalMonths, DateTime nextOccurrenceDate, string currencyCode = "EUR", CancellationToken cancellationToken = default);
     Task UpdateRecurringIncomeAsync(Guid id, string name, long amountMinor, int intervalMonths, DateTime nextOccurrenceDate, string currencyCode = "EUR", CancellationToken cancellationToken = default);
     Task SoftDeleteRecurringIncomeAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<int> ProcessDueRecurringIncomesAsync(DateTime today, string currencyCode, CancellationToken cancellationToken = default);
     Task<long> GetInitialBalanceAsync(CancellationToken cancellationToken = default);
     Task SetInitialBalanceAsync(long amountMinor, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<SavingsGoal>> GetSavingsGoalsAsync(CancellationToken cancellationToken = default);
@@ -95,7 +95,8 @@ public interface IFinanceStore
     Task AddSubscriptionAsync(string name, long amountMinor, int billingIntervalMonths, DateTime nextBillingDate, string currencyCode = "EUR", CancellationToken cancellationToken = default);
     Task UpdateSubscriptionAsync(Guid id, string name, long amountMinor, int billingIntervalMonths, DateTime nextBillingDate, string currencyCode = "EUR", CancellationToken cancellationToken = default);
     Task SoftDeleteSubscriptionAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<int> ProcessDueSubscriptionsAsync(DateTime today, string currencyCode, CancellationToken cancellationToken = default);
+    /// <summary>Enregistre en une transaction les dépenses/revenus échus du plan et avance les prochaines échéances.</summary>
+    Task ApplyDueOperationsAsync(DueOperationsPlan plan, CancellationToken cancellationToken = default);
     Task<FinanceBackupSnapshot> CreateBackupSnapshotAsync(CancellationToken cancellationToken = default);
     Task RestoreBackupSnapshotAsync(FinanceBackupSnapshot snapshot, CancellationToken cancellationToken = default);
     Task DeleteAllDataAsync(CancellationToken cancellationToken = default);

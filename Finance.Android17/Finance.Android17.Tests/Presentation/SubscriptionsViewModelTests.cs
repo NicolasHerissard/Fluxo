@@ -64,11 +64,15 @@ public sealed class SubscriptionsViewModelTests : IDisposable
         var vm = _app.CreateSubscriptions();
 
         await vm.LoadAsync();
-        Assert.Equal([(1, 7)], _app.Reminders.Calls);
+
+        // J − 7 est déjà passé : pas d'alarme, mais l'échéance est dans la semaine.
+        var plan = Assert.Single(_app.Reminders.Plans);
+        Assert.Empty(plan.Alarms);
+        Assert.Equal("Netflix arrive le 25/10.", plan.Notice?.Text);
 
         _app.Settings.SubscriptionRemindersEnabled = false;
         await vm.LoadAsync();
-        Assert.Single(_app.Reminders.Calls);
+        Assert.Single(_app.Reminders.Plans);
     }
 
     [Fact]

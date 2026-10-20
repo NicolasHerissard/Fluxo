@@ -20,6 +20,7 @@ internal sealed class PinLockService(ISecureValueStore secrets) : IAppLockServic
 
     public async Task SetPinAsync(string pin, CancellationToken cancellationToken = default)
     {
+        if (!PinPolicy.IsValid(pin)) throw new ArgumentException($"Le PIN doit contenir {PinPolicy.RequirementText}.", nameof(pin));
         var salt = RandomNumberGenerator.GetBytes(SaltSize);
         var hash = await DeriveAsync(pin, salt, cancellationToken).ConfigureAwait(false);
         await secrets.SetAsync(SaltKey, Convert.ToBase64String(salt), cancellationToken).ConfigureAwait(false);

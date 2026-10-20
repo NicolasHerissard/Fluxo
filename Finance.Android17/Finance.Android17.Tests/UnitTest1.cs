@@ -32,22 +32,6 @@ public class DashboardTests
     }
 
     [Fact]
-    public void GetDueDates_ReturnsEveryMissedOccurrence_AndStopsAfterToday()
-    {
-        var dates = Finance.Android17.Application.FinanceService.GetDueDates(new DateTime(2026, 6, 15), 1, new DateTime(2026, 9, 26));
-
-        Assert.Equal([new DateTime(2026, 6, 15), new DateTime(2026, 7, 15), new DateTime(2026, 8, 15), new DateTime(2026, 9, 15)], dates);
-    }
-
-    [Fact]
-    public void GetDueDates_UsesOneMonth_WhenIntervalIsInvalid()
-    {
-        var dates = Finance.Android17.Application.FinanceService.GetDueDates(new DateTime(2026, 8, 1), 0, new DateTime(2026, 9, 26));
-
-        Assert.Equal(2, dates.Count);
-    }
-
-    [Fact]
     public void BuildFinancialSummary_ComputesBalanceNetAndForecast()
     {
         var expenses = new[]

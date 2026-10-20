@@ -37,11 +37,11 @@ public sealed class FakeSettings : ISettingsService
 
 public sealed class FakeReminderService : IReminderService
 {
-    public List<(int Count, int Days)> Calls { get; } = [];
+    public List<ReminderPlan> Plans { get; } = [];
 
-    public Task ShowSubscriptionReminderAsync(IReadOnlyList<Subscription> subscriptions, int reminderDays, CancellationToken cancellationToken = default)
+    public Task ApplyAsync(ReminderPlan plan, CancellationToken cancellationToken = default)
     {
-        Calls.Add((subscriptions.Count, reminderDays));
+        Plans.Add(plan);
         return Task.CompletedTask;
     }
 }

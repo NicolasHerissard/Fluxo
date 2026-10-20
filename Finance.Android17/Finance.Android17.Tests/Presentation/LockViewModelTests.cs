@@ -117,7 +117,8 @@ public sealed class LockViewModelTests : IDisposable
         Assert.Equal(["Abonnement · Netflix", "Abonnement · Netflix"], (await _app.Finance.GetExpensesAsync()).Select(x => x.Description));
         Assert.Equal(new DateTime(2026, 11, 5), Assert.Single(await _app.Finance.GetSubscriptionsAsync()).NextBillingDate);
         Assert.Equal(200_000, Assert.Single(await _app.Finance.GetIncomesAsync()).AmountMinor);
-        Assert.Equal([(1, 3)], _app.Reminders.Calls);
+        var plan = Assert.Single(_app.Reminders.Plans);
+        Assert.Equal(new DateTimeOffset(2026, 11, 2, 9, 0, 0, TimeSpan.Zero), Assert.Single(plan.Alarms).TriggerAt);
     }
 
     [Fact]
@@ -136,7 +137,7 @@ public sealed class LockViewModelTests : IDisposable
 
         Assert.Empty(await _app.Finance.GetExpensesAsync());
         Assert.Empty(await _app.Finance.GetIncomesAsync());
-        Assert.Empty(_app.Reminders.Calls);
+        Assert.Empty(_app.Reminders.Plans);
     }
 
     [Fact]
