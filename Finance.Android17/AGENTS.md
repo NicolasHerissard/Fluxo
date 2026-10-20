@@ -10,12 +10,12 @@ La cible réellement déclarée par le projet MAUI est `net10.0-android` et `net
 
 Le code est organisé en couches, avec des dépendances dirigées vers le domaine :
 
-- `src/Finance.Android17.Domain` : entités persistées (`Entity`, `Expense`, `Income`, `RecurringIncome`, `SavingsGoal`, `FinancialProfile`, `Category`, `Subscription`). Les montants sont des `long` en centimes (`AmountMinor`) ; ne pas utiliser `decimal` pour les stocker.
-- `src/Finance.Android17.Application` : contrats (`IFinanceStore`, services de sécurité, réglages, export et sauvegarde), DTO de sauvegarde, `FinanceService` et règles calculées indépendantes de l’UI.
-- `src/Finance.Android17.Infrastructure` : `FinanceDbContext` EF Core et `EncryptedFinanceStore`, persistance SQLite chiffrée avec SQLCipher.
-- `src/Finance.Android17.Presentation` : ViewModels CommunityToolkit.Mvvm et modèles d’affichage (`ExpenseRow`, `ChartBar`, etc.).
-- `src/Finance.Android17.Maui` : application MAUI, pages XAML/code-behind, enregistrement DI, services natifs et ressources.
-- `tests/Finance.Android17.Tests` : tests xUnit des règles pures de dashboard et d’échéances d’abonnements.
+- `Finance.Android17.Domain` : entités persistées (`Entity`, `Expense`, `Income`, `RecurringIncome`, `SavingsGoal`, `FinancialProfile`, `Category`, `Subscription`). Les montants sont des `long` en centimes (`AmountMinor`) ; ne pas utiliser `decimal` pour les stocker.
+- `Finance.Android17.Application` : contrats (`IFinanceStore`, services de sécurité, réglages, export et sauvegarde), DTO de sauvegarde, `FinanceService` et règles calculées indépendantes de l’UI.
+- `Finance.Android17.Infrastructure` : `FinanceDbContext` EF Core et `EncryptedFinanceStore`, persistance SQLite chiffrée avec SQLCipher.
+- `Finance.Android17.Presentation` : ViewModels CommunityToolkit.Mvvm et modèles d’affichage (`ExpenseRow`, `ChartBar`, etc.).
+- `Finance.Android17.Maui` : application MAUI, pages XAML/code-behind, enregistrement DI, services natifs et ressources.
+- `Finance.Android17.Tests` : tests xUnit des règles pures de dashboard et d’échéances d’abonnements.
 
 Les projets non-MAUI ciblent `net10.0`. Les versions NuGet sont centralisées dans `Directory.Packages.props`.
 
@@ -101,13 +101,13 @@ Les fichiers `bin/` et `obj/` sont générés et ne doivent pas être documenté
 Depuis la racine du projet :
 
 ```powershell
-dotnet restore .\src\Finance.Android17.Maui\Finance.Android17.Maui.csproj
-dotnet build .\src\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Debug
-dotnet test .\tests\Finance.Android17.Tests\Finance.Android17.Tests.csproj -c Debug
-dotnet publish .\src\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Release -r android-arm64
+dotnet restore .\Finance.Android17.Maui\Finance.Android17.Maui.csproj
+dotnet build .\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Debug
+dotnet test .\Finance.Android17.Tests\Finance.Android17.Tests.csproj -c Debug
+dotnet publish .\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Release -r android-arm64
 ```
 
-La publication Release Android vise ARM64, produit un APK et désactive le shared runtime. Le README indique les chemins de sortie attendus sous `src/Finance.Android17.Maui/bin/...`.
+La publication Release Android vise ARM64, produit un APK et désactive le shared runtime. Le README indique les chemins de sortie attendus sous `Finance.Android17.Maui/bin/...`.
 
 ## Vérification connue au moment de la rédaction
 
