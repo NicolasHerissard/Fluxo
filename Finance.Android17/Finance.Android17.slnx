@@ -4,7 +4,5 @@
   <Project Path="Finance.Android17.Infrastructure/Finance.Android17.Infrastructure.csproj" />
   <Project Path="Finance.Android17.Maui/Finance.Android17.Maui.csproj" />
   <Project Path="Finance.Android17.Presentation/Finance.Android17.Presentation.csproj" />
-  <Folder Name="/tests/">
-    <Project Path="tests/Finance.Android17.Tests/Finance.Android17.Tests.csproj" />
-  </Folder>
+  <Project Path="Finance.Android17.Tests/Finance.Android17.Tests.csproj" />
 </Solution>

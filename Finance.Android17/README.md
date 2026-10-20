@@ -44,7 +44,7 @@ API 36 est la cible Android prise en charge par le SDK .NET 10 installé. Androi
 
 ```powershell
 dotnet build .\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Debug
-dotnet test .\tests\Finance.Android17.Tests\Finance.Android17.Tests.csproj -c Debug
+dotnet test .\Finance.Android17.Tests\Finance.Android17.Tests.csproj -c Debug
 ```
 
 APK Debug signé généré :

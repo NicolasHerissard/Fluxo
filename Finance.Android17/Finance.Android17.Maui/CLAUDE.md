@@ -5,7 +5,7 @@
 - Cibles : `net10.0-android` (cible réelle, minimum API 21) et `net10.0-windows10.0.19041.0` (`WindowsPackageType=None`). Les dossiers `Platforms/iOS` et `Platforms/MacCatalyst` sont des restes de template, non ciblés par le `.csproj`.
 - Identité : `ApplicationTitle` « Mes Finances », `ApplicationId` `fr.nicol.finance.android17`, `ApplicationDisplayVersion` `2.0.0`, `ApplicationVersion` `8` (à garder synchronisés avec `README.md`).
 - `MauiXamlInflator=SourceGen` : le XAML est compilé en C#, les pages utilisent `x:DataType` (bindings compilés).
-- Références : `Finance.Android17.Application`, `Finance.Android17.Infrastructure`, `Finance.Android17.Presentation` (dossier **absent du dépôt** pour l'instant : le projet ne se restaure pas sans lui). NuGet : `Microsoft.Maui.Controls`, `Microsoft.Extensions.Logging.Debug`, et `Xamarin.Google.MLKit.TextRecognition` (Android uniquement).
+- Références : `Finance.Android17.Application`, `Finance.Android17.Infrastructure`, `Finance.Android17.Presentation` (les ViewModels des pages). NuGet : `Microsoft.Maui.Controls`, `Microsoft.Extensions.Logging.Debug`, et `Xamarin.Google.MLKit.TextRecognition` (Android uniquement).
 - Debug Android : assemblies embarquées dans l'APK, sans Fast Deployment ni shared runtime. Release Android : `android-arm64`, APK, pas de trimming ni d'AOT.
 
 ## Démarrage et navigation

@@ -15,7 +15,7 @@ Le code est organisé en couches, avec des dépendances dirigées vers le domain
 - `Finance.Android17.Infrastructure` : `FinanceDbContext` EF Core et `EncryptedFinanceStore`, persistance SQLite chiffrée avec SQLCipher.
 - `Finance.Android17.Presentation` : ViewModels CommunityToolkit.Mvvm et modèles d’affichage (`ExpenseRow`, `ChartBar`, etc.).
 - `Finance.Android17.Maui` : application MAUI, pages XAML/code-behind, enregistrement DI, services natifs et ressources.
-- `tests/Finance.Android17.Tests` : tests xUnit des règles pures de dashboard et d’échéances d’abonnements.
+- `Finance.Android17.Tests` : tests xUnit des règles pures de dashboard et d’échéances d’abonnements.
 
 Les projets non-MAUI ciblent `net10.0`. Les versions NuGet sont centralisées dans `Directory.Packages.props`.
 
@@ -103,7 +103,7 @@ Depuis la racine du projet :
 ```powershell
 dotnet restore .\Finance.Android17.Maui\Finance.Android17.Maui.csproj
 dotnet build .\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Debug
-dotnet test .\tests\Finance.Android17.Tests\Finance.Android17.Tests.csproj -c Debug
+dotnet test .\Finance.Android17.Tests\Finance.Android17.Tests.csproj -c Debug
 dotnet publish .\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Release -r android-arm64
 ```
 

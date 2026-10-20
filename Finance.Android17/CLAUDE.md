@@ -2,7 +2,7 @@
 
 Application Android (et Windows) de gestion de finances personnelles, **locale, hors ligne et mono-solde** : dépenses, revenus ponctuels et récurrents, abonnements, objectifs d'épargne, solde initial. Nom affiché : « Mes Finances », identifiant Android `fr.nicol.finance.android17`, version `2.0.0` (code de version `8`). Stack : .NET 10, .NET MAUI, EF Core 10, SQLite chiffré avec SQLCipher, CommunityToolkit.Mvvm.
 
-Le point d'entrée de la solution est `Finance.Android17.slnx` (format `.slnx`, Visual Studio 2026 ou SDK .NET 10). Les dossiers de projet sont directement à côté du `.slnx` (il n'y a plus de dossier `src/`).
+Le point d'entrée de la solution est `Finance.Android17.slnx` (format `.slnx`, Visual Studio 2026 ou SDK .NET 10). Tous les dossiers de projet, tests compris, sont directement à côté du `.slnx` (il n'y a ni dossier `src/`, ni dossier `tests/`).
 
 Pour le détail des règles métier, de la sécurité, du langage visuel et de la feuille de route, lire `AGENTS.md` (même dossier) ; ce fichier-ci donne la carte d'ensemble et les commandes.
 
@@ -13,11 +13,11 @@ Pour le détail des règles métier, de la sécurité, du langage visuel et de l
 | `Finance.Android17.Domain` | `net10.0` | Entités persistées, sans aucune dépendance. |
 | `Finance.Android17.Application` | `net10.0` | Contrats (interfaces, DTO de sauvegarde), `FinanceService`, règles de calcul pures, `ReceiptParser`. |
 | `Finance.Android17.Infrastructure` | `net10.0` | Persistance : `EncryptedFinanceStore` (EF Core + SQLite/SQLCipher). |
-| `Finance.Android17.Presentation` | `net10.0` | ViewModels (CommunityToolkit.Mvvm) et modèles d'affichage. **Absent du dépôt pour l'instant**, voir plus bas. |
+| `Finance.Android17.Presentation` | `net10.0` | ViewModels (CommunityToolkit.Mvvm) et modèles d'affichage, sans dépendance à MAUI. |
 | `Finance.Android17.Maui` | `net10.0-android`, `net10.0-windows10.0.19041.0` | Application : pages XAML, DI, services natifs, ressources. Racine de composition. |
-| `tests/Finance.Android17.Tests` | `net10.0` | Tests xUnit des règles pures (dashboard, échéances). **Absent du dépôt pour l'instant.** |
+| `Finance.Android17.Tests` | `net10.0` | Tests xUnit des règles pures d'`Application` (dashboard, résumé financier, échéances, `ReceiptParser`, compatibilité des sauvegardes). |
 
-Chaque projet présent a son propre `CLAUDE.md` décrivant son contenu et ses règles.
+Chaque projet a son propre `CLAUDE.md` décrivant son contenu et ses règles.
 
 ## Architecture
 
@@ -29,7 +29,7 @@ Maui ──► Presentation ──► Application ──► Domain
   └────► Infrastructure ─────┘  (Infrastructure référence aussi Domain)
 ```
 
-Les références de `Maui` et d'`Infrastructure` ont été vérifiées dans les `.csproj` ; celle de `Presentation` vers `Application` est déduite d'`AGENTS.md`, le projet n'étant pas dans le dépôt.
+`Presentation` référence `Application` et `Domain` ; `Finance.Android17.Tests` référence `Application` et `Domain` seulement.
 
 - `Domain` ne dépend de rien.
 - `Application` référence `Domain` et définit les abstractions (`IFinanceStore`, `ISecretStore`, `IAppLockService`, `IBiometricService`, `ISettingsService`, `IExportService`, `IOcrService`, `IDataBackupService`, `IReminderService`).
@@ -67,8 +67,8 @@ dotnet build Finance.Android17.Infrastructure/Finance.Android17.Infrastructure.c
 # Application Android (workload maui-android requis)
 dotnet build Finance.Android17.Maui/Finance.Android17.Maui.csproj -f net10.0-android -c Debug
 
-# Tests (quand le projet de tests est présent)
-dotnet test tests/Finance.Android17.Tests/Finance.Android17.Tests.csproj -c Debug
+# Tests unitaires (7 tests, sans MAUI)
+dotnet test Finance.Android17.Tests/Finance.Android17.Tests.csproj -c Debug
 
 # APK Release ARM64 non débogable (à utiliser sur appareil à pages de 16 ko)
 dotnet publish Finance.Android17.Maui/Finance.Android17.Maui.csproj -f net10.0-android -c Release -r android-arm64
@@ -77,7 +77,3 @@ dotnet publish Finance.Android17.Maui/Finance.Android17.Maui.csproj -f net10.0-a
 Sorties APK : `Finance.Android17.Maui/bin/Debug/net10.0-android/fr.nicol.finance.android17-Signed.apk` et `Finance.Android17.Maui/bin/Release/net10.0-android/android-arm64/publish/fr.nicol.finance.android17-Signed.apk`.
 
 La cible Windows du projet MAUI ne se restaure que sous Windows (sinon `NETSDK1100`) ; sur Linux/macOS, compiler uniquement `-f net10.0-android`. Si le build échoue avec une erreur d'assets (`net10.0-android/android-x64` absent), relancer `dotnet restore` au lieu de modifier les fichiers générés.
-
-## État actuel du dépôt
-
-`Finance.Android17.slnx` et `Finance.Android17.Maui.csproj` référencent le projet `Finance.Android17.Presentation` et le projet de tests `tests/Finance.Android17.Tests`, mais **ces deux dossiers ne sont pas (encore) versionnés** : le projet MAUI ne peut donc pas être restauré ni compilé tant que `Presentation` est absent. Seuls `Domain`, `Application` et `Infrastructure` compilent seuls. Une fois ces dossiers ajoutés, créer leur `CLAUDE.md` et mettre à jour ce paragraphe.

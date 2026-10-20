@@ -36,4 +36,4 @@ Cherche le total en partant de la fin du ticket (libellés « total ttc », « t
 - Montants en `long` (centimes), dates sans heure (`.Date`), `CancellationToken` sur les opérations asynchrones.
 - Toute modification de `FinanceBackupSnapshot` doit rester compatible avec les fichiers `.mfbackup` existants (formats 1 et 2) : incrémenter `FormatVersion` et adapter `RestoreBackupSnapshotAsync` plutôt que de casser le format.
 - Conserver la séparation `IOcrService` / `ReceiptParser`.
-- Les règles pures (`BuildDashboard`, `GetDueDates`, `BuildFinancialSummary`, `ReceiptParser`) sont celles qui doivent être couvertes par `tests/Finance.Android17.Tests`.
+- Les règles pures (`BuildDashboard`, `GetDueDates`, `BuildFinancialSummary`, `ReceiptParser`) sont celles qui doivent être couvertes par `Finance.Android17.Tests`.
