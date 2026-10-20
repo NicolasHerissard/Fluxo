@@ -103,7 +103,7 @@ public partial class AddExpenseViewModel(IExpenseRepository expenseRepository, I
                 await expenseRepository.UpdateAsync(editingId, minor, Description, Date, SelectedCategory.Id, settings.CurrencyCode);
             else
                 await expenseRepository.AddAsync(minor, Description, Date, SelectedCategory.Id, settings.CurrencyCode);
-            var keepOpen = _editingId is null && settings.AfterSaveBehavior == "Ajouter une autre";
+            var keepOpen = _editingId is null && settings.AfterSaveBehavior == AfterSaveOptions.AddAnother;
             Amount = Description = string.Empty;
             Date = clock.GetLocalNow().Date;
             _editingId = null;

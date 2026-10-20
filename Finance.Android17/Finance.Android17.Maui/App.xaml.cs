@@ -16,7 +16,7 @@ public partial class App : Microsoft.Maui.Controls.Application
 		InitializeComponent();
 		_services = services;
 		_settings = settings;
-		UserAppTheme = settings.Theme switch { "Clair" => AppTheme.Light, "Sombre" => AppTheme.Dark, _ => AppTheme.Unspecified };
+		UserAppTheme = AppSettingsService.ToAppTheme(settings.Theme);
 		RequestedThemeChanged += (_, _) => SystemBarAppearance.Apply();
 	}
 

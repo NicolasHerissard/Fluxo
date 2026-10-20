@@ -25,7 +25,7 @@ public sealed class FakeSettings : ISettingsService
     public bool HideAmounts { get; set; }
     public bool BiometricsEnabled { get; set; }
     public int AutoLockMinutes { get; set; } = 5;
-    public string Theme { get; set; } = "Système";
+    public string Theme { get; set; } = ThemeOptions.FollowSystem;
     public bool AutoCreateSubscriptionExpenses { get; set; }
     public bool AutoCreateRecurringIncomes { get; set; } = true;
     public bool SubscriptionRemindersEnabled { get; set; } = true;
@@ -35,7 +35,7 @@ public sealed class FakeSettings : ISettingsService
     public string DefaultCategoryId { get; set; } = string.Empty;
     public string LastCategoryId { get; set; } = string.Empty;
     public bool RememberLastCategory { get; set; } = true;
-    public string AfterSaveBehavior { get; set; } = "Fermer";
+    public string AfterSaveBehavior { get; set; } = AfterSaveOptions.Close;
 }
 
 public sealed class FakeReminderService : IReminderService

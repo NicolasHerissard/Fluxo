@@ -15,11 +15,11 @@ Ce fichier donne la carte d'ensemble, les conventions transverses, les commandes
 | Dossier | Cible | Rôle |
 | --- | --- | --- |
 | `Finance.Android17.Domain` | `net10.0` | Entités persistées, sans aucune dépendance. |
-| `Finance.Android17.Application` | `net10.0` | Contrats (interfaces, DTO de sauvegarde), `FinanceService`, règles de calcul pures, `ReceiptParser`. |
-| `Finance.Android17.Infrastructure` | `net10.0` | Persistance : `EncryptedFinanceStore` (EF Core + SQLite/SQLCipher). |
+| `Finance.Android17.Application` | `net10.0` | Règles métier et calculs purs (tableau de bord, résumé financier, filtres, échéances, rappels, `ReceiptParser`…), services d'orchestration et **ports** (interfaces de persistance, de sécurité et de plateforme). |
+| `Finance.Android17.Infrastructure` | `net10.0` | Implémentation des ports indépendants de la plateforme : persistance (dépôts EF Core + SQLite/SQLCipher, schéma versionné), PIN, clé de la base, sauvegarde chiffrée, export CSV. |
 | `Finance.Android17.Presentation` | `net10.0` | ViewModels (CommunityToolkit.Mvvm) et modèles d'affichage, sans dépendance à MAUI. |
-| `Finance.Android17.Maui` | `net10.0-android`, `net10.0-windows10.0.19041.0` | Application : pages XAML, DI, services natifs, ressources. Racine de composition. |
-| `Finance.Android17.Tests` | `net10.0` | Tests xUnit des règles pures d'`Application` (dashboard, résumé financier, échéances, `ReceiptParser`, compatibilité des sauvegardes). |
+| `Finance.Android17.Maui` | `net10.0-android`, `net10.0-windows10.0.19041.0` | Application : pages XAML, ressources et fins adaptateurs vers la plateforme (stockage sécurisé, partage de fichiers, préférences, biométrie, OCR, rappels). Racine de composition. |
+| `Finance.Android17.Tests` | `net10.0` | Tests xUnit : règles pures, dépôts sur une vraie base SQLCipher temporaire, sécurité et format de sauvegarde, ViewModels, composition. |
 
 Chaque projet a son propre `CLAUDE.md` décrivant son contenu et ses règles.
 
@@ -33,27 +33,34 @@ Maui ──► Presentation ──► Application ──► Domain
   └────► Infrastructure ─────┘  (Infrastructure référence aussi Domain)
 ```
 
-`Presentation` référence `Application` et `Domain` ; `Finance.Android17.Tests` référence `Application` et `Domain` seulement.
+`Presentation` référence `Application` et `Domain` ; `Finance.Android17.Tests` référence tout sauf `Maui`.
 
 - `Domain` ne dépend de rien.
-- `Application` référence `Domain` et définit les abstractions (`IFinanceStore`, `ISecretStore`, `IAppLockService`, `IBiometricService`, `ISettingsService`, `IExportService`, `IOcrService`, `IDataBackupService`, `IReminderService`).
-- `Infrastructure` implémente `IFinanceStore` (seule implémentation : `EncryptedFinanceStore`) et dépend de `Application` + `Domain`.
-- `Maui` référence `Application`, `Infrastructure` et `Presentation` ; il implémente les abstractions natives (PIN, biométrie, réglages, CSV, OCR, sauvegarde, rappels) et enregistre tout dans `MauiProgram`.
-- Les règles métier et abstractions réutilisables vivent dans `Application`, jamais dans le code-behind MAUI.
+- `Application` référence `Domain`. Elle contient les règles et définit les **ports** : un par agrégat pour la persistance (`IExpenseRepository`, `ICategoryRepository`, `IIncomeRepository`, `IRecurringIncomeRepository`, `ISubscriptionRepository`, `ISavingsGoalRepository`, `IFinancialProfileRepository`, plus `IDueOperationsStore`, `IFinanceDataStore`, `IDatabaseInitializer`), puis la sécurité (`ISecretStore`, `IAppLockService`, `IBiometricService`), `ISettingsService`, `IExportService`, `IDataBackupService`, `IOcrService`, `IReminderService`, et deux ports de plateforme très étroits : `ISecureValueStore` et `IFileExchange`.
+- `Infrastructure` dépend de `Application` + `Domain` et implémente tout ce qui ne dépend pas de la plateforme : dépôts, PIN, clé de la base, format `.mfbackup`, CSV. Rien d'`internal` n'en sort : seul `AddInfrastructure()` est public.
+- `Presentation` dépend d'`Application` + `Domain` : les ViewModels reçoivent des ports et services, jamais une API de plateforme.
+- `Maui` référence `Application`, `Infrastructure` et `Presentation`. Il n'implémente que ce qui touche vraiment la plateforme (`ISecureValueStore` → `SecureStorage`, `IFileExchange` → partage/sélecteur de fichiers, `ISettingsService` → `Preferences`, `IBiometricService`, `IOcrService`, `IReminderService`) et compose le tout dans `MauiProgram`.
+- Les règles métier vivent dans `Application`, jamais dans le code-behind MAUI ni dans un ViewModel.
 
-Chemin type d'une opération : page MAUI → ViewModel (`Presentation`) → `FinanceService` (`Application`) → `IFinanceStore` → `EncryptedFinanceStore` (`Infrastructure`). Pour ajouter une opération de stockage : l'ajouter à `IFinanceStore`, l'implémenter dans `EncryptedFinanceStore`, l'exposer par `FinanceService`, puis l'utiliser dans un ViewModel.
+**Composition** : chaque couche expose sa propre méthode d'enregistrement, appelée par `MauiProgram` : `AddInfrastructure()`, `AddApplication()`, `AddPresentation()`. Les tests construisent la même composition avec des adaptateurs de plateforme factices.
+
+**Horloge et base injectables** : toute heure vient d'un `TimeProvider` (jamais `DateTime.Now`/`Today` dans `Application`, `Infrastructure` ou `Presentation`), et le chemin de la base d'un `FinanceDatabaseOptions` : c'est ce qui rend l'ensemble testable.
+
+Chemin type d'une opération : page MAUI → ViewModel (`Presentation`) → port d'un agrégat (`Application`) → dépôt (`Infrastructure/Persistence`) → `FinanceDatabase` → SQLCipher. Pour ajouter une opération de stockage : l'ajouter au port de l'agrégat, l'implémenter dans son dépôt, puis l'utiliser depuis un ViewModel ou un service. Pas de façade intermédiaire.
 
 ## Conventions transverses
 
 - **Montants** : toujours des `long` en centimes (`AmountMinor`), jamais de `decimal` stocké. Arrondi des saisies avec `MidpointRounding.AwayFromZero`. Devise par défaut `EUR`.
 - **Dates** : dates sans heure (`.Date`) pour les dépenses, revenus et échéances.
 - **Suppressions logiques** (`DeletedAtUtc`) pour dépenses, catégories, abonnements, revenus, revenus récurrents et objectifs ; les lectures normales et les sauvegardes les ignorent.
-- **Asynchrone** : les opérations persistantes passent par `InitializeAsync` et acceptent un `CancellationToken`.
+- **Asynchrone** : les opérations persistantes acceptent un `CancellationToken` ; la base s'ouvre à la première utilisation (`IDatabaseInitializer.InitializeAsync` la prépare dès le déverrouillage).
 - **Hors ligne** : pas de permission Internet, sauvegarde Android désactivée (`allowBackup=false`).
-- **Sécurité** : ne pas changer la clé SQLCipher, le nom de la base (`finance-v2.db3`) ni le format de sauvegarde sans stratégie de migration explicite.
+- **Sécurité** : ne pas changer la clé SQLCipher, le nom de la base (`finance-v2.db3`), les clés du coffre sécurisé ni le format de sauvegarde sans stratégie de migration explicite. Toute évolution du schéma passe par une **migration** de `FinanceSchema` (`PRAGMA user_version`).
+- **Valeurs persistées** : les libellés français de `ThemeOptions` et `AfterSaveOptions` sont enregistrés dans les préférences existantes ; ne pas les modifier.
 - **Langue** : interface, messages et commentaires du projet sont en français.
 - `Directory.Packages.props` centralise les versions NuGet (`ManagePackageVersionsCentrally`) : ajouter les versions là, pas dans les `.csproj`.
-- `bin/` et `obj/` sont générés et ignorés par Git. Les fichiers `Class1.cs` sont des placeholders de template sans logique.
+- Un seul espace de noms par projet (`Finance.Android17.<Projet>`) : les dossiers servent à ranger, pas à nommer.
+- `bin/` et `obj/` sont générés et ignorés par Git.
 
 ## Commandes
 
@@ -71,7 +78,7 @@ dotnet build Finance.Android17.Infrastructure/Finance.Android17.Infrastructure.c
 # Application Android (workload maui-android requis)
 dotnet build Finance.Android17.Maui/Finance.Android17.Maui.csproj -f net10.0-android -c Debug
 
-# Tests unitaires (7 tests, sans MAUI)
+# Tests (sans MAUI, environ deux minutes : une base SQLCipher temporaire par test de persistance)
 dotnet test Finance.Android17.Tests/Finance.Android17.Tests.csproj -c Debug
 
 # APK Release ARM64 non débogable (à utiliser sur appareil à pages de 16 ko)
@@ -82,7 +89,7 @@ Sorties APK : `Finance.Android17.Maui/bin/Debug/net10.0-android/fr.nicol.finance
 
 La cible Windows du projet MAUI ne se restaure que sous Windows (sinon `NETSDK1100`) ; sur Linux/macOS, compiler uniquement `-f net10.0-android`, et restaurer avec `-p:EnableWindowsTargeting=true`. Si le build échoue avec une erreur d'assets (`net10.0-android/android-x64` absent), relancer `dotnet restore` au lieu de modifier les fichiers générés.
 
-Sur une machine sans Android SDK (environnement cloud, CI), la compilation Android s'arrête sur `XA5300` : installer le SDK Android (plateforme 36, build-tools 36) et passer `-p:AndroidSdkDirectory=<chemin>`. Même avec le SDK, l'étape finale de signature peut échouer sur `XA4314` (`AndroidSigningKeyPass` vide) car le `.csproj` déclare `AndroidKeyStore=True` sans fournir de keystore : le code C# est alors compilé mais l'APK n'est pas produit. Les couches non-MAUI (`Domain`, `Application`, `Infrastructure`, `Presentation`) et les tests se compilent et s'exécutent sans cela.
+Sur une machine sans Android SDK (environnement cloud, CI), la compilation Android s'arrête sur `XA5300` : installer le SDK Android (plateforme 36, build-tools 36) et passer `-p:AndroidSdkDirectory=<chemin>`. Même avec le SDK, l'étape finale de signature peut échouer sur `XA4314` (`AndroidSigningKeyPass` vide) car le `.csproj` déclare `AndroidKeyStore=True` sans fournir de keystore : le code C# est alors compilé mais l'APK n'est pas produit. Les couches non-MAUI (`Domain`, `Application`, `Infrastructure`, `Presentation`) et les tests se compilent et s'exécutent sans cela. Sur ce genre de machine, `-p:AndroidSdkDirectory=<chemin> -p:EnableWindowsTargeting=true` suffit pour vérifier que le C# et le XAML (bindings compilés) compilent ; `XA4314` est alors la seule erreur attendue.
 
 Avertissements connus à la compilation Android (non bloquants) : `CS0618`/`CS0672` dans `Platforms/Android/CameraCapture.cs` (API `Fragment.StartActivityForResult`/`OnActivityResult` obsolètes ; ce flux caméra est actuellement masqué dans l'interface) et `XA4301` (bibliothèques natives ML Kit `libmlkit_google_ocr_pipeline.so` dupliquées lors de l'empaquetage).
 

@@ -19,11 +19,11 @@ public partial class SettingsViewModel(
     private bool _updatingColor;
     private Guid? _editingCategoryId;
     public ObservableCollection<CategoryItem> Categories { get; } = [];
-    public IReadOnlyList<string> Themes { get; } = ["Système", "Clair", "Sombre"];
+    public IReadOnlyList<string> Themes { get; } = ThemeOptions.All;
     public IReadOnlyList<int> AutoLockChoices { get; } = [1, 2, 5, 10, 30];
     public IReadOnlyList<int> ReminderDayChoices { get; } = [1, 3, 7];
     public IReadOnlyList<string> Currencies { get; } = ["EUR", "USD", "CHF", "GBP", "CAD", "JPY"];
-    public IReadOnlyList<string> AfterSaveChoices { get; } = ["Fermer", "Ajouter une autre"];
+    public IReadOnlyList<string> AfterSaveChoices { get; } = AfterSaveOptions.All;
     public IReadOnlyList<string> CategoryColors { get; } = [Palette.Primary, "#2E7D32", "#1565C0", "#C62828", "#EF6C00", "#546E7A", "#7D5260", "#00838F"];
 
     [ObservableProperty] private string newCategoryName = string.Empty;
@@ -39,7 +39,7 @@ public partial class SettingsViewModel(
     [ObservableProperty] private bool biometricsEnabled;
     [ObservableProperty] private bool biometricsAvailable;
     [ObservableProperty] private int autoLockMinutes;
-    [ObservableProperty] private string selectedTheme = "Système";
+    [ObservableProperty] private string selectedTheme = ThemeOptions.FollowSystem;
     [ObservableProperty] private bool autoCreateSubscriptionExpenses;
     [ObservableProperty] private bool autoCreateRecurringIncomes;
     [ObservableProperty] private bool subscriptionRemindersEnabled;
@@ -48,7 +48,7 @@ public partial class SettingsViewModel(
     [ObservableProperty] private string selectedCurrency = "EUR";
     [ObservableProperty] private CategoryItem? defaultCategory;
     [ObservableProperty] private bool rememberLastCategory = true;
-    [ObservableProperty] private string selectedAfterSaveBehavior = "Fermer";
+    [ObservableProperty] private string selectedAfterSaveBehavior = AfterSaveOptions.Close;
     [ObservableProperty] private string currentPin = string.Empty;
     [ObservableProperty] private string newPin = string.Empty;
     [ObservableProperty] private string confirmPin = string.Empty;
