@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Finance.Android17.Presentation;assembly=Finance.Android17.Presentation"
+             x:Class="Finance.Android17.Maui.AddExpensePage"
+             x:Name="AddPage"
+             x:DataType="vm:AddExpenseViewModel"
+             Title="{Binding PageTitle}"
+             NavigationPage.HasNavigationBar="False"
+             Style="{StaticResource AppPage}">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="20,14,20,24" Spacing="20">
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Spacing="1">
+                        <Label Text="{Binding PageTitle}" Style="{StaticResource PageTitle}" SemanticProperties.HeadingLevel="Level1" />
+                        <Label Text="Saisie rapide" Style="{StaticResource MutedLabel}" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1" Text="Fermer" Clicked="OnCancelClicked" Style="{StaticResource TextButton}" />
+                </Grid>
+
+                <VerticalStackLayout Spacing="2" HorizontalOptions="Fill">
+                    <Label Text="MONTANT" Style="{StaticResource FieldLabel}" HorizontalTextAlignment="Center" CharacterSpacing="1" />
+                    <Grid ColumnDefinitions="48,180,48" HorizontalOptions="Center">
+                        <Entry x:Name="AmountEntry" Grid.Column="1" Placeholder="0,00" Text="{Binding Amount}" Keyboard="Numeric" ReturnType="Done" FontSize="46" FontAttributes="Bold" HorizontalTextAlignment="Center" BackgroundColor="Transparent" ClearButtonVisibility="Never" SemanticProperties.Description="Montant de la dépense" />
+                        <Label Grid.Column="2" Text="{Binding CurrencySymbol}" Style="{StaticResource SectionTitle}" FontSize="28" VerticalOptions="Center" HorizontalOptions="Start" Margin="8,0,0,0" />
+                    </Grid>
+                    <Button Text="📷 Scanner un ticket" Clicked="OnScanReceiptClicked" Style="{StaticResource TextButton}" IsVisible="False" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Catégorie" Style="{StaticResource SectionTitle}" FontSize="18" SemanticProperties.HeadingLevel="Level2" />
+                    <CollectionView ItemsSource="{Binding CategoryOptions}" SelectionMode="None" HeightRequest="68">
+                        <CollectionView.ItemsLayout><LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" /></CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ExpenseCategoryOption">
+                                <Grid Padding="2">
+                                    <Border Padding="16,10" BackgroundColor="{Binding Color}" Stroke="{Binding SelectionStroke}" StrokeThickness="{Binding SelectionStrokeThickness}" StrokeShape="RoundRectangle 18" MinimumHeightRequest="52">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={x:Reference AddPage}, Path=BindingContext.SelectCategoryCommand}" CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="8">
+                                            <Label Text="{Binding Name}" TextColor="{Binding Color, Converter={StaticResource ColorContrastConverter}}" FontAttributes="Bold" VerticalOptions="Center" />
+                                            <Border Grid.Column="1" IsVisible="{Binding IsSelected}" WidthRequest="22" HeightRequest="22" Padding="0" BackgroundColor="{StaticResource TextPrimaryDark}" StrokeThickness="0" StrokeShape="RoundRectangle 11" VerticalOptions="Center">
+                                                <Label Text="{Binding SelectionMark}" TextColor="{StaticResource PrimaryPressedColor}" FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Date" Style="{StaticResource SectionTitle}" FontSize="18" SemanticProperties.HeadingLevel="Level2" />
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <Button Text="Aujourd’hui" Command="{Binding SelectDateCommand}" CommandParameter="Aujourd’hui" Style="{StaticResource SegmentButton}">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsTodaySelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                        <Button Grid.Column="1" Text="Hier" Command="{Binding SelectDateCommand}" CommandParameter="Hier" Style="{StaticResource SegmentButton}">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsYesterdaySelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                        <Button Grid.Column="2" Text="{Binding OtherDateText}" Clicked="OnOtherDateClicked" Style="{StaticResource SegmentButton}">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsOtherDateSelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                        </Button>
+                    </Grid>
+                    <Border IsVisible="{Binding IsCustomDateVisible}" Style="{StaticResource InputField}">
+                        <DatePicker x:Name="CustomDatePicker" Date="{Binding Date}" Format="dddd d MMMM yyyy" MinimumHeightRequest="50" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Note" Style="{StaticResource SectionTitle}" FontSize="18" SemanticProperties.HeadingLevel="Level2" />
+                    <Border Style="{StaticResource InputField}">
+                        <Entry x:Name="NoteEntry" Placeholder="Facultatif · ex. Courses de la semaine" Text="{Binding Description}" Style="{StaticResource InputEntry}" ReturnType="Done" />
+                    </Border>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border Grid.Row="1" Padding="20,12,20,18" BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource PageBackgroundDark}}" Stroke="Transparent" StrokeThickness="0">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" HorizontalTextAlignment="Center" />
+                <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" HorizontalTextAlignment="Center" />
+                <Button Text="{Binding SaveButtonText}" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsSaveEnabled}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource PrimaryColor}" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

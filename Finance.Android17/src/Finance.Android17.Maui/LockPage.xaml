@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Finance.Android17.Presentation;assembly=Finance.Android17.Presentation"
+             x:Class="Finance.Android17.Maui.LockPage"
+             x:DataType="vm:LockViewModel"
+             Style="{StaticResource AppPage}">
+    <ScrollView>
+        <VerticalStackLayout Padding="28" Spacing="16" VerticalOptions="Center" MaximumWidthRequest="460" HorizontalOptions="Center">
+            <Border HeightRequest="76" WidthRequest="76" BackgroundColor="{StaticResource PrimaryColor}" StrokeThickness="0" StrokeShape="RoundRectangle 24" HorizontalOptions="Center">
+                <Label Text="{Binding CurrencySymbol}" TextColor="White" FontSize="38" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+            <Label Text="{Binding PinTitle}" Style="{StaticResource PageTitle}" HorizontalTextAlignment="Center" SemanticProperties.HeadingLevel="Level1" />
+            <Label Text="{Binding PinHelp}" Style="{StaticResource MutedLabel}" FontSize="15" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding PinDots}" FontSize="28" CharacterSpacing="5" TextColor="{StaticResource PrimaryColor}" HorizontalTextAlignment="Center" SemanticProperties.Description="Indicateur de chiffres du code PIN" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Border Style="{StaticResource InputField}"><Entry Text="{Binding Pin}" IsPassword="{Binding IsPinHidden}" Keyboard="Numeric" MaxLength="8" ReturnCommand="{Binding SubmitPinCommand}" Style="{StaticResource InputEntry}" FontSize="22" HorizontalTextAlignment="Center" SemanticProperties.Description="Code PIN de quatre à huit chiffres" /></Border>
+                <ImageButton Grid.Column="1" Source="{Binding PinVisibilityIcon}" Command="{Binding TogglePinVisibilityCommand}" BackgroundColor="{StaticResource PrimaryColor}" CornerRadius="16" Padding="14" WidthRequest="52" HeightRequest="52" SemanticProperties.Description="Afficher ou masquer le code PIN" />
+            </Grid>
+            <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" HorizontalTextAlignment="Center" />
+            <Button Text="Continuer" Command="{Binding SubmitPinCommand}" Style="{StaticResource PrimaryButton}" />
+            <Button Text="Utiliser la biométrie" Command="{Binding UseBiometricsCommand}" IsVisible="{Binding CanUseBiometrics}" Style="{StaticResource SecondaryButton}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource PrimaryColor}" />
+            <Label Text="Chiffrement local • Fonctionne hors connexion" Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" Margin="0,18,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
