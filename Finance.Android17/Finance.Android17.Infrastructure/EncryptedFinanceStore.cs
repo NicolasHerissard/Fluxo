@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Finance.Android17.Infrastructure;
 
-public sealed class EncryptedFinanceStore(ISecretStore secrets) : IFinanceStore
+public sealed class EncryptedFinanceStore(ISecretStore secrets, FinanceDatabaseOptions options) : IFinanceStore
 {
     private readonly SemaphoreSlim _initializationLock = new(1, 1);
     private string? _connectionString;
@@ -19,12 +19,11 @@ public sealed class EncryptedFinanceStore(ISecretStore secrets) : IFinanceStore
             if (_connectionString is not null) return;
             SQLitePCL.Batteries_V2.Init();
             var key = await secrets.GetOrCreateDatabaseKeyAsync(cancellationToken).ConfigureAwait(false);
-            var dataDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            Directory.CreateDirectory(dataDirectory);
-            var path = Path.Combine(dataDirectory, "finance-v2.db3");
+            var dataDirectory = Path.GetDirectoryName(Path.GetFullPath(options.DatabasePath));
+            if (!string.IsNullOrEmpty(dataDirectory)) Directory.CreateDirectory(dataDirectory);
             _connectionString = new SqliteConnectionStringBuilder
             {
-                DataSource = path,
+                DataSource = options.DatabasePath,
                 Password = key,
                 Mode = SqliteOpenMode.ReadWriteCreate
             }.ToString();

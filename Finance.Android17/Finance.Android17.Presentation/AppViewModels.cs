@@ -41,7 +41,7 @@ public partial class ExpenseCategoryOption(Category category) : ObservableObject
     public string SelectionMark => IsSelected ? "✓" : string.Empty;
 }
 
-public partial class LockViewModel(FinanceService finance, IAppLockService appLock, IBiometricService biometrics, ISettingsService settings, IReminderService reminders) : ObservableObject
+public partial class LockViewModel(FinanceService finance, IAppLockService appLock, IBiometricService biometrics, ISettingsService settings, IReminderService reminders, TimeProvider clock) : ObservableObject
 {
     private bool _initialized;
     public event EventHandler? Unlocked;
@@ -130,9 +130,9 @@ public partial class LockViewModel(FinanceService finance, IAppLockService appLo
     {
         await finance.InitializeAsync();
         if (settings.AutoCreateSubscriptionExpenses)
-            await finance.ProcessDueSubscriptionsAsync(DateTime.Today, settings.CurrencyCode);
+            await finance.ProcessDueSubscriptionsAsync(clock.GetLocalNow().Date, settings.CurrencyCode);
         if (settings.AutoCreateRecurringIncomes)
-            await finance.ProcessDueRecurringIncomesAsync(DateTime.Today, settings.CurrencyCode);
+            await finance.ProcessDueRecurringIncomesAsync(clock.GetLocalNow().Date, settings.CurrencyCode);
         if (settings.SubscriptionRemindersEnabled)
             await reminders.ShowSubscriptionReminderAsync(await finance.GetSubscriptionsAsync(), settings.SubscriptionReminderDays);
     }
@@ -146,7 +146,7 @@ public partial class LockViewModel(FinanceService finance, IAppLockService appLo
     }
 }
 
-public partial class DashboardViewModel(FinanceService finance, ISettingsService settings) : ObservableObject
+public partial class DashboardViewModel(FinanceService finance, ISettingsService settings, TimeProvider clock) : ObservableObject
 {
     private bool _hasLoaded;
     public ObservableCollection<ExpenseRow> RecentExpenses { get; } = [];
@@ -193,21 +193,21 @@ public partial class DashboardViewModel(FinanceService finance, ISettingsService
         try
         {
             var culture = CultureInfo.GetCultureInfo("fr-FR");
-            Greeting = DateTime.Now.Hour < 18 ? "Bonjour" : "Bonsoir";
-            CurrentDate = culture.TextInfo.ToTitleCase(DateTime.Today.ToString("dddd d MMMM", culture));
+            Greeting = clock.GetLocalNow().Hour < 18 ? "Bonjour" : "Bonsoir";
+            CurrentDate = culture.TextInfo.ToTitleCase(clock.GetLocalNow().Date.ToString("dddd d MMMM", culture));
             var all = await finance.GetExpensesAsync();
             var incomes = await finance.GetIncomesAsync();
             var subscriptions = await finance.GetSubscriptionsAsync();
             var recurringIncomes = await finance.GetRecurringIncomesAsync();
             var initialBalance = await finance.GetInitialBalanceAsync();
-            var financial = FinanceService.BuildFinancialSummary(all, incomes, initialBalance, subscriptions, recurringIncomes, DateTime.Today);
+            var financial = FinanceService.BuildFinancialSummary(all, incomes, initialBalance, subscriptions, recurringIncomes, clock.GetLocalNow().Date);
             CurrentBalance = settings.HideAmounts ? "••••" : Money(financial.CurrentBalanceMinor, settings.CurrencyCode);
             MonthlyIncome = settings.HideAmounts ? "••••" : Money(financial.IncomeTotalMinor, settings.CurrencyCode);
             MonthlyNet = settings.HideAmounts ? "••••" : Money(financial.NetTotalMinor, settings.CurrencyCode);
             ForecastBalance = settings.HideAmounts ? "••••" : Money(financial.ForecastBalanceMinor, settings.CurrencyCode);
             ForecastStatus = financial.ForecastBalanceMinor < 0 ? "Découvert probable en fin de mois" : "Après échéances connues";
             SavingsRate = $"{financial.SavingsRate:P0}";
-            var (from, to, previousFrom, previousTo, title) = GetRanges(SelectedPeriod, DateTime.Today);
+            var (from, to, previousFrom, previousTo, title) = GetRanges(SelectedPeriod, clock.GetLocalNow().Date);
             PeriodTitle = title;
             var current = all.Where(x => x.OccurredOn.Date >= from && x.OccurredOn.Date <= to).ToList();
             var previous = all.Where(x => x.OccurredOn.Date >= previousFrom && x.OccurredOn.Date <= previousTo).ToList();
@@ -216,7 +216,7 @@ public partial class DashboardViewModel(FinanceService finance, ISettingsService
             Total = settings.HideAmounts ? "••••••" : Money(currentTotal, settings.CurrencyCode);
             PrivacyIcon = settings.HideAmounts ? "icon_visibility_off.png" : "icon_visibility.png";
             ExpenseCount = $"{current.Count} dépense{(current.Count > 1 ? "s" : string.Empty)}";
-            var next = subscriptions.Where(x => x.NextBillingDate.Date >= DateTime.Today).OrderBy(x => x.NextBillingDate).FirstOrDefault();
+            var next = subscriptions.Where(x => x.NextBillingDate.Date >= clock.GetLocalNow().Date).OrderBy(x => x.NextBillingDate).FirstOrDefault();
             NextSubscription = next is null ? "Aucun abonnement" : $"{next.Name} · {next.NextBillingDate.ToString("dd MMM", culture)}";
             var groups = current.GroupBy(x => new { Name = x.Category?.Name ?? "Sans catégorie", Color = x.Category?.Color ?? "#6750A4", Budget = x.Category?.BudgetMinor })
                 .Select(g => new { g.Key.Name, g.Key.Color, g.Key.Budget, Total = g.Sum(x => x.AmountMinor) }).OrderByDescending(x => x.Total).ToList();
@@ -316,7 +316,7 @@ public partial class DashboardViewModel(FinanceService finance, ISettingsService
     };
 }
 
-public partial class ExpensesViewModel(FinanceService finance, ISettingsService settings) : ObservableObject
+public partial class ExpensesViewModel(FinanceService finance, ISettingsService settings, TimeProvider clock) : ObservableObject
 {
     public event EventHandler<Expense>? EditRequested;
     public ObservableCollection<ExpenseRow> Expenses { get; } = [];
@@ -326,8 +326,8 @@ public partial class ExpensesViewModel(FinanceService finance, ISettingsService 
     public IReadOnlyList<string> SortOptions { get; } = ["Plus récentes", "Plus anciennes", "Montant décroissant", "Montant croissant", "Nom A–Z", "Nom Z–A"];
     [ObservableProperty] private string searchText = string.Empty;
     [ObservableProperty] private string selectedPeriod = "Toutes les dates";
-    [ObservableProperty] private DateTime customFrom = DateTime.Today.AddMonths(-1);
-    [ObservableProperty] private DateTime customTo = DateTime.Today;
+    [ObservableProperty] private DateTime customFrom = clock.GetLocalNow().Date.AddMonths(-1);
+    [ObservableProperty] private DateTime customTo = clock.GetLocalNow().Date;
     [ObservableProperty] private string minimumAmount = string.Empty;
     [ObservableProperty] private string maximumAmount = string.Empty;
     [ObservableProperty] private string selectedSort = "Plus récentes";
@@ -516,7 +516,7 @@ public partial class ExpensesViewModel(FinanceService finance, ISettingsService 
     {
         var culture = CultureInfo.GetCultureInfo("fr-FR");
         var amount = (expense.AmountMinor / 100m).ToString("0.00", culture);
-        return Normalize($"{expense.Description} {expense.Category?.Name} {amount} {expense.AmountMinor} {expense.OccurredOn:dd/MM/yyyy} {expense.OccurredOn:dd MMMM yyyy}");
+        return Normalize($"{expense.Description} {expense.Category?.Name} {amount} {expense.AmountMinor} {expense.OccurredOn.ToString("dd/MM/yyyy", culture)} {expense.OccurredOn.ToString("dd MMMM yyyy", culture)}");
     }
 
     private static string Normalize(string value)
@@ -525,9 +525,9 @@ public partial class ExpensesViewModel(FinanceService finance, ISettingsService 
         return string.Concat(decomposed.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)).Normalize(NormalizationForm.FormC);
     }
 
-    private static (DateTime? from, DateTime? to) Range(string value, DateTime customFrom, DateTime customTo)
+    private (DateTime? from, DateTime? to) Range(string value, DateTime customFrom, DateTime customTo)
     {
-        var today = DateTime.Today;
+        var today = clock.GetLocalNow().Date;
         return value switch
         {
             "Aujourd’hui" => (today, today),
@@ -540,7 +540,7 @@ public partial class ExpensesViewModel(FinanceService finance, ISettingsService 
     }
 }
 
-public partial class AddExpenseViewModel(FinanceService finance, ISettingsService settings, IOcrService ocr) : ObservableObject
+public partial class AddExpenseViewModel(FinanceService finance, ISettingsService settings, IOcrService ocr, TimeProvider clock) : ObservableObject
 {
     public ObservableCollection<Category> Categories { get; } = [];
     public ObservableCollection<ExpenseCategoryOption> CategoryOptions { get; } = [];
@@ -548,7 +548,7 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
     [ObservableProperty] private string amount = string.Empty;
     [ObservableProperty] private string currencySymbol = "€";
     [ObservableProperty] private string description = string.Empty;
-    [ObservableProperty] private DateTime date = DateTime.Today;
+    [ObservableProperty] private DateTime date = clock.GetLocalNow().Date;
     [ObservableProperty] private Category? selectedCategory;
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private bool isSaveEnabled = true;
@@ -630,8 +630,8 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
     private void SelectDate(string shortcut)
     {
         IsCustomDateVisible = shortcut == "Autre";
-        if (shortcut == "Aujourd’hui") Date = DateTime.Today;
-        if (shortcut == "Hier") Date = DateTime.Today.AddDays(-1);
+        if (shortcut == "Aujourd’hui") Date = clock.GetLocalNow().Date;
+        if (shortcut == "Hier") Date = clock.GetLocalNow().Date.AddDays(-1);
         UpdateDateButtons();
     }
 
@@ -651,7 +651,7 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
                 await finance.AddExpenseAsync(minor, Description, Date, SelectedCategory.Id, settings.CurrencyCode);
             var keepOpen = _editingId is null && settings.AfterSaveBehavior == "Ajouter une autre";
             Amount = Description = string.Empty;
-            Date = DateTime.Today;
+            Date = clock.GetLocalNow().Date;
             _editingId = null;
             if (keepOpen)
             {
@@ -681,7 +681,7 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
         Description = expense.Description;
         Date = expense.OccurredOn;
         SelectedCategory = Categories.FirstOrDefault(x => x.Id == expense.CategoryId);
-        IsCustomDateVisible = Date.Date != DateTime.Today && Date.Date != DateTime.Today.AddDays(-1);
+        IsCustomDateVisible = Date.Date != clock.GetLocalNow().Date && Date.Date != clock.GetLocalNow().Date.AddDays(-1);
         UpdateDateButtons();
     }
 
@@ -693,8 +693,8 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
 
     private void UpdateDateButtons()
     {
-        var today = Date.Date == DateTime.Today;
-        var yesterday = Date.Date == DateTime.Today.AddDays(-1);
+        var today = Date.Date == clock.GetLocalNow().Date;
+        var yesterday = Date.Date == clock.GetLocalNow().Date.AddDays(-1);
         IsTodaySelected = today;
         IsYesterdaySelected = yesterday;
         IsOtherDateSelected = !today && !yesterday;
@@ -704,7 +704,7 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
     private static Guid? ParseCategoryId(string value) => Guid.TryParse(value, out var id) ? id : null;
 }
 
-public partial class SubscriptionsViewModel(FinanceService finance, ISettingsService settings, IReminderService reminders) : ObservableObject
+public partial class SubscriptionsViewModel(FinanceService finance, ISettingsService settings, IReminderService reminders, TimeProvider clock) : ObservableObject
 {
     public ObservableCollection<SubscriptionRow> Subscriptions { get; } = [];
     public IReadOnlyList<string> Frequencies { get; } = ["Mensuel", "Trimestriel", "Annuel"];
@@ -712,7 +712,7 @@ public partial class SubscriptionsViewModel(FinanceService finance, ISettingsSer
     [ObservableProperty] private string amount = string.Empty;
     [ObservableProperty] private string currencySymbol = "€";
     [ObservableProperty] private string selectedFrequency = "Mensuel";
-    [ObservableProperty] private DateTime nextBillingDate = DateTime.Today.AddMonths(1);
+    [ObservableProperty] private DateTime nextBillingDate = clock.GetLocalNow().Date.AddMonths(1);
     [ObservableProperty] private string monthlyTotal = "0,00 € / mois";
     [ObservableProperty] private string annualTotal = "0,00 € / an";
     [ObservableProperty] private string errorMessage = string.Empty;
@@ -773,7 +773,7 @@ public partial class SubscriptionsViewModel(FinanceService finance, ISettingsSer
         _editingSubscription = null;
         Name = Amount = string.Empty;
         SelectedFrequency = "Mensuel";
-        NextBillingDate = DateTime.Today.AddMonths(1);
+        NextBillingDate = clock.GetLocalNow().Date.AddMonths(1);
         IsEditing = false;
         FormTitle = "Ajouter un abonnement";
         SaveButtonText = "Ajouter l’abonnement";

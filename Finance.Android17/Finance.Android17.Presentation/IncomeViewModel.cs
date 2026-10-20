@@ -12,7 +12,7 @@ public sealed record RecurringIncomeRow(string Name, string Amount, string Frequ
 public sealed record SavingsGoalRow(string Name, string Saved, string Target, string ProgressText, double Progress, SavingsGoal Source);
 public sealed record OperationRow(string Type, string Description, string Date, string Amount, string Color);
 
-public partial class IncomeViewModel(FinanceService finance, ISettingsService settings) : ObservableObject
+public partial class IncomeViewModel(FinanceService finance, ISettingsService settings, TimeProvider clock) : ObservableObject
 {
     private Income? _editingIncome;
     private RecurringIncome? _editingRecurringIncome;
@@ -31,17 +31,17 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     [ObservableProperty] private string forecastBalance = "0,00 €";
     [ObservableProperty] private string incomeDescription = string.Empty;
     [ObservableProperty] private string incomeAmount = string.Empty;
-    [ObservableProperty] private DateTime incomeDate = DateTime.Today;
+    [ObservableProperty] private DateTime incomeDate = clock.GetLocalNow().Date;
     [ObservableProperty] private string incomeFormTitle = "Ajouter un revenu";
     [ObservableProperty] private string recurringName = string.Empty;
     [ObservableProperty] private string recurringAmount = string.Empty;
     [ObservableProperty] private string selectedFrequency = "Mensuel";
-    [ObservableProperty] private DateTime nextOccurrenceDate = DateTime.Today.AddMonths(1);
+    [ObservableProperty] private DateTime nextOccurrenceDate = clock.GetLocalNow().Date.AddMonths(1);
     [ObservableProperty] private string recurringFormTitle = "Ajouter un revenu récurrent";
     [ObservableProperty] private string goalName = string.Empty;
     [ObservableProperty] private string goalTargetAmount = string.Empty;
     [ObservableProperty] private string goalSavedAmount = string.Empty;
-    [ObservableProperty] private DateTime goalTargetDate = DateTime.Today.AddYears(1);
+    [ObservableProperty] private DateTime goalTargetDate = clock.GetLocalNow().Date.AddYears(1);
     [ObservableProperty] private bool goalHasTargetDate;
     [ObservableProperty] private string goalFormTitle = "Ajouter un objectif";
     [ObservableProperty] private string statusMessage = string.Empty;
@@ -82,7 +82,7 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
                 RecentOperations.Add(new(item.Type, string.IsNullOrWhiteSpace(item.Description) ? item.Type : item.Description,
                     item.OccurredOn.ToString("dd MMM yyyy", CultureInfo.GetCultureInfo("fr-FR")), HiddenMoney(item.AmountMinor), item.Color));
 
-            var summary = FinanceService.BuildFinancialSummary(expenses, incomes, balance, subscriptions, recurring, DateTime.Today);
+            var summary = FinanceService.BuildFinancialSummary(expenses, incomes, balance, subscriptions, recurring, clock.GetLocalNow().Date);
             CurrentBalance = HiddenMoney(summary.CurrentBalanceMinor);
             MonthIncome = HiddenMoney(summary.IncomeTotalMinor);
             MonthNet = HiddenMoney(summary.NetTotalMinor);
@@ -135,7 +135,7 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     {
         _editingIncome = null;
         IncomeDescription = IncomeAmount = string.Empty;
-        IncomeDate = DateTime.Today;
+        IncomeDate = clock.GetLocalNow().Date;
         IncomeFormTitle = "Ajouter un revenu";
     }
 
@@ -177,7 +177,7 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
         _editingRecurringIncome = null;
         RecurringName = RecurringAmount = string.Empty;
         SelectedFrequency = "Mensuel";
-        NextOccurrenceDate = DateTime.Today.AddMonths(1);
+        NextOccurrenceDate = clock.GetLocalNow().Date.AddMonths(1);
         RecurringFormTitle = "Ajouter un revenu récurrent";
     }
 
@@ -204,7 +204,7 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
         GoalTargetAmount = AmountText(row.Source.TargetAmountMinor);
         GoalSavedAmount = AmountText(row.Source.SavedAmountMinor);
         GoalHasTargetDate = row.Source.TargetDate is not null;
-        GoalTargetDate = row.Source.TargetDate ?? DateTime.Today.AddYears(1);
+        GoalTargetDate = row.Source.TargetDate ?? clock.GetLocalNow().Date.AddYears(1);
         GoalFormTitle = "Modifier l’objectif";
     }
 
@@ -222,7 +222,7 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
         _editingGoal = null;
         GoalName = GoalTargetAmount = GoalSavedAmount = string.Empty;
         GoalHasTargetDate = false;
-        GoalTargetDate = DateTime.Today.AddYears(1);
+        GoalTargetDate = clock.GetLocalNow().Date.AddYears(1);
         GoalFormTitle = "Ajouter un objectif";
     }
 

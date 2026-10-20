@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -21,6 +21,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Finance.Android17.Application\Finance.Android17.Application.csproj" />
     <ProjectReference Include="..\Finance.Android17.Domain\Finance.Android17.Domain.csproj" />
+    <ProjectReference Include="..\Finance.Android17.Infrastructure\Finance.Android17.Infrastructure.csproj" />
+    <ProjectReference Include="..\Finance.Android17.Presentation\Finance.Android17.Presentation.csproj" />
   </ItemGroup>
 
 </Project>

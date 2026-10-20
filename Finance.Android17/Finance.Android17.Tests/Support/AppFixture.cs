@@ -1,0 +1,81 @@
+using Finance.Android17.Application;
+using Finance.Android17.Domain;
+using Finance.Android17.Infrastructure;
+using Finance.Android17.Presentation;
+
+namespace Finance.Android17.Tests.Support;
+
+/// <summary>
+/// Application assemblée comme en production (vraie base SQLCipher temporaire), mais avec une horloge figée
+/// et des réglages/services natifs factices. « Aujourd'hui » vaut le mardi 20 octobre 2026.
+/// </summary>
+public sealed class AppFixture : IDisposable
+{
+    public static readonly DateTime Now = new(2026, 10, 20, 9, 30, 0);
+
+    private readonly TempDatabase _db = new();
+
+    public AppFixture(DateTime? now = null)
+    {
+        Clock = new FixedTimeProvider(now ?? Now);
+        Store = _db.CreateStore();
+        Finance = new FinanceService(Store);
+    }
+
+    public TimeProvider Clock { get; }
+    public EncryptedFinanceStore Store { get; }
+    public FinanceService Finance { get; }
+    public FakeSettings Settings { get; } = new();
+    public FakeReminderService Reminders { get; } = new();
+
+    public DashboardViewModel CreateDashboard() => new(Finance, Settings, Clock);
+    public ExpensesViewModel CreateExpenses() => new(Finance, Settings, Clock);
+    public IncomeViewModel CreateIncome() => new(Finance, Settings, Clock);
+    public SubscriptionsViewModel CreateSubscriptions() => new(Finance, Settings, Reminders, Clock);
+    public AddExpenseViewModel CreateAddExpense(string? ocrText = null) => new(Finance, Settings, new FakeOcrService(ocrText), Clock);
+    public LockViewModel CreateLock(FakeAppLock appLock, FakeBiometrics? biometrics = null) =>
+        new(Finance, appLock, biometrics ?? new FakeBiometrics(), Settings, Reminders, Clock);
+
+    public async Task<Category> CategoryAsync(string name) =>
+        (await Finance.GetCategoriesAsync()).Single(x => x.Name == name);
+
+    /// <summary>
+    /// Scénario commun : octobre 2026 contient 3 dépenses (202,50 €), septembre une (80,00 €), un salaire de
+    /// 2 000 €, l'abonnement Netflix (15,99 € le 25/10) et le revenu récurrent « Loyer perçu » (50 € le 30/10).
+    /// Le budget de la catégorie Alimentation est de 200 €.
+    /// </summary>
+    public async Task SeedScenarioAsync()
+    {
+        var food = await CategoryAsync("Alimentation");
+        var transport = await CategoryAsync("Transport");
+        await Finance.UpdateCategoryAsync(food.Id, food.Name, food.Color, 20_000);
+        await Finance.AddExpenseAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
+        await Finance.AddExpenseAsync(15_000, "Courses", new DateTime(2026, 10, 10), food.Id);
+        await Finance.AddExpenseAsync(4_000, "Train", new DateTime(2026, 10, 15), transport.Id);
+        await Finance.AddExpenseAsync(8_000, "Marché", new DateTime(2026, 9, 10), food.Id);
+        await Finance.AddIncomeAsync(200_000, "Salaire", new DateTime(2026, 10, 1));
+        await Finance.AddSubscriptionAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
+        await Finance.AddRecurringIncomeAsync("Loyer perçu", 5_000, 1, new DateTime(2026, 10, 30));
+    }
+
+    public void Dispose() => _db.Dispose();
+}
+
+public static class TestText
+{
+    /// <summary>Remplace les espaces insécables que produit la culture fr-FR par des espaces simples.</summary>
+    public static string Fr(this string value) => value.Replace(' ', ' ').Replace(' ', ' ');
+
+    /// <summary>Supprime tous les espaces : le pourcentage dépend de la culture courante (« 80 % » ou « 80% »).</summary>
+    public static string Compact(this string value) => new(value.Where(c => !char.IsWhiteSpace(c)).ToArray());
+
+    public static async Task WaitUntilAsync(Func<bool> condition, int timeoutMilliseconds = 5_000)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMilliseconds);
+        while (!condition())
+        {
+            if (DateTime.UtcNow > deadline) throw new TimeoutException("La condition attendue n'a jamais été vraie.");
+            await Task.Delay(20);
+        }
+    }
+}

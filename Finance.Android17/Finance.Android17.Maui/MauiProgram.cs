@@ -35,6 +35,8 @@ public static class MauiProgram
 		builder.Services.AddSingleton<AppSecurityService>();
 		builder.Services.AddSingleton<IAppLockService>(sp => sp.GetRequiredService<AppSecurityService>());
 		builder.Services.AddSingleton<ISecretStore>(sp => sp.GetRequiredService<AppSecurityService>());
+		builder.Services.AddSingleton(TimeProvider.System);
+		builder.Services.AddSingleton(FinanceDatabaseOptions.Default());
 		builder.Services.AddSingleton<IFinanceStore, EncryptedFinanceStore>();
 		builder.Services.AddSingleton<FinanceService>();
 		builder.Services.AddSingleton<AppSettingsService>();
