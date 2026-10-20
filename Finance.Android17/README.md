@@ -43,26 +43,26 @@ API 36 est la cible Android prise en charge par le SDK .NET 10 installé. Androi
 ## Commandes utiles
 
 ```powershell
-dotnet build .\src\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Debug
+dotnet build .\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Debug
 dotnet test .\tests\Finance.Android17.Tests\Finance.Android17.Tests.csproj -c Debug
 ```
 
 APK Debug signé généré :
 
 ```text
-src\Finance.Android17.Maui\bin\Debug\net10.0-android\fr.nicol.finance.android17-Signed.apk
+Finance.Android17.Maui\bin\Debug\net10.0-android\fr.nicol.finance.android17-Signed.apk
 ```
 
 Pour installer sur un appareil Android 16 ko, utiliser la version **Release ARM64 non débogable** afin d'éviter les fichiers d'assemblies individuels du mode Debug :
 
 ```powershell
-dotnet publish .\src\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Release -r android-arm64
+dotnet publish .\Finance.Android17.Maui\Finance.Android17.Maui.csproj -f net10.0-android -c Release -r android-arm64
 ```
 
 APK Release :
 
 ```text
-src\Finance.Android17.Maui\bin\Release\net10.0-android\android-arm64\publish\fr.nicol.finance.android17-Signed.apk
+Finance.Android17.Maui\bin\Release\net10.0-android\android-arm64\publish\fr.nicol.finance.android17-Signed.apk
 ```
 
 Ouvrir `Finance.Android17.slnx` dans Visual Studio 2026 ou avec un SDK .NET prenant en charge le format `.slnx`.

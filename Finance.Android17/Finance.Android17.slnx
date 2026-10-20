@@ -1,11 +1,9 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Finance.Android17.Application/Finance.Android17.Application.csproj" />
-    <Project Path="src/Finance.Android17.Domain/Finance.Android17.Domain.csproj" />
-    <Project Path="src/Finance.Android17.Infrastructure/Finance.Android17.Infrastructure.csproj" />
-    <Project Path="src/Finance.Android17.Maui/Finance.Android17.Maui.csproj" />
-    <Project Path="src/Finance.Android17.Presentation/Finance.Android17.Presentation.csproj" />
-  </Folder>
+  <Project Path="Finance.Android17.Application/Finance.Android17.Application.csproj" />
+  <Project Path="Finance.Android17.Domain/Finance.Android17.Domain.csproj" />
+  <Project Path="Finance.Android17.Infrastructure/Finance.Android17.Infrastructure.csproj" />
+  <Project Path="Finance.Android17.Maui/Finance.Android17.Maui.csproj" />
+  <Project Path="Finance.Android17.Presentation/Finance.Android17.Presentation.csproj" />
   <Folder Name="/tests/">
     <Project Path="tests/Finance.Android17.Tests/Finance.Android17.Tests.csproj" />
   </Folder>
