@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Finance.Android17.Presentation;assembly=Finance.Android17.Presentation"
+             x:Class="Finance.Android17.Maui.SubscriptionsPage"
+             x:Name="Page"
+             x:DataType="vm:SubscriptionsViewModel"
+             Style="{StaticResource AppPage}">
+    <ScrollView>
+        <VerticalStackLayout Padding="20,24,20,100" Spacing="18">
+            <VerticalStackLayout><Label Text="Abonnements" Style="{StaticResource PageTitle}" SemanticProperties.HeadingLevel="Level1" /><Label Text="Anticipez vos prochaines échéances" Style="{StaticResource MutedLabel}" /></VerticalStackLayout>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <Border Style="{StaticResource Card}"><VerticalStackLayout><Label Text="Coût mensuel" Style="{StaticResource MutedLabel}" /><Label Text="{Binding MonthlyTotal}" Style="{StaticResource SectionTitle}" /></VerticalStackLayout></Border>
+                <Border Grid.Column="1" Style="{StaticResource Card}"><VerticalStackLayout><Label Text="Coût annuel" Style="{StaticResource MutedLabel}" /><Label Text="{Binding AnnualTotal}" Style="{StaticResource SectionTitle}" /></VerticalStackLayout></Border>
+            </Grid>
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{Binding FormTitle}" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
+                    <Label Text="Nom" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Placeholder="Ex. Musique" Text="{Binding Name}" Style="{StaticResource InputEntry}" /></Border>
+                    <Label Text="Montant" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource InputField}"><Grid ColumnDefinitions="*,Auto"><Entry Placeholder="9,99" Text="{Binding Amount}" Keyboard="Numeric" Style="{StaticResource InputEntry}" /><Label Grid.Column="1" Text="{Binding CurrencySymbol}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" VerticalOptions="Center" Margin="8,0" /></Grid></Border>
+                    <Label Text="Fréquence" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Picker ItemsSource="{Binding Frequencies}" SelectedItem="{Binding SelectedFrequency}" /></Border>
+                    <Label Text="Prochaine échéance" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><DatePicker Date="{Binding NextBillingDate}" /></Border>
+                    <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" />
+                    <Button Text="{Binding SaveButtonText}" Command="{Binding AddCommand}" Style="{StaticResource PrimaryButton}" />
+                    <Button Text="Annuler la modification" Command="{Binding CancelEditCommand}" IsVisible="{Binding IsEditing}" Style="{StaticResource TextButton}" />
+                </VerticalStackLayout>
+            </Border>
+            <Label Text="Prochaines échéances" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
+            <Border IsVisible="{Binding IsEmpty}" Style="{StaticResource Card}"><Label Text="Aucun abonnement. Ajoutez-en un pour calculer vos coûts mensuels et annuels." Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" /></Border>
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Subscriptions}" Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SubscriptionRow">
+                        <Border Style="{StaticResource Card}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCommand}" CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto,48,48" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                                <Label Text="{Binding Name}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding Amount}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                                <Label Grid.Row="1" Text="{Binding Frequency}" Style="{StaticResource MutedLabel}" />
+                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding NextDate}" Style="{StaticResource MutedLabel}" />
+                                <ImageButton Grid.Column="2" Grid.RowSpan="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Modifier cet abonnement" />
+                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Supprimer cet abonnement" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

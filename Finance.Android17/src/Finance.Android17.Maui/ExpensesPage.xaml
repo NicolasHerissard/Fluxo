@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Finance.Android17.Presentation;assembly=Finance.Android17.Presentation"
+             x:Class="Finance.Android17.Maui.ExpensesPage"
+             x:Name="Page"
+             x:DataType="vm:ExpensesViewModel"
+             Style="{StaticResource AppPage}">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="20,24,20,12" RowSpacing="12">
+        <VerticalStackLayout Spacing="2">
+            <Label Text="Dépenses" Style="{StaticResource PageTitle}" SemanticProperties.HeadingLevel="Level1" />
+            <Label Text="Retrouvez rapidement chaque opération" Style="{StaticResource MutedLabel}" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="1" Spacing="10">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <Border Style="{StaticResource InputField}" Padding="12,0" StrokeShape="RoundRectangle 18">
+                    <Grid ColumnDefinitions="28,*,44">
+                        <Label Text="⌕" FontSize="25" VerticalTextAlignment="Center" TextColor="{AppThemeBinding Light={StaticResource OutlineDark}, Dark={StaticResource TextSecondaryDark}}" SemanticProperties.Description="Recherche" />
+                        <Entry Grid.Column="1" Placeholder="Nom, catégorie, montant ou date" Text="{Binding SearchText}" BackgroundColor="Transparent" ReturnCommand="{Binding LoadCommand}" ClearButtonVisibility="WhileEditing" />
+                        <ImageButton Grid.Column="2" Source="icon_close.png" Command="{Binding ClearSearchCommand}" BackgroundColor="Transparent" Padding="13" SemanticProperties.Description="Effacer la recherche" />
+                    </Grid>
+                </Border>
+                <Button Grid.Column="1" Text="{Binding FilterButtonText}" Command="{Binding OpenFiltersCommand}" Style="{StaticResource PrimaryButton}" Padding="16,0" HeightRequest="56" SemanticProperties.Hint="Ouvre les filtres avancés" />
+            </Grid>
+
+            <ScrollView IsVisible="{Binding HasActiveFilters}" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout BindableLayout.ItemsSource="{Binding ActiveFilters}" Spacing="8">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ActiveFilterChip">
+                            <Button Text="{Binding Label, StringFormat='{}{0}  ×'}" Command="{Binding Source={x:Reference Page}, Path=BindingContext.RemoveFilterCommand}" CommandParameter="{Binding .}" BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryContainerLight}, Dark={StaticResource SurfaceContainerDark}}" TextColor="{AppThemeBinding Light={StaticResource OnPrimaryContainerLight}, Dark={StaticResource TextPrimaryDark}}" CornerRadius="18" Padding="14,6" HeightRequest="40" />
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </HorizontalStackLayout>
+            </ScrollView>
+
+            <Label Text="{Binding ResultSummary}" Style="{StaticResource MutedLabel}" />
+        </VerticalStackLayout>
+
+        <Grid Grid.Row="2">
+            <CollectionView ItemsSource="{Binding Expenses}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ExpenseRow">
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="*,Auto,48,48" RowDefinitions="Auto,Auto" ColumnSpacing="4">
+                                <Label Text="{Binding Description}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+                                <Label Grid.Column="1" Text="{Binding Amount}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                                <Label Grid.Row="1" Text="{Binding Category}" Style="{StaticResource MutedLabel}" />
+                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding Date}" Style="{StaticResource MutedLabel}" />
+                                <ImageButton Grid.Column="2" Grid.RowSpan="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Modifier cette dépense" />
+                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Supprimer cette dépense" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <VerticalStackLayout IsVisible="{Binding IsEmpty}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="8" Padding="24">
+                <Label Text="{Binding EmptyTitle}" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" />
+                <Label Text="{Binding EmptySubtitle}" Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+            <Button Text="＋" Clicked="OnAddClicked" Style="{StaticResource Fab}" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,0,16" SemanticProperties.Description="Ajouter une dépense" />
+        </Grid>
+
+        <Border Grid.Row="3" IsVisible="{Binding IsUndoVisible}" BackgroundColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource OutlineLight}}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="14,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light=White, Dark={StaticResource TextPrimaryLight}}" VerticalOptions="Center" />
+                <Button Grid.Column="1" Text="Annuler" Command="{Binding UndoDeleteCommand}" BackgroundColor="Transparent" TextColor="{AppThemeBinding Light={StaticResource PrimaryContainerLight}, Dark={StaticResource PrimaryColor}}" HeightRequest="48" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.RowSpan="4" RowDefinitions="*,Auto" IsVisible="{Binding IsFilterPanelVisible}" Margin="-20,-24,-20,-12" BackgroundColor="{StaticResource ScrimColor}" SemanticProperties.Description="Panneau des filtres de dépenses">
+            <Grid Grid.Row="0">
+                <Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding CloseFiltersCommand}" /></Grid.GestureRecognizers>
+            </Grid>
+            <Border Grid.Row="1" BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceElevatedLight}, Dark={StaticResource SurfaceElevatedDark}}" StrokeThickness="0" StrokeShape="RoundRectangle 28" Padding="20" MaximumHeightRequest="720">
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
+                    <Grid ColumnDefinitions="*,48">
+                        <VerticalStackLayout Spacing="2"><Label Text="Filtrer les dépenses" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" /><Label Text="Affinez sans perdre votre recherche" Style="{StaticResource MutedLabel}" /></VerticalStackLayout>
+                        <ImageButton Grid.Column="1" Source="icon_close.png" Command="{Binding CloseFiltersCommand}" BackgroundColor="Transparent" Padding="13" SemanticProperties.Description="Fermer les filtres" />
+                    </Grid>
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Spacing="16">
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="Catégories" Style="{StaticResource FieldLabel}" />
+                                <FlexLayout BindableLayout.ItemsSource="{Binding CategoryFilters}" Direction="Row" Wrap="Wrap" JustifyContent="Start">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:CategoryFilterOption">
+                                            <Button Text="{Binding DisplayName}" Command="{Binding Source={x:Reference Page}, Path=BindingContext.ToggleCategoryCommand}" CommandParameter="{Binding .}" BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceContainerLight}, Dark={StaticResource SurfaceContainerDark}}" TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" CornerRadius="18" Padding="14,6" Margin="0,0,8,8" HeightRequest="40" SemanticProperties.Description="{Binding AccessibilityDescription}">
+                                                <Button.Triggers>
+                                                    <DataTrigger TargetType="Button" Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" />
+                                                        <Setter Property="TextColor" Value="White" />
+                                                    </DataTrigger>
+                                                </Button.Triggers>
+                                            </Button>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </FlexLayout>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="Période" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputField}"><Picker ItemsSource="{Binding Periods}" SelectedItem="{Binding SelectedPeriod}" /></Border>
+                                <Grid IsVisible="{Binding IsCustomPeriod}" ColumnDefinitions="*,*" ColumnSpacing="12">
+                                    <VerticalStackLayout><Label Text="Du" Style="{StaticResource MutedLabel}" /><Border Style="{StaticResource InputField}"><DatePicker Date="{Binding CustomFrom}" /></Border></VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1"><Label Text="Au" Style="{StaticResource MutedLabel}" /><Border Style="{StaticResource InputField}"><DatePicker Date="{Binding CustomTo}" /></Border></VerticalStackLayout>
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="Montant" Style="{StaticResource FieldLabel}" />
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Minimum" Text="{Binding MinimumAmount}" Keyboard="Numeric" Style="{StaticResource InputEntry}" /></Border>
+                                    <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Placeholder="Maximum" Text="{Binding MaximumAmount}" Keyboard="Numeric" Style="{StaticResource InputEntry}" /></Border>
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Spacing="8">
+                                <Label Text="Trier par" Style="{StaticResource FieldLabel}" />
+                                <Border Style="{StaticResource InputField}"><Picker ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}" /></Border>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </ScrollView>
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Button Text="Réinitialiser" Command="{Binding ResetFiltersCommand}" Style="{StaticResource TextButton}" />
+                        <Button Grid.Column="1" Text="{Binding ApplyButtonText}" Command="{Binding ApplyFiltersCommand}" Style="{StaticResource PrimaryButton}" />
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>
