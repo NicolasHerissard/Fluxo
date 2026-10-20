@@ -39,9 +39,26 @@ Permissions déclarées : `USE_BIOMETRIC`, `CAMERA`, `POST_NOTIFICATIONS`. **Auc
 ## Règles de modification
 
 - Toute nouvelle page ou ViewModel doit être enregistrée dans `MauiProgram` (transient).
-- Respecter le langage visuel (Material 3 approximatif) décrit dans `../AGENTS.md` : styles nommés de `App.xaml` (`AppPage`, `PageTitle`, `Card`, `InputField`/`InputEntry`, `PrimaryButton`, `SecondaryButton`, `TextButton`, `DangerButton`, `SegmentButton`, `Fab`, `ExtendedFab`…), `Border` et non `Frame`, couleurs via `AppThemeBinding` et `Colors.xaml`, police Open Sans.
+- Respecter le langage visuel décrit dans la section suivante : styles nommés de `App.xaml`, `Border` et non `Frame`, couleurs via `AppThemeBinding` et `Colors.xaml`, police Open Sans.
 - Ne pas ajouter de convertisseur XAML générique sans vérifier les bindings existants (`ColorContrastConverter` est le seul convertisseur du projet).
 - Code propre à une plateforme : `#if ANDROID` ou dossier `Platforms/` ; garder un comportement de repli sur les autres cibles.
 - Opérations persistantes via les ViewModels et `FinanceService`, jamais directement sur la base depuis une page.
 - Le texte de l'interface est en français ; fournir des `SemanticProperties.Description` sur les contrôles interactifs, comme dans les pages existantes.
 - Si `ApplicationDisplayVersion`/`ApplicationVersion` changent, mettre aussi `README.md` à jour.
+
+## Langage visuel
+
+Thème proche de Material 3, centralisé dans `Resources/Styles/Colors.xaml` (palette), `Resources/Styles/Styles.xaml` (styles MAUI implicites) et `App.xaml` (styles nommés : `AppPage`, `PageTitle`, `SectionTitle`, `BodyLabel`, `MutedLabel`, `FieldLabel`, `Card`, `InputField`, `InputEntry`, `PrimaryButton`, `SecondaryButton`, `TextButton`, `DangerButton`, `SegmentButton`, `Fab`, `ExtendedFab`).
+
+- **Couleurs** : accent principal `#6750A4`, conteneur principal clair `#EADDFF`, danger `#B3261E`, succès `#2E7D32`. Fonds de page `#F7F5FA` (clair) et `#121212` (sombre) ; texte principal `#201A2B` et `#F2EDF7` ; texte secondaire `#625B71` et `#CAC4D0`. Utiliser les clés de `Colors.xaml` avec `AppThemeBinding` plutôt que des valeurs en dur dans les pages.
+- **Typographie** : police Open Sans ; titres de page à 28, titres de section à 20 (généralement), corps à 14, légendes à 13.
+- **Espacements** : 8, 12, 16 et 20 reviennent partout ; les pages utilisent généralement 20 de marge latérale.
+- **Rayons** : 12 à 18 pour les contrôles et cartes (`Card` 18, boutons 12 à 16, `InputField` 14), 24 pour les grands panneaux, 28 pour les boutons flottants.
+- **Cartes** : `Border` avec fond blanc ou `#211F26` et trait discret `#E7E0EC` ou `#49454F`. Ne pas réintroduire `Frame`.
+- **Ombres et dégradés** : les ombres sont réservées aux éléments flottants (`Fab`). Seuls les deux grands résumés de solde en tête de `DashboardPage` et d'`IncomePage` (onglet « Finances ») utilisent un dégradé (`#7658B5` vers `#51358D`) ; ne pas en ajouter ailleurs.
+- **États sélectionnés** : violet principal et texte contrasté ; pour les catégories colorées, contour clair accompagné d'une coche (voir `ExpenseCategoryOption` dans `Presentation`).
+- **Champs** : entourer les `Entry`, `Picker` et `DatePicker` d'un `Border` `InputField`, avec `InputEntry` sur les champs texte. Les mappings globaux de `MauiProgram` retirent le soulignement natif Android ; ne pas les contourner.
+- **Boutons** : employer `PrimaryButton`, `SecondaryButton`, `TextButton`, `DangerButton`, `SegmentButton`, `Fab` ou `ExtendedFab` au lieu de recopier couleurs et dimensions dans les pages.
+- **Barres système Android** : gérées globalement par `SystemBarAppearance` (fond clair ou sombre, couleur des icônes, y compris au changement de thème et sous Android 15+).
+- **Thème** : le choix Clair / Sombre / Système est appliqué immédiatement par `AppSettingsService` (et au démarrage par `App`).
+- **Contrôles** : privilégier les contrôles MAUI déjà employés (`Border`, `CollectionView`, `Grid`, `DatePicker`, `ProgressBar`, `AppThemeBinding`, états visuels) et les bindings MVVM compilés (`x:DataType`).

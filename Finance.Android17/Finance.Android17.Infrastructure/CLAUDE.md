@@ -26,5 +26,6 @@ Couche **infrastructure** : la persistance. Bibliothèque `net10.0` qui impléme
 - Ne pas changer le nom de la base, la clé SQLCipher ni le format de sauvegarde sans stratégie de migration explicite.
 - Garder `FinanceDbContext` en `internal` ; le reste de la solution ne parle qu'à `IFinanceStore`.
 - Nouvelle entité ou propriété persistée : modèle dans `Domain`, configuration dans `FinanceDbContext`, SQL idempotent dans `InitializeAsync`, méthodes dans `IFinanceStore` + `EncryptedFinanceStore`, et prise en compte dans le snapshot de sauvegarde (nouveau `FormatVersion` si nécessaire).
-- Conserver les dates sans heure (`.Date`), les montants en centimes et les suppressions logiques dans les lectures et sauvegardes normales.
+- Conserver les dates sans heure (`.Date`), les montants en centimes et les suppressions logiques dans les lectures et sauvegardes normales : une lecture n'expose jamais une entité dont `DeletedAtUtc` est renseigné, sauf si une fonctionnalité demande explicitement la récupération des données supprimées (par exemple une future corbeille).
+- Les modifications mettent à jour `UpdatedAtUtc` et `Version` ; `SoftDeleteCategoryAsync` et `SoftDeleteSubscriptionAsync` ne régénèrent pas `Version` aujourd'hui (écart connu avec les autres suppressions).
 - Les chaînes de ce projet (messages d'erreur, noms de catégories) sont en français.
