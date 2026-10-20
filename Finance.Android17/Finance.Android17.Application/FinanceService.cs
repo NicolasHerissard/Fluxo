@@ -45,38 +45,4 @@ public sealed class FinanceService(IFinanceStore store)
     public Task<FinanceBackupSnapshot> CreateBackupSnapshotAsync(CancellationToken cancellationToken = default) => store.CreateBackupSnapshotAsync(cancellationToken);
     public Task RestoreBackupSnapshotAsync(FinanceBackupSnapshot snapshot, CancellationToken cancellationToken = default) => store.RestoreBackupSnapshotAsync(snapshot, cancellationToken);
     public Task DeleteAllDataAsync(CancellationToken cancellationToken = default) => store.DeleteAllDataAsync(cancellationToken);
-
-    public static DashboardSummary BuildDashboard(IEnumerable<Expense> expenses, DateTime today)
-    {
-        var monthly = expenses.Where(x => x.OccurredOn.Year == today.Year && x.OccurredOn.Month == today.Month).ToList();
-        var top = monthly.GroupBy(x => x.Category?.Name ?? "Sans catégorie")
-            .OrderByDescending(x => x.Sum(y => y.AmountMinor)).Select(x => x.Key).FirstOrDefault() ?? "—";
-        return new(monthly.Sum(x => x.AmountMinor), monthly.Count, top);
-    }
-
-    public static FinancialSummary BuildFinancialSummary(
-        IEnumerable<Expense> expenses,
-        IEnumerable<Income> incomes,
-        long initialBalanceMinor,
-        IEnumerable<Subscription> subscriptions,
-        IEnumerable<RecurringIncome> recurringIncomes,
-        DateTime today)
-    {
-        var expenseList = expenses.ToList();
-        var incomeList = incomes.ToList();
-        var monthStart = new DateTime(today.Year, today.Month, 1);
-        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-        var monthExpenses = expenseList.Where(x => x.OccurredOn.Date >= monthStart && x.OccurredOn.Date <= monthEnd).Sum(x => x.AmountMinor);
-        var monthIncomes = incomeList.Where(x => x.OccurredOn.Date >= monthStart && x.OccurredOn.Date <= monthEnd).Sum(x => x.AmountMinor);
-        var balance = initialBalanceMinor + incomeList.Sum(x => x.AmountMinor) - expenseList.Sum(x => x.AmountMinor);
-        var upcomingExpenses = subscriptions
-            .Where(x => x.DeletedAtUtc is null && x.NextBillingDate.Date > today.Date && x.NextBillingDate.Date <= monthEnd)
-            .Sum(x => x.AmountMinor);
-        var upcomingIncomes = recurringIncomes
-            .Where(x => x.DeletedAtUtc is null && x.NextOccurrenceDate.Date > today.Date && x.NextOccurrenceDate.Date <= monthEnd)
-            .Sum(x => x.AmountMinor);
-        var net = monthIncomes - monthExpenses;
-        var rate = monthIncomes <= 0 ? 0 : Math.Clamp((double)net / monthIncomes, -1, 1);
-        return new FinancialSummary(monthExpenses, monthIncomes, net, balance, balance + upcomingIncomes - upcomingExpenses, rate);
-    }
 }

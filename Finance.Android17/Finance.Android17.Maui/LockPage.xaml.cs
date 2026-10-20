@@ -19,6 +19,4 @@ public partial class LockPage : ContentPage
         base.OnAppearing();
         _ = _viewModel.InitializeAsync();
     }
-
-    public void Reset() => _viewModel.Reset();
 }

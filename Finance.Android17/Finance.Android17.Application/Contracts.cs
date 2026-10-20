@@ -118,12 +118,3 @@ public sealed record FinanceBackupSnapshot(
     IReadOnlyList<RecurringIncomeBackup>? RecurringIncomes = null,
     IReadOnlyList<SavingsGoalBackup>? SavingsGoals = null,
     long InitialBalanceMinor = 0);
-
-public sealed record DashboardSummary(long MonthTotalMinor, int ExpenseCount, string TopCategory);
-public sealed record FinancialSummary(
-    long ExpenseTotalMinor,
-    long IncomeTotalMinor,
-    long NetTotalMinor,
-    long CurrentBalanceMinor,
-    long ForecastBalanceMinor,
-    double SavingsRate);

@@ -21,8 +21,7 @@ public sealed class AddExpenseViewModelTests : IDisposable
 
         await vm.LoadAsync();
 
-        Assert.Equal(["Transport", "Loisirs", "Alimentation", "Autre", "Logement"], vm.Categories.Select(x => x.Name));
-        Assert.Equal(vm.Categories.Select(x => x.Name), vm.CategoryOptions.Select(x => x.Name));
+        Assert.Equal(["Transport", "Loisirs", "Alimentation", "Autre", "Logement"], vm.CategoryOptions.Select(x => x.Name));
         Assert.Equal("Transport", vm.SelectedCategory?.Name);
     }
 
@@ -157,7 +156,7 @@ public sealed class AddExpenseViewModelTests : IDisposable
         var original = Assert.Single(await _app.Finance.GetExpensesAsync());
         var vm = _app.CreateAddExpense();
 
-        await vm.BeginEditAsync(original);
+        await vm.BeginEditAsync(original.Id);
 
         Assert.Equal("Modifier la dépense", vm.PageTitle);
         Assert.Equal("Enregistrer les modifications", vm.SaveButtonText);

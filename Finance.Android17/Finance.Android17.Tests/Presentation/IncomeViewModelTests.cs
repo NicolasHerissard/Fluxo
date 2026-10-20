@@ -122,7 +122,7 @@ public sealed class IncomeViewModelTests : IDisposable
 
         var row = Assert.Single(vm.Incomes);
         Assert.Equal("Revenu enregistré.", vm.StatusMessage);
-        Assert.Equal(15_025, row.Source.AmountMinor);
+        Assert.Equal("150,25 €", row.Amount.Fr());
         Assert.Equal(string.Empty, vm.IncomeDescription);
 
         vm.EditIncomeCommand.Execute(row);
@@ -132,7 +132,7 @@ public sealed class IncomeViewModelTests : IDisposable
         await vm.SaveIncomeCommand.ExecuteAsync(null);
 
         row = Assert.Single(vm.Incomes);
-        Assert.Equal(20_000, row.Source.AmountMinor);
+        Assert.Equal("200,00 €", row.Amount.Fr());
         Assert.Equal("Ajouter un revenu", vm.IncomeFormTitle);
 
         await vm.DeleteIncomeCommand.ExecuteAsync(row);

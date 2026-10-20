@@ -13,6 +13,8 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<DueOperationsService>();
         services.AddSingleton<SubscriptionReminderScheduler>();
         services.AddSingleton<StartupService>();
+        services.AddSingleton<FinanceDataLoader>();
+        services.AddSingleton<DashboardService>();
         return services;
     }
 }

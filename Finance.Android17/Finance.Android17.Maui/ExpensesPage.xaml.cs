@@ -14,10 +14,10 @@ public partial class ExpensesPage : ContentPage
     }
     protected override void OnAppearing() { base.OnAppearing(); _ = _viewModel.LoadAsync(); }
     private async void OnAddClicked(object? sender, EventArgs e) => await Navigation.PushModalAsync(new NavigationPage(_services.GetRequiredService<AddExpensePage>()));
-    private async void OnEditRequested(object? sender, Finance.Android17.Domain.Expense expense)
+    private async void OnEditRequested(object? sender, Guid expenseId)
     {
         var page = _services.GetRequiredService<AddExpensePage>();
-        await page.BeginEditAsync(expense);
+        await page.BeginEditAsync(expenseId);
         await Navigation.PushModalAsync(new NavigationPage(page));
     }
 }

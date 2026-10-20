@@ -90,7 +90,7 @@ public sealed class ExpensesViewModelTests : IDisposable
 
         Assert.Equal(["Train"], Descriptions(vm));
         var chip = Assert.Single(vm.ActiveFilters);
-        Assert.Equal($"category:{transport.Category.Id}", chip.Key);
+        Assert.Equal($"category:{transport.Id}", chip.Key);
         Assert.Equal("Transport", chip.Label);
         Assert.True(vm.HasActiveFilters);
         Assert.Equal("Filtres (1)", vm.FilterButtonText);
@@ -229,16 +229,16 @@ public sealed class ExpensesViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task Edit_RaisesEditRequested_WithTheStoredExpense()
+    public async Task Edit_RaisesEditRequested_WithTheExpenseId()
     {
         var vm = await LoadedAsync();
-        Finance.Android17.Domain.Expense? requested = null;
-        vm.EditRequested += (_, expense) => requested = expense;
+        Guid? requested = null;
+        vm.EditRequested += (_, id) => requested = id;
+        var stored = (await _app.Finance.GetExpensesAsync()).Single(x => x.Description == "Courses");
 
         vm.EditCommand.Execute(vm.Expenses.Single(x => x.Description == "Courses"));
 
-        Assert.NotNull(requested);
-        Assert.Equal(15_000, requested.AmountMinor);
+        Assert.Equal(stored.Id, requested);
     }
 
     [Fact]
@@ -261,5 +261,20 @@ public sealed class ExpensesViewModelTests : IDisposable
         Assert.Equal("T", row.CategoryInitial);
         Assert.Equal(transport.Color, row.CategoryColor);
         Assert.Equal("15 oct. 2026", row.Date);
+    }
+
+    [Theory]
+    [InlineData("élan", "É")]
+    [InlineData("😀 Fêtes", "😀")]
+    public async Task Rows_InitialIsTheFirstTextElement_Uppercased(string categoryName, string expected)
+    {
+        await _app.Finance.AddCategoryAsync(categoryName, "#336699");
+        var category = await _app.CategoryAsync(categoryName);
+        await _app.Finance.AddExpenseAsync(500, "Test", new DateTime(2026, 10, 1), category.Id);
+        var vm = _app.CreateExpenses();
+
+        await vm.LoadAsync();
+
+        Assert.Equal(expected, vm.Expenses.Single(x => x.Description == "Test").CategoryInitial);
     }
 }
