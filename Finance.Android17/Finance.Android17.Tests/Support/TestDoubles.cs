@@ -7,8 +7,11 @@ namespace Finance.Android17.Tests.Support;
 /// <summary>Horloge figée : la date « du jour » ne dépend jamais de la machine qui exécute les tests.</summary>
 public sealed class FixedTimeProvider(DateTime localNow) : TimeProvider
 {
+    /// <summary>Heure courante (fuseau UTC) ; modifiable pour faire avancer le temps pendant un test.</summary>
+    public DateTime Now { get; set; } = localNow;
+
     public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
-    public override DateTimeOffset GetUtcNow() => new(DateTime.SpecifyKind(localNow, DateTimeKind.Utc));
+    public override DateTimeOffset GetUtcNow() => new(DateTime.SpecifyKind(Now, DateTimeKind.Utc));
 }
 
 public sealed class FakeSecretStore(string key = "cle-de-test-0123456789abcdef0123456789=") : ISecretStore
@@ -111,9 +114,6 @@ public sealed class TempDatabase : IDisposable
     public TempDatabase() => Directory.CreateDirectory(_directory);
 
     public FinanceDatabaseOptions Options => new(Path.Combine(_directory, "finance-test.db3"));
-
-    public EncryptedFinanceStore CreateStore(string? key = null) =>
-        new(key is null ? new FakeSecretStore() : new FakeSecretStore(key), Options);
 
     public void Dispose()
     {

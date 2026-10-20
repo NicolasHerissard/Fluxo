@@ -5,7 +5,7 @@ using Finance.Android17.Application;
 
 namespace Finance.Android17.Presentation;
 
-public partial class AddExpenseViewModel(FinanceService finance, ISettingsService settings, IOcrService ocr, TimeProvider clock) : ObservableObject
+public partial class AddExpenseViewModel(IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, ISettingsService settings, IOcrService ocr, TimeProvider clock) : ObservableObject
 {
     private const string NewExpenseTitle = "Nouvelle dépense";
     private const string SaveEditsText = "Enregistrer les modifications";
@@ -45,7 +45,7 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
         CurrencySymbol = MoneyFormatter.CurrencySymbol(settings.CurrencyCode);
         var currentId = SelectedCategory?.Id;
         CategoryOptions.Clear();
-        var categories = CategoryChoice.OrderByRecentUse(await finance.GetCategoriesAsync(), await finance.GetExpensesAsync());
+        var categories = CategoryChoice.OrderByRecentUse(await categoryRepository.GetAllAsync(), await expenseRepository.GetAllAsync());
         foreach (var category in categories) CategoryOptions.Add(new ExpenseCategoryOption(category.Id, category.Name, category.Color));
         var preferred = CategoryChoice.Preferred(categories, currentId, settings.LastCategoryId, settings.DefaultCategoryId, settings.RememberLastCategory);
         SelectedCategory = CategoryOptions.FirstOrDefault(x => x.Id == preferred?.Id);
@@ -100,9 +100,9 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
         try
         {
             if (_editingId is Guid editingId)
-                await finance.UpdateExpenseAsync(editingId, minor, Description, Date, SelectedCategory.Id, settings.CurrencyCode);
+                await expenseRepository.UpdateAsync(editingId, minor, Description, Date, SelectedCategory.Id, settings.CurrencyCode);
             else
-                await finance.AddExpenseAsync(minor, Description, Date, SelectedCategory.Id, settings.CurrencyCode);
+                await expenseRepository.AddAsync(minor, Description, Date, SelectedCategory.Id, settings.CurrencyCode);
             var keepOpen = _editingId is null && settings.AfterSaveBehavior == "Ajouter une autre";
             Amount = Description = string.Empty;
             Date = clock.GetLocalNow().Date;
@@ -120,7 +120,7 @@ public partial class AddExpenseViewModel(FinanceService finance, ISettingsServic
 
     public async Task BeginEditAsync(Guid expenseId)
     {
-        var expense = (await finance.GetExpensesAsync()).FirstOrDefault(x => x.Id == expenseId);
+        var expense = (await expenseRepository.GetAllAsync()).FirstOrDefault(x => x.Id == expenseId);
         if (expense is null) return;
         await LoadAsync();
         _editingId = expense.Id;

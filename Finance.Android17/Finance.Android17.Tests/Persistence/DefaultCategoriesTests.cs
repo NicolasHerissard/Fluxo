@@ -5,9 +5,9 @@ namespace Finance.Android17.Tests.Persistence;
 
 public sealed class DefaultCategoriesTests : IDisposable
 {
-    private readonly TempDatabase _db = new();
+    private readonly InfrastructureHost _host = new();
 
-    public void Dispose() => _db.Dispose();
+    public void Dispose() => _host.Dispose();
 
     [Fact]
     public void InitialSet_HasFiveDistinctColoredCategories()
@@ -33,16 +33,15 @@ public sealed class DefaultCategoriesTests : IDisposable
     }
 
     [Fact]
-    public async Task Store_SeedsExactlyTheInitialSet_AndRecreatesItAfterDeleteAll()
+    public async Task Database_SeedsExactlyTheInitialSet_AndRecreatesItAfterDeleteAll()
     {
-        var store = _db.CreateStore();
         var expected = DefaultCategories.CreateInitialSet().Select(x => (x.Name, x.Color)).OrderBy(x => x.Name).ToList();
 
-        Assert.Equal(expected, (await store.GetCategoriesAsync()).Select(x => (x.Name, x.Color)));
+        Assert.Equal(expected, (await _host.Categories.GetAllAsync()).Select(x => (x.Name, x.Color)));
 
-        await store.AddCategoryAsync("Perso", "#000000");
-        await store.DeleteAllDataAsync();
+        await _host.Categories.AddAsync("Perso", "#000000");
+        await _host.Data.DeleteAllAsync();
 
-        Assert.Equal(expected, (await store.GetCategoriesAsync()).Select(x => (x.Name, x.Color)));
+        Assert.Equal(expected, (await _host.Categories.GetAllAsync()).Select(x => (x.Name, x.Color)));
     }
 }

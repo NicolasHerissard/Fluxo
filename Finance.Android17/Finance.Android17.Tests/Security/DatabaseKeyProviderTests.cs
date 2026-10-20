@@ -41,13 +41,13 @@ public sealed class DatabaseKeyProviderTests
     public async Task Database_ReopensWithTheStoredKey_AfterARestart()
     {
         using var host = new InfrastructureHost();
-        var food = (await host.Get<IFinanceStore>().GetCategoriesAsync()).Single(x => x.Name == "Alimentation");
-        await host.Get<IFinanceStore>().AddExpenseAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
+        var food = (await host.Categories.GetAllAsync()).Single(x => x.Name == "Alimentation");
+        await host.Expenses.AddAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
 
         // Même coffre à secrets, nouveau processus : la base doit s'ouvrir avec la clé conservée.
         using var restarted = new InfrastructureHost(secrets: host.Secrets, databaseOf: host);
 
-        var expense = Assert.Single(await restarted.Get<IFinanceStore>().GetExpensesAsync());
+        var expense = Assert.Single(await restarted.Expenses.GetAllAsync());
         Assert.Equal("Pain", expense.Description);
     }
 }

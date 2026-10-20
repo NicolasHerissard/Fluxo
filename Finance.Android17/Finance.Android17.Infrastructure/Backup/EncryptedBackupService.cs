@@ -4,12 +4,12 @@ using Finance.Android17.Application;
 namespace Finance.Android17.Infrastructure;
 
 /// <summary>Sauvegarde chiffrée : instantané JSON de la base, chiffré par <see cref="BackupCodec"/>, partagé comme fichier.</summary>
-internal sealed class EncryptedBackupService(IFinanceStore store, IFileExchange files, TimeProvider clock) : IDataBackupService
+internal sealed class EncryptedBackupService(IFinanceDataStore data, IFileExchange files, TimeProvider clock) : IDataBackupService
 {
     public async Task ExportEncryptedAsync(string password, CancellationToken cancellationToken = default)
     {
         ValidatePassword(password);
-        var snapshot = await store.CreateBackupSnapshotAsync(cancellationToken).ConfigureAwait(false);
+        var snapshot = await data.CreateSnapshotAsync(cancellationToken).ConfigureAwait(false);
         var payload = BackupCodec.Encrypt(JsonSerializer.SerializeToUtf8Bytes(snapshot), password);
         var fileName = $"mes-finances-{clock.GetLocalNow():yyyyMMdd-HHmm}.mfbackup";
         await files.ShareAsync(fileName, payload, "Sauvegarde chiffrée Mes Finances", cancellationToken).ConfigureAwait(false);
@@ -22,7 +22,7 @@ internal sealed class EncryptedBackupService(IFinanceStore store, IFileExchange 
         if (payload is null) return false;
         var plain = BackupCodec.Decrypt(payload, password);
         var snapshot = Deserialize(plain);
-        await store.RestoreBackupSnapshotAsync(snapshot, cancellationToken).ConfigureAwait(false);
+        await data.RestoreSnapshotAsync(snapshot, cancellationToken).ConfigureAwait(false);
         return true;
     }
 

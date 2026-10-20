@@ -6,13 +6,13 @@ using Finance.Android17.Domain;
 namespace Finance.Android17.Infrastructure;
 
 /// <summary>Export des dépenses : CSV séparé par « ; », UTF-8 avec BOM (lisible directement par Excel).</summary>
-internal sealed class CsvExportService(IFinanceStore store, IFileExchange files, TimeProvider clock) : IExportService
+internal sealed class CsvExportService(IExpenseRepository expenseRepository, IFileExchange files, TimeProvider clock) : IExportService
 {
     private const string Header = "Date;Description;Catégorie;Montant;Devise";
 
     public async Task ExportExpensesCsvAsync(CancellationToken cancellationToken = default)
     {
-        var expenses = await store.GetExpensesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var expenses = await expenseRepository.GetAllAsync(cancellationToken).ConfigureAwait(false);
         var content = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
         byte[] bytes = [.. content.GetPreamble(), .. content.GetBytes(Build(expenses))];
         var fileName = $"depenses-{clock.GetLocalNow():yyyyMMdd-HHmm}.csv";

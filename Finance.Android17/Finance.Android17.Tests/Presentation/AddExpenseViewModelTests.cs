@@ -15,8 +15,8 @@ public sealed class AddExpenseViewModelTests : IDisposable
     {
         var transport = await _app.CategoryAsync("Transport");
         var leisure = await _app.CategoryAsync("Loisirs");
-        await _app.Finance.AddExpenseAsync(500, "Ciné", new DateTime(2026, 10, 1), leisure.Id);
-        await _app.Finance.AddExpenseAsync(500, "Bus", new DateTime(2026, 10, 10), transport.Id);
+        await _app.Expenses.AddAsync(500, "Ciné", new DateTime(2026, 10, 1), leisure.Id);
+        await _app.Expenses.AddAsync(500, "Bus", new DateTime(2026, 10, 10), transport.Id);
         var vm = _app.CreateAddExpense();
 
         await vm.LoadAsync();
@@ -82,7 +82,7 @@ public sealed class AddExpenseViewModelTests : IDisposable
         await vm.SaveCommand.ExecuteAsync(null);
 
         Assert.Equal(message, vm.ErrorMessage);
-        Assert.Empty(await _app.Finance.GetExpensesAsync());
+        Assert.Empty(await _app.Expenses.GetAllAsync());
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public sealed class AddExpenseViewModelTests : IDisposable
         vm.Date = new DateTime(2026, 10, 18);
         await vm.SaveCommand.ExecuteAsync(null);
 
-        var expense = Assert.Single(await _app.Finance.GetExpensesAsync());
+        var expense = Assert.Single(await _app.Expenses.GetAllAsync());
         Assert.Equal(123_457, expense.AmountMinor);
         Assert.Equal("Courses", expense.Description);
         Assert.Equal(new DateTime(2026, 10, 18), expense.OccurredOn);
@@ -122,7 +122,7 @@ public sealed class AddExpenseViewModelTests : IDisposable
 
         Assert.False(saved);
         Assert.Equal("Dépense ajoutée. Vous pouvez saisir la suivante.", vm.StatusMessage);
-        Assert.Single(await _app.Finance.GetExpensesAsync());
+        Assert.Single(await _app.Expenses.GetAllAsync());
     }
 
     [Fact]
@@ -152,8 +152,8 @@ public sealed class AddExpenseViewModelTests : IDisposable
     public async Task BeginEdit_LoadsTheExpense_AndSaveUpdatesIt()
     {
         var transport = await _app.CategoryAsync("Transport");
-        await _app.Finance.AddExpenseAsync(4_000, "Train", new DateTime(2026, 9, 15), transport.Id);
-        var original = Assert.Single(await _app.Finance.GetExpensesAsync());
+        await _app.Expenses.AddAsync(4_000, "Train", new DateTime(2026, 9, 15), transport.Id);
+        var original = Assert.Single(await _app.Expenses.GetAllAsync());
         var vm = _app.CreateAddExpense();
 
         await vm.BeginEditAsync(original.Id);
@@ -168,7 +168,7 @@ public sealed class AddExpenseViewModelTests : IDisposable
         vm.Amount = "45";
         await vm.SaveCommand.ExecuteAsync(null);
 
-        var updated = Assert.Single(await _app.Finance.GetExpensesAsync());
+        var updated = Assert.Single(await _app.Expenses.GetAllAsync());
         Assert.Equal(original.Id, updated.Id);
         Assert.Equal(4_500, updated.AmountMinor);
     }

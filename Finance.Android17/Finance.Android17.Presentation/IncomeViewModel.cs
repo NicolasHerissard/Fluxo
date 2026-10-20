@@ -6,7 +6,14 @@ using Finance.Android17.Domain;
 
 namespace Finance.Android17.Presentation;
 
-public partial class IncomeViewModel(FinanceService finance, FinanceDataLoader dataLoader, ISettingsService settings, TimeProvider clock) : ObservableObject
+public partial class IncomeViewModel(
+    IIncomeRepository incomeRepository,
+    IRecurringIncomeRepository recurringIncomeRepository,
+    ISavingsGoalRepository goalRepository,
+    IFinancialProfileRepository profileRepository,
+    FinanceDataLoader dataLoader,
+    ISettingsService settings,
+    TimeProvider clock) : ObservableObject
 {
     private IReadOnlyList<Income> _incomes = [];
     private IReadOnlyList<RecurringIncome> _recurringIncomes = [];
@@ -54,7 +61,7 @@ public partial class IncomeViewModel(FinanceService finance, FinanceDataLoader d
             var data = await dataLoader.LoadAsync();
             _incomes = data.Incomes;
             _recurringIncomes = data.RecurringIncomes;
-            _goals = await finance.GetSavingsGoalsAsync();
+            _goals = await goalRepository.GetAllAsync();
             InitialBalance = MoneyFormatter.PlainAmount(data.InitialBalanceMinor);
 
             Incomes.Clear();
@@ -91,7 +98,7 @@ public partial class IncomeViewModel(FinanceService finance, FinanceDataLoader d
     private async Task SaveInitialBalanceAsync()
     {
         if (!AmountParser.TryParse(InitialBalance, out var amount)) { StatusMessage = "Indiquez un solde initial valide."; return; }
-        await finance.SetInitialBalanceAsync(amount);
+        await profileRepository.SetInitialBalanceAsync(amount);
         StatusMessage = "Solde initial enregistré.";
         await LoadAsync();
     }
@@ -101,8 +108,8 @@ public partial class IncomeViewModel(FinanceService finance, FinanceDataLoader d
     {
         if (string.IsNullOrWhiteSpace(IncomeDescription)) { StatusMessage = "Indiquez l’origine du revenu."; return; }
         if (!AmountParser.TryParse(IncomeAmount, out var amount) || amount <= 0) { StatusMessage = "Indiquez un montant valide."; return; }
-        if (_editingIncomeId is not Guid id) await finance.AddIncomeAsync(amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
-        else await finance.UpdateIncomeAsync(id, amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
+        if (_editingIncomeId is not Guid id) await incomeRepository.AddAsync(amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
+        else await incomeRepository.UpdateAsync(id, amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
         CancelIncomeEdit();
         StatusMessage = "Revenu enregistré.";
         await LoadAsync();
@@ -123,7 +130,7 @@ public partial class IncomeViewModel(FinanceService finance, FinanceDataLoader d
     [RelayCommand]
     private async Task DeleteIncomeAsync(IncomeRow row)
     {
-        await finance.DeleteIncomeAsync(row.Id);
+        await incomeRepository.DeleteAsync(row.Id);
         if (_editingIncomeId == row.Id) CancelIncomeEdit();
         await LoadAsync();
     }
@@ -143,8 +150,8 @@ public partial class IncomeViewModel(FinanceService finance, FinanceDataLoader d
         if (string.IsNullOrWhiteSpace(RecurringName)) { StatusMessage = "Indiquez le nom du revenu récurrent."; return; }
         if (!AmountParser.TryParse(RecurringAmount, out var amount) || amount <= 0) { StatusMessage = "Indiquez un montant valide."; return; }
         var interval = BillingFrequency.ToMonths(SelectedFrequency);
-        if (_editingRecurringIncomeId is not Guid id) await finance.AddRecurringIncomeAsync(RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
-        else await finance.UpdateRecurringIncomeAsync(id, RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
+        if (_editingRecurringIncomeId is not Guid id) await recurringIncomeRepository.AddAsync(RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
+        else await recurringIncomeRepository.UpdateAsync(id, RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
         CancelRecurringIncomeEdit();
         StatusMessage = "Revenu récurrent enregistré.";
         await LoadAsync();
@@ -166,7 +173,7 @@ public partial class IncomeViewModel(FinanceService finance, FinanceDataLoader d
     [RelayCommand]
     private async Task DeleteRecurringIncomeAsync(RecurringIncomeRow row)
     {
-        await finance.DeleteRecurringIncomeAsync(row.Id);
+        await recurringIncomeRepository.DeleteAsync(row.Id);
         if (_editingRecurringIncomeId == row.Id) CancelRecurringIncomeEdit();
         await LoadAsync();
     }
@@ -189,8 +196,8 @@ public partial class IncomeViewModel(FinanceService finance, FinanceDataLoader d
         var saved = 0L;
         if (!string.IsNullOrWhiteSpace(GoalSavedAmount) && (!AmountParser.TryParse(GoalSavedAmount, out saved) || saved < 0)) { StatusMessage = "Indiquez un montant épargné valide."; return; }
         DateTime? targetDate = GoalHasTargetDate ? GoalTargetDate.Date : null;
-        if (_editingGoalId is not Guid id) await finance.AddSavingsGoalAsync(GoalName, target, saved, targetDate);
-        else await finance.UpdateSavingsGoalAsync(id, GoalName, target, saved, targetDate);
+        if (_editingGoalId is not Guid id) await goalRepository.AddAsync(GoalName, target, saved, targetDate);
+        else await goalRepository.UpdateAsync(id, GoalName, target, saved, targetDate);
         CancelGoalEdit();
         StatusMessage = "Objectif enregistré.";
         await LoadAsync();
@@ -213,7 +220,7 @@ public partial class IncomeViewModel(FinanceService finance, FinanceDataLoader d
     [RelayCommand]
     private async Task DeleteGoalAsync(SavingsGoalRow row)
     {
-        await finance.DeleteSavingsGoalAsync(row.Id);
+        await goalRepository.DeleteAsync(row.Id);
         if (_editingGoalId == row.Id) CancelGoalEdit();
         await LoadAsync();
     }

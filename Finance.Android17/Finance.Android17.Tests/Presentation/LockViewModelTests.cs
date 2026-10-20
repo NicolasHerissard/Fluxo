@@ -106,17 +106,17 @@ public sealed class LockViewModelTests : IDisposable
     public async Task Unlock_CreatesDueSubscriptionExpensesAndRecurringIncomes_WhenEnabled()
     {
         _app.Settings.AutoCreateSubscriptionExpenses = true;
-        await _app.Finance.AddSubscriptionAsync("Netflix", 1_599, 1, new DateTime(2026, 9, 5));
-        await _app.Finance.AddRecurringIncomeAsync("Salaire", 200_000, 1, new DateTime(2026, 10, 1));
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 9, 5));
+        await _app.RecurringIncomes.AddAsync("Salaire", 200_000, 1, new DateTime(2026, 10, 1));
         var vm = _app.CreateLock(new FakeAppLock("1234"));
         await vm.InitializeAsync();
 
         vm.Pin = "1234";
         await vm.SubmitPinCommand.ExecuteAsync(null);
 
-        Assert.Equal(["Abonnement · Netflix", "Abonnement · Netflix"], (await _app.Finance.GetExpensesAsync()).Select(x => x.Description));
-        Assert.Equal(new DateTime(2026, 11, 5), Assert.Single(await _app.Finance.GetSubscriptionsAsync()).NextBillingDate);
-        Assert.Equal(200_000, Assert.Single(await _app.Finance.GetIncomesAsync()).AmountMinor);
+        Assert.Equal(["Abonnement · Netflix", "Abonnement · Netflix"], (await _app.Expenses.GetAllAsync()).Select(x => x.Description));
+        Assert.Equal(new DateTime(2026, 11, 5), Assert.Single(await _app.Subscriptions.GetAllAsync()).NextBillingDate);
+        Assert.Equal(200_000, Assert.Single(await _app.Incomes.GetAllAsync()).AmountMinor);
         var plan = Assert.Single(_app.Reminders.Plans);
         Assert.Equal(new DateTimeOffset(2026, 11, 2, 9, 0, 0, TimeSpan.Zero), Assert.Single(plan.Alarms).TriggerAt);
     }
@@ -127,16 +127,16 @@ public sealed class LockViewModelTests : IDisposable
         _app.Settings.AutoCreateSubscriptionExpenses = false;
         _app.Settings.AutoCreateRecurringIncomes = false;
         _app.Settings.SubscriptionRemindersEnabled = false;
-        await _app.Finance.AddSubscriptionAsync("Netflix", 1_599, 1, new DateTime(2026, 9, 5));
-        await _app.Finance.AddRecurringIncomeAsync("Salaire", 200_000, 1, new DateTime(2026, 10, 1));
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 9, 5));
+        await _app.RecurringIncomes.AddAsync("Salaire", 200_000, 1, new DateTime(2026, 10, 1));
         var vm = _app.CreateLock(new FakeAppLock("1234"));
         await vm.InitializeAsync();
 
         vm.Pin = "1234";
         await vm.SubmitPinCommand.ExecuteAsync(null);
 
-        Assert.Empty(await _app.Finance.GetExpensesAsync());
-        Assert.Empty(await _app.Finance.GetIncomesAsync());
+        Assert.Empty(await _app.Expenses.GetAllAsync());
+        Assert.Empty(await _app.Incomes.GetAllAsync());
         Assert.Empty(_app.Reminders.Plans);
     }
 

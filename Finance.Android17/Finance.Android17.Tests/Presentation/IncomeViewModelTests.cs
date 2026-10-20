@@ -32,9 +32,9 @@ public sealed class IncomeViewModelTests : IDisposable
     [Fact]
     public async Task Load_ListsIncomesRecurringIncomesAndGoals()
     {
-        await _app.Finance.AddSavingsGoalAsync("Vacances", 100_000, 25_000, new DateTime(2027, 6, 1));
-        await _app.Finance.AddRecurringIncomeAsync("Prime", 90_000, 12, new DateTime(2026, 12, 15));
-        await _app.Finance.AddRecurringIncomeAsync("Dividendes", 30_000, 3, new DateTime(2026, 12, 20));
+        await _app.SavingsGoals.AddAsync("Vacances", 100_000, 25_000, new DateTime(2027, 6, 1));
+        await _app.RecurringIncomes.AddAsync("Prime", 90_000, 12, new DateTime(2026, 12, 15));
+        await _app.RecurringIncomes.AddAsync("Dividendes", 30_000, 3, new DateTime(2026, 12, 20));
         var vm = await LoadedAsync();
 
         var income = Assert.Single(vm.Incomes);
@@ -93,7 +93,7 @@ public sealed class IncomeViewModelTests : IDisposable
         vm.InitialBalance = input;
         await vm.SaveInitialBalanceCommand.ExecuteAsync(null);
 
-        Assert.Equal(expectedMinor, await _app.Finance.GetInitialBalanceAsync());
+        Assert.Equal(expectedMinor, await _app.Profile.GetInitialBalanceAsync());
         Assert.Equal("Solde initial enregistré.", vm.StatusMessage);
         Assert.Equal(expectedText, vm.InitialBalance);
     }
@@ -107,7 +107,7 @@ public sealed class IncomeViewModelTests : IDisposable
         await vm.SaveInitialBalanceCommand.ExecuteAsync(null);
 
         Assert.Equal("Indiquez un solde initial valide.", vm.StatusMessage);
-        Assert.Equal(0, await _app.Finance.GetInitialBalanceAsync());
+        Assert.Equal(0, await _app.Profile.GetInitialBalanceAsync());
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public sealed class IncomeViewModelTests : IDisposable
         await vm.SaveIncomeCommand.ExecuteAsync(null);
 
         Assert.Equal(message, vm.StatusMessage);
-        Assert.Empty(await _app.Finance.GetIncomesAsync());
+        Assert.Empty(await _app.Incomes.GetAllAsync());
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public sealed class IncomeViewModelTests : IDisposable
         vm.NextOccurrenceDate = new DateTime(2026, 11, 5);
         await vm.SaveRecurringIncomeCommand.ExecuteAsync(null);
 
-        var stored = Assert.Single(await _app.Finance.GetRecurringIncomesAsync());
+        var stored = Assert.Single(await _app.RecurringIncomes.GetAllAsync());
         Assert.Equal(3, stored.IntervalMonths);
         Assert.Equal(new DateTime(2026, 11, 5), stored.NextOccurrenceDate);
         Assert.Equal("Revenu récurrent enregistré.", vm.StatusMessage);
@@ -190,7 +190,7 @@ public sealed class IncomeViewModelTests : IDisposable
         vm.GoalTargetDate = new DateTime(2027, 3, 1);
         await vm.SaveGoalCommand.ExecuteAsync(null);
 
-        var goal = Assert.Single(await _app.Finance.GetSavingsGoalsAsync());
+        var goal = Assert.Single(await _app.SavingsGoals.GetAllAsync());
         Assert.Equal(800_000, goal.TargetAmountMinor);
         Assert.Equal(50_000, goal.SavedAmountMinor);
         Assert.Equal(new DateTime(2027, 3, 1), goal.TargetDate);

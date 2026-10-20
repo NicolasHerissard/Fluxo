@@ -50,7 +50,7 @@ public sealed class DashboardViewModelTests : IDisposable
     public async Task Load_FlagsAProbableOverdraft_WhenForecastIsNegative()
     {
         var food = await _app.CategoryAsync("Alimentation");
-        await _app.Finance.AddExpenseAsync(10_000, "Courses", new DateTime(2026, 10, 3), food.Id);
+        await _app.Expenses.AddAsync(10_000, "Courses", new DateTime(2026, 10, 3), food.Id);
         var vm = _app.CreateDashboard();
 
         await vm.LoadAsync();

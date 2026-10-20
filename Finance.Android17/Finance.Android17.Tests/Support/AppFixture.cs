@@ -11,7 +11,7 @@ namespace Finance.Android17.Tests.Support;
 /// temporaire), mais avec une horloge figée et des réglages/services natifs factices.
 /// « Aujourd'hui » vaut le mardi 20 octobre 2026, 9 h 30.
 /// </summary>
-public sealed class AppFixture : IDisposable
+public sealed class AppFixture : FinancePorts, IDisposable
 {
     public static readonly DateTime Now = new(2026, 10, 20, 9, 30, 0);
 
@@ -22,7 +22,7 @@ public sealed class AppFixture : IDisposable
     {
         Clock = new FixedTimeProvider(now ?? Now);
         var services = new ServiceCollection();
-        services.AddSingleton(Clock);
+        services.AddSingleton<TimeProvider>(Clock);
         services.AddSingleton<ISecureValueStore>(new FakeSecureValueStore());
         services.AddSingleton<IFileExchange>(new FakeFileExchange());
         services.AddSingleton<ISettingsService>(Settings);
@@ -34,13 +34,11 @@ public sealed class AppFixture : IDisposable
         _provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
     }
 
-    public TimeProvider Clock { get; }
+    public FixedTimeProvider Clock { get; }
     public FakeSettings Settings { get; } = new();
     public FakeReminderService Reminders { get; } = new();
-    public IFinanceStore Store => Get<IFinanceStore>();
-    public FinanceService Finance => Get<FinanceService>();
 
-    public T Get<T>() where T : notnull => _provider.GetRequiredService<T>();
+    public override T Get<T>() => _provider.GetRequiredService<T>();
 
     /// <summary>Construit un ViewModel avec ses dépendances du conteneur ; <paramref name="overrides"/> remplace celles de même type.</summary>
     private T Create<T>(params object[] overrides) => ActivatorUtilities.CreateInstance<T>(_provider, overrides);
@@ -54,7 +52,7 @@ public sealed class AppFixture : IDisposable
         Create<LockViewModel>(appLock, biometrics ?? new FakeBiometrics());
 
     public async Task<Category> CategoryAsync(string name) =>
-        (await Finance.GetCategoriesAsync()).Single(x => x.Name == name);
+        (await Categories.GetAllAsync()).Single(x => x.Name == name);
 
     /// <summary>
     /// Scénario commun : octobre 2026 contient 3 dépenses (202,50 €), septembre une (80,00 €), un salaire de
@@ -65,14 +63,14 @@ public sealed class AppFixture : IDisposable
     {
         var food = await CategoryAsync("Alimentation");
         var transport = await CategoryAsync("Transport");
-        await Finance.UpdateCategoryAsync(food.Id, food.Name, food.Color, 20_000);
-        await Finance.AddExpenseAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
-        await Finance.AddExpenseAsync(15_000, "Courses", new DateTime(2026, 10, 10), food.Id);
-        await Finance.AddExpenseAsync(4_000, "Train", new DateTime(2026, 10, 15), transport.Id);
-        await Finance.AddExpenseAsync(8_000, "Marché", new DateTime(2026, 9, 10), food.Id);
-        await Finance.AddIncomeAsync(200_000, "Salaire", new DateTime(2026, 10, 1));
-        await Finance.AddSubscriptionAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
-        await Finance.AddRecurringIncomeAsync("Loyer perçu", 5_000, 1, new DateTime(2026, 10, 30));
+        await Categories.UpdateAsync(food.Id, food.Name, food.Color, 20_000);
+        await Expenses.AddAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
+        await Expenses.AddAsync(15_000, "Courses", new DateTime(2026, 10, 10), food.Id);
+        await Expenses.AddAsync(4_000, "Train", new DateTime(2026, 10, 15), transport.Id);
+        await Expenses.AddAsync(8_000, "Marché", new DateTime(2026, 9, 10), food.Id);
+        await Incomes.AddAsync(200_000, "Salaire", new DateTime(2026, 10, 1));
+        await Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
+        await RecurringIncomes.AddAsync("Loyer perçu", 5_000, 1, new DateTime(2026, 10, 30));
     }
 
     public void Dispose()

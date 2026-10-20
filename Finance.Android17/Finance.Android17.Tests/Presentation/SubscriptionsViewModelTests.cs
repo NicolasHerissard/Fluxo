@@ -23,9 +23,9 @@ public sealed class SubscriptionsViewModelTests : IDisposable
     [Fact]
     public async Task Load_ComputesMonthlyAndAnnualTotals_FromEveryFrequency()
     {
-        await _app.Finance.AddSubscriptionAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
-        await _app.Finance.AddSubscriptionAsync("Assurance", 9_000, 3, new DateTime(2026, 12, 1));
-        await _app.Finance.AddSubscriptionAsync("Antivirus", 4_800, 12, new DateTime(2027, 1, 10));
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
+        await _app.Subscriptions.AddAsync("Assurance", 9_000, 3, new DateTime(2026, 12, 1));
+        await _app.Subscriptions.AddAsync("Antivirus", 4_800, 12, new DateTime(2027, 1, 10));
         var vm = _app.CreateSubscriptions();
 
         await vm.LoadAsync();
@@ -45,7 +45,7 @@ public sealed class SubscriptionsViewModelTests : IDisposable
     [Fact]
     public async Task Load_HidesAmounts_WhenPrivacyIsOn()
     {
-        await _app.Finance.AddSubscriptionAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
         _app.Settings.HideAmounts = true;
         var vm = _app.CreateSubscriptions();
 
@@ -59,7 +59,7 @@ public sealed class SubscriptionsViewModelTests : IDisposable
     [Fact]
     public async Task Load_SchedulesReminders_OnlyWhenEnabled()
     {
-        await _app.Finance.AddSubscriptionAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
         _app.Settings.SubscriptionReminderDays = 7;
         var vm = _app.CreateSubscriptions();
 
@@ -86,7 +86,7 @@ public sealed class SubscriptionsViewModelTests : IDisposable
         vm.NextBillingDate = new DateTime(2026, 12, 1);
         await vm.AddCommand.ExecuteAsync(null);
 
-        var stored = Assert.Single(await _app.Finance.GetSubscriptionsAsync());
+        var stored = Assert.Single(await _app.Subscriptions.GetAllAsync());
         Assert.Equal(3, stored.BillingIntervalMonths);
         Assert.Equal(9_000, stored.AmountMinor);
         Assert.Equal("EUR", stored.CurrencyCode);
@@ -109,13 +109,13 @@ public sealed class SubscriptionsViewModelTests : IDisposable
         await vm.AddCommand.ExecuteAsync(null);
 
         Assert.Equal(message, vm.ErrorMessage);
-        Assert.Empty(await _app.Finance.GetSubscriptionsAsync());
+        Assert.Empty(await _app.Subscriptions.GetAllAsync());
     }
 
     [Fact]
     public async Task Edit_ThenSave_UpdatesInsteadOfAdding()
     {
-        await _app.Finance.AddSubscriptionAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
         var vm = _app.CreateSubscriptions();
         await vm.LoadAsync();
 
@@ -130,7 +130,7 @@ public sealed class SubscriptionsViewModelTests : IDisposable
         vm.SelectedFrequency = "Annuel";
         await vm.AddCommand.ExecuteAsync(null);
 
-        var stored = Assert.Single(await _app.Finance.GetSubscriptionsAsync());
+        var stored = Assert.Single(await _app.Subscriptions.GetAllAsync());
         Assert.Equal(1_799, stored.AmountMinor);
         Assert.Equal(12, stored.BillingIntervalMonths);
         Assert.False(vm.IsEditing);
@@ -140,7 +140,7 @@ public sealed class SubscriptionsViewModelTests : IDisposable
     [Fact]
     public async Task Delete_RemovesTheRow_AndCancelsAnOngoingEdit()
     {
-        await _app.Finance.AddSubscriptionAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
         var vm = _app.CreateSubscriptions();
         await vm.LoadAsync();
         var row = vm.Subscriptions.Single();
@@ -149,7 +149,7 @@ public sealed class SubscriptionsViewModelTests : IDisposable
         await vm.DeleteCommand.ExecuteAsync(row);
 
         Assert.Empty(vm.Subscriptions);
-        Assert.Empty(await _app.Finance.GetSubscriptionsAsync());
+        Assert.Empty(await _app.Subscriptions.GetAllAsync());
         Assert.False(vm.IsEditing);
         Assert.True(vm.IsEmpty);
     }

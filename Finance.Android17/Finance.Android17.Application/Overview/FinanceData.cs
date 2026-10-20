@@ -10,15 +10,17 @@ public sealed record FinanceData(
     IReadOnlyList<RecurringIncome> RecurringIncomes,
     long InitialBalanceMinor);
 
-public sealed class FinanceDataLoader(IFinanceStore store)
+public sealed class FinanceDataLoader(
+    IExpenseRepository expenses,
+    IIncomeRepository incomes,
+    ISubscriptionRepository subscriptions,
+    IRecurringIncomeRepository recurringIncomes,
+    IFinancialProfileRepository profile)
 {
-    public async Task<FinanceData> LoadAsync(CancellationToken cancellationToken = default)
-    {
-        var expenses = await store.GetExpensesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        var incomes = await store.GetIncomesAsync(cancellationToken).ConfigureAwait(false);
-        var subscriptions = await store.GetSubscriptionsAsync(cancellationToken).ConfigureAwait(false);
-        var recurringIncomes = await store.GetRecurringIncomesAsync(cancellationToken).ConfigureAwait(false);
-        var initialBalance = await store.GetInitialBalanceAsync(cancellationToken).ConfigureAwait(false);
-        return new FinanceData(expenses, incomes, subscriptions, recurringIncomes, initialBalance);
-    }
+    public async Task<FinanceData> LoadAsync(CancellationToken cancellationToken = default) =>
+        new(await expenses.GetAllAsync(cancellationToken).ConfigureAwait(false),
+            await incomes.GetAllAsync(cancellationToken).ConfigureAwait(false),
+            await subscriptions.GetAllAsync(cancellationToken).ConfigureAwait(false),
+            await recurringIncomes.GetAllAsync(cancellationToken).ConfigureAwait(false),
+            await profile.GetInitialBalanceAsync(cancellationToken).ConfigureAwait(false));
 }

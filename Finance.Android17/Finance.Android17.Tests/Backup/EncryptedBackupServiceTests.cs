@@ -20,7 +20,6 @@ public sealed class EncryptedBackupServiceTests : IDisposable
     public void Dispose() => _host.Dispose();
 
     private IDataBackupService Backup => _host.Get<IDataBackupService>();
-    private IFinanceStore Store => _host.Get<IFinanceStore>();
 
     /// <summary>Lecteur du format, réécrit ici d'après sa spécification : MFBAK01 | sel 16 | nonce 12 | tag 16 | données.</summary>
     private static byte[] Open(byte[] payload, string password)
@@ -39,11 +38,11 @@ public sealed class EncryptedBackupServiceTests : IDisposable
 
     private async Task SeedAsync()
     {
-        var food = (await Store.GetCategoriesAsync()).Single(x => x.Name == "Alimentation");
-        await Store.UpdateCategoryAsync(food.Id, food.Name, food.Color, 20_000);
-        await Store.AddExpenseAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
-        await Store.AddIncomeAsync(200_000, "Salaire", new DateTime(2026, 10, 1));
-        await Store.SetInitialBalanceAsync(50_000);
+        var food = (await _host.Categories.GetAllAsync()).Single(x => x.Name == "Alimentation");
+        await _host.Categories.UpdateAsync(food.Id, food.Name, food.Color, 20_000);
+        await _host.Expenses.AddAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
+        await _host.Incomes.AddAsync(200_000, "Salaire", new DateTime(2026, 10, 1));
+        await _host.Profile.SetInitialBalanceAsync(50_000);
     }
 
     [Fact]
@@ -90,19 +89,19 @@ public sealed class EncryptedBackupServiceTests : IDisposable
     [Fact]
     public async Task Import_ReadsABackupProducedByAnotherImplementation()
     {
-        await Store.AddExpenseAsync(999, "Sera effacée", new DateTime(2026, 10, 3), (await Store.GetCategoriesAsync()).First().Id);
+        await _host.Expenses.AddAsync(999, "Sera effacée", new DateTime(2026, 10, 3), (await _host.Categories.GetAllAsync()).First().Id);
         _host.Files.ToPick = Convert.FromBase64String(GoldenPayload);
 
         var imported = await Backup.ImportEncryptedAsync(GoldenPassword);
 
         Assert.True(imported);
-        var category = Assert.Single(await Store.GetCategoriesAsync());
+        var category = Assert.Single(await _host.Categories.GetAllAsync());
         Assert.Equal("Alimentation", category.Name);
         Assert.Equal(20_000, category.BudgetMinor);
-        var expense = Assert.Single(await Store.GetExpensesAsync());
+        var expense = Assert.Single(await _host.Expenses.GetAllAsync());
         Assert.Equal("Pain", expense.Description);
         Assert.Equal(1_250, expense.AmountMinor);
-        Assert.Equal(50_000, await Store.GetInitialBalanceAsync());
+        Assert.Equal(50_000, await _host.Profile.GetInitialBalanceAsync());
     }
 
     [Fact]
@@ -115,11 +114,10 @@ public sealed class EncryptedBackupServiceTests : IDisposable
         other.Files.ToPick = _host.Shared().Content;
         Assert.True(await other.Get<IDataBackupService>().ImportEncryptedAsync("motdepasse-solide"));
 
-        var store = other.Get<IFinanceStore>();
-        Assert.Equal("Pain", Assert.Single(await store.GetExpensesAsync()).Description);
-        Assert.Equal("Salaire", Assert.Single(await store.GetIncomesAsync()).Description);
-        Assert.Equal(50_000, await store.GetInitialBalanceAsync());
-        Assert.Equal(20_000, (await store.GetCategoriesAsync()).Single(x => x.Name == "Alimentation").BudgetMinor);
+        Assert.Equal("Pain", Assert.Single(await other.Expenses.GetAllAsync()).Description);
+        Assert.Equal("Salaire", Assert.Single(await other.Incomes.GetAllAsync()).Description);
+        Assert.Equal(50_000, await other.Profile.GetInitialBalanceAsync());
+        Assert.Equal(20_000, (await other.Categories.GetAllAsync()).Single(x => x.Name == "Alimentation").BudgetMinor);
     }
 
     [Fact]
@@ -131,7 +129,7 @@ public sealed class EncryptedBackupServiceTests : IDisposable
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => Backup.ImportEncryptedAsync("un-autre-mot-de-passe"));
 
         Assert.Equal("Mot de passe incorrect ou sauvegarde endommagée.", error.Message);
-        Assert.Equal("Pain", Assert.Single(await Store.GetExpensesAsync()).Description);
+        Assert.Equal("Pain", Assert.Single(await _host.Expenses.GetAllAsync()).Description);
     }
 
     [Fact]
@@ -166,7 +164,7 @@ public sealed class EncryptedBackupServiceTests : IDisposable
         _host.Files.ToPick = null;
 
         Assert.False(await Backup.ImportEncryptedAsync(GoldenPassword));
-        Assert.Single(await Store.GetExpensesAsync());
+        Assert.Single(await _host.Expenses.GetAllAsync());
     }
 
     [Fact]

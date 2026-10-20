@@ -234,7 +234,7 @@ public sealed class ExpensesViewModelTests : IDisposable
         var vm = await LoadedAsync();
         Guid? requested = null;
         vm.EditRequested += (_, id) => requested = id;
-        var stored = (await _app.Finance.GetExpensesAsync()).Single(x => x.Description == "Courses");
+        var stored = (await _app.Expenses.GetAllAsync()).Single(x => x.Description == "Courses");
 
         vm.EditCommand.Execute(vm.Expenses.Single(x => x.Description == "Courses"));
 
@@ -268,9 +268,9 @@ public sealed class ExpensesViewModelTests : IDisposable
     [InlineData("😀 Fêtes", "😀")]
     public async Task Rows_InitialIsTheFirstTextElement_Uppercased(string categoryName, string expected)
     {
-        await _app.Finance.AddCategoryAsync(categoryName, "#336699");
+        await _app.Categories.AddAsync(categoryName, "#336699");
         var category = await _app.CategoryAsync(categoryName);
-        await _app.Finance.AddExpenseAsync(500, "Test", new DateTime(2026, 10, 1), category.Id);
+        await _app.Expenses.AddAsync(500, "Test", new DateTime(2026, 10, 1), category.Id);
         var vm = _app.CreateExpenses();
 
         await vm.LoadAsync();

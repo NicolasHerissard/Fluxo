@@ -30,12 +30,11 @@ public sealed class CsvExportServiceTests : IDisposable
     [Fact]
     public async Task Export_WritesOneLinePerExpense_NewestFirst()
     {
-        var store = _host.Get<IFinanceStore>();
-        var categories = await store.GetCategoriesAsync();
+        var categories = await _host.Categories.GetAllAsync();
         var food = categories.Single(x => x.Name == "Alimentation");
         var transport = categories.Single(x => x.Name == "Transport");
-        await store.AddExpenseAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
-        await store.AddExpenseAsync(4_005, "Train \"Intercités\"; billet", new DateTime(2026, 10, 15), transport.Id, "USD");
+        await _host.Expenses.AddAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
+        await _host.Expenses.AddAsync(4_005, "Train \"Intercités\"; billet", new DateTime(2026, 10, 15), transport.Id, "USD");
 
         await _host.Get<IExportService>().ExportExpensesCsvAsync();
 
@@ -52,10 +51,9 @@ public sealed class CsvExportServiceTests : IDisposable
     [Fact]
     public async Task Export_IgnoresDeletedExpenses()
     {
-        var store = _host.Get<IFinanceStore>();
-        var food = (await store.GetCategoriesAsync()).Single(x => x.Name == "Alimentation");
-        await store.AddExpenseAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
-        await store.SoftDeleteExpenseAsync((await store.GetExpensesAsync()).Single().Id);
+        var food = (await _host.Categories.GetAllAsync()).Single(x => x.Name == "Alimentation");
+        await _host.Expenses.AddAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
+        await _host.Expenses.DeleteAsync((await _host.Expenses.GetAllAsync()).Single().Id);
 
         await _host.Get<IExportService>().ExportExpensesCsvAsync();
 

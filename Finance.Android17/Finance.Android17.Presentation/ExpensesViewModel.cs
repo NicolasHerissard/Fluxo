@@ -6,7 +6,7 @@ using Finance.Android17.Domain;
 
 namespace Finance.Android17.Presentation;
 
-public partial class ExpensesViewModel(FinanceService finance, ISettingsService settings, TimeProvider clock) : ObservableObject
+public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, ISettingsService settings, TimeProvider clock) : ObservableObject
 {
     private const string AllDates = "Toutes les dates";
     private const string CustomPeriodLabel = "Période personnalisée";
@@ -84,9 +84,9 @@ public partial class ExpensesViewModel(FinanceService finance, ISettingsService 
         try
         {
             if (CategoryFilters.Count == 0)
-                foreach (var category in await finance.GetCategoriesAsync()) CategoryFilters.Add(new(category.Id, category.Name));
+                foreach (var category in await categoryRepository.GetAllAsync()) CategoryFilters.Add(new(category.Id, category.Name));
 
-            _allExpenses = await finance.GetExpensesAsync();
+            _allExpenses = await expenseRepository.GetAllAsync();
             Expenses.Clear();
             foreach (var expense in ExpenseSearch.Apply(_allExpenses, CurrentCriteria())) Expenses.Add(ExpenseRow.From(expense, settings.HideAmounts));
             IsEmpty = Expenses.Count == 0;
@@ -142,7 +142,7 @@ public partial class ExpensesViewModel(FinanceService finance, ISettingsService 
     [RelayCommand]
     private async Task DeleteAsync(ExpenseRow row)
     {
-        await finance.DeleteExpenseAsync(row.Id);
+        await expenseRepository.DeleteAsync(row.Id);
         _pendingDeletedId = row.Id;
         StatusMessage = "Dépense supprimée";
         IsUndoVisible = true;
@@ -153,7 +153,7 @@ public partial class ExpensesViewModel(FinanceService finance, ISettingsService 
     private async Task UndoDeleteAsync()
     {
         if (_pendingDeletedId is not Guid id) return;
-        await finance.RestoreExpenseAsync(id);
+        await expenseRepository.RestoreAsync(id);
         _pendingDeletedId = null;
         IsUndoVisible = false;
         StatusMessage = "Dépense restaurée";

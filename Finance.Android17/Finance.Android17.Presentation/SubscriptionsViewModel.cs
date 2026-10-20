@@ -6,7 +6,7 @@ using Finance.Android17.Domain;
 
 namespace Finance.Android17.Presentation;
 
-public partial class SubscriptionsViewModel(FinanceService finance, ISettingsService settings, SubscriptionReminderScheduler reminders, TimeProvider clock) : ObservableObject
+public partial class SubscriptionsViewModel(ISubscriptionRepository subscriptionRepository, ISettingsService settings, SubscriptionReminderScheduler reminders, TimeProvider clock) : ObservableObject
 {
     public ObservableCollection<SubscriptionRow> Subscriptions { get; } = [];
     public IReadOnlyList<string> Frequencies { get; } = BillingFrequency.Options;
@@ -29,7 +29,7 @@ public partial class SubscriptionsViewModel(FinanceService finance, ISettingsSer
     public async Task LoadAsync()
     {
         CurrencySymbol = MoneyFormatter.CurrencySymbol(settings.CurrencyCode);
-        _loaded = await finance.GetSubscriptionsAsync();
+        _loaded = await subscriptionRepository.GetAllAsync();
         Subscriptions.Clear();
         foreach (var item in _loaded)
             Subscriptions.Add(new(item.Id, item.Name, settings.HideAmounts ? MoneyFormatter.Hidden : MoneyFormatter.Money(item.AmountMinor, settings.CurrencyCode),
@@ -49,9 +49,9 @@ public partial class SubscriptionsViewModel(FinanceService finance, ISettingsSer
         if (!AmountParser.TryParse(Amount, out var minor) || minor <= 0) { ErrorMessage = "Indiquez un montant valide."; return; }
         var interval = BillingFrequency.ToMonths(SelectedFrequency);
         if (_editingId is not Guid editingId)
-            await finance.AddSubscriptionAsync(Name, minor, interval, NextBillingDate, settings.CurrencyCode);
+            await subscriptionRepository.AddAsync(Name, minor, interval, NextBillingDate, settings.CurrencyCode);
         else
-            await finance.UpdateSubscriptionAsync(editingId, Name, minor, interval, NextBillingDate, settings.CurrencyCode);
+            await subscriptionRepository.UpdateAsync(editingId, Name, minor, interval, NextBillingDate, settings.CurrencyCode);
         CancelEdit();
         await LoadAsync();
     }
@@ -89,7 +89,7 @@ public partial class SubscriptionsViewModel(FinanceService finance, ISettingsSer
     private async Task DeleteAsync(SubscriptionRow item)
     {
         if (_editingId == item.Id) CancelEdit();
-        await finance.DeleteSubscriptionAsync(item.Id);
+        await subscriptionRepository.DeleteAsync(item.Id);
         await LoadAsync();
     }
 }

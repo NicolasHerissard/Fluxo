@@ -7,7 +7,8 @@ using Finance.Android17.Application;
 namespace Finance.Android17.Presentation;
 
 public partial class SettingsViewModel(
-    FinanceService finance,
+    ICategoryRepository categoryRepository,
+    IFinanceDataStore dataStore,
     ISettingsService settings,
     IExportService export,
     IDataBackupService backup,
@@ -120,12 +121,12 @@ public partial class SettingsViewModel(
         }
         if (_editingCategoryId is not Guid id)
         {
-            await finance.AddCategoryAsync(NewCategoryName, SelectedColor, budgetMinor);
+            await categoryRepository.AddAsync(NewCategoryName, SelectedColor, budgetMinor);
             StatusMessage = "Catégorie ajoutée.";
         }
         else
         {
-            await finance.UpdateCategoryAsync(id, NewCategoryName, SelectedColor, budgetMinor);
+            await categoryRepository.UpdateAsync(id, NewCategoryName, SelectedColor, budgetMinor);
             StatusMessage = "Catégorie mise à jour.";
         }
         CancelCategoryEdit();
@@ -155,7 +156,7 @@ public partial class SettingsViewModel(
     [RelayCommand]
     private async Task DeleteCategoryAsync(CategoryItem category)
     {
-        try { await finance.DeleteCategoryAsync(category.Id); StatusMessage = "Catégorie supprimée."; await ReloadCategoriesAsync(); }
+        try { await categoryRepository.DeleteAsync(category.Id); StatusMessage = "Catégorie supprimée."; await ReloadCategoriesAsync(); }
         catch (Exception ex) { StatusMessage = ex.Message; }
     }
 
@@ -210,7 +211,7 @@ public partial class SettingsViewModel(
         try
         {
             if (!await appLock.VerifyPinAsync(pin)) { StatusMessage = "Code PIN incorrect. Suppression annulée."; return; }
-            IsBusy = true; await finance.DeleteAllDataAsync(); StatusMessage = "Toutes les données financières ont été supprimées."; await ReloadCategoriesAsync();
+            IsBusy = true; await dataStore.DeleteAllAsync(); StatusMessage = "Toutes les données financières ont été supprimées."; await ReloadCategoriesAsync();
         }
         catch (Exception ex) { StatusMessage = ex.Message; }
         finally { IsBusy = false; }
@@ -219,7 +220,7 @@ public partial class SettingsViewModel(
     private async Task ReloadCategoriesAsync()
     {
         Categories.Clear();
-        foreach (var category in await finance.GetCategoriesAsync()) Categories.Add(CategoryItem.From(category));
+        foreach (var category in await categoryRepository.GetAllAsync()) Categories.Add(CategoryItem.From(category));
     }
 
     private void UpdateColorFromRgb()
