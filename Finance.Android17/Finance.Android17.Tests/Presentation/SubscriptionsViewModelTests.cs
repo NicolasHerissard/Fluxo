@@ -72,7 +72,10 @@ public sealed class SubscriptionsViewModelTests : IDisposable
 
         _app.Settings.SubscriptionRemindersEnabled = false;
         await vm.LoadAsync();
-        Assert.Single(_app.Reminders.Plans);
+        // Désactivés : un plan vide est appliqué pour annuler les alarmes déjà programmées.
+        Assert.Equal(2, _app.Reminders.Plans.Count);
+        Assert.Empty(_app.Reminders.Plans[1].Alarms);
+        Assert.Null(_app.Reminders.Plans[1].Notice);
     }
 
     [Fact]

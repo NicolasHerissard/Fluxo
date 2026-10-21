@@ -53,7 +53,8 @@ public sealed class DatabaseInitializationTests : IDisposable
     [Fact]
     public async Task Initialize_CanBeRetried_AfterAFailure()
     {
-        var secrets = new FakeSecureValueStore();
+        // Clé présente : le fichier existant est refusé par SQLCipher (et non par le contrôle de clé manquante).
+        var secrets = new FakeSecureValueStore { Values = { ["database_key_v2"] = "autre-cle-0123456789abcdef0123456789=" } };
         using var host = new InfrastructureHost(secrets: secrets);
         var wrongKeyFile = host.DatabaseFile.Options.DatabasePath;
         await File.WriteAllTextAsync(wrongKeyFile, "ceci n'est pas une base SQLCipher, mais un fichier quelconque assez long pour ne pas être vide");

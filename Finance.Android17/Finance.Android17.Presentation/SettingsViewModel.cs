@@ -13,7 +13,9 @@ public partial class SettingsViewModel(
     IExportService export,
     IDataBackupService backup,
     IBiometricService biometrics,
-    IAppLockService appLock) : ObservableObject
+    IAppLockService appLock,
+    ISubscriptionRepository subscriptionRepository,
+    SubscriptionReminderScheduler reminders) : ObservableObject
 {
     private bool _loading;
     private bool _updatingColor;
@@ -87,8 +89,19 @@ public partial class SettingsViewModel(
     partial void OnSelectedThemeChanged(string value) { if (!_loading && !string.IsNullOrWhiteSpace(value)) settings.Theme = value; }
     partial void OnAutoCreateSubscriptionExpensesChanged(bool value) { if (!_loading) settings.AutoCreateSubscriptionExpenses = value; }
     partial void OnAutoCreateRecurringIncomesChanged(bool value) { if (!_loading) settings.AutoCreateRecurringIncomes = value; }
-    partial void OnSubscriptionRemindersEnabledChanged(bool value) { if (!_loading) settings.SubscriptionRemindersEnabled = value; }
-    partial void OnSubscriptionReminderDaysChanged(int value) { if (!_loading && value > 0) settings.SubscriptionReminderDays = value; }
+    partial void OnSubscriptionRemindersEnabledChanged(bool value)
+    {
+        if (_loading) return;
+        settings.SubscriptionRemindersEnabled = value;
+        _ = RefreshRemindersAsync();
+    }
+
+    partial void OnSubscriptionReminderDaysChanged(int value)
+    {
+        if (_loading || value <= 0) return;
+        settings.SubscriptionReminderDays = value;
+        _ = RefreshRemindersAsync();
+    }
     partial void OnSelectedCurrencyChanged(string value) { if (!_loading && !string.IsNullOrWhiteSpace(value)) settings.CurrencyCode = value; }
     partial void OnDefaultCategoryChanged(CategoryItem? value) { if (!_loading) settings.DefaultCategoryId = value?.Id.ToString() ?? string.Empty; }
     partial void OnRememberLastCategoryChanged(bool value) { if (!_loading) settings.RememberLastCategory = value; }
@@ -172,7 +185,7 @@ public partial class SettingsViewModel(
     [RelayCommand]
     private async Task ChangePinAsync()
     {
-        if (!await appLock.VerifyPinAsync(CurrentPin)) { StatusMessage = "Le code PIN actuel est incorrect."; return; }
+        if (!await appLock.VerifyPinAsync(CurrentPin)) { StatusMessage = await PinLockMessages.AfterFailureAsync(appLock, "Le code PIN actuel est incorrect."); return; }
         if (!PinPolicy.IsValid(NewPin)) { StatusMessage = $"Le nouveau PIN doit contenir {PinPolicy.RequirementText}."; return; }
         if (NewPin != ConfirmPin) { StatusMessage = "La confirmation du nouveau PIN ne correspond pas."; return; }
         await appLock.SetPinAsync(NewPin);
@@ -200,7 +213,7 @@ public partial class SettingsViewModel(
         try
         {
             IsBusy = true;
-            if (await backup.ImportEncryptedAsync(BackupPassword)) { StatusMessage = "Sauvegarde restaurée."; await ReloadCategoriesAsync(); }
+            if (await backup.ImportEncryptedAsync(BackupPassword)) { StatusMessage = "Sauvegarde restaurée."; await ReloadCategoriesAsync(); await RefreshRemindersAsync(); }
         }
         catch (Exception ex) { StatusMessage = ex.Message; }
         finally { IsBusy = false; }
@@ -210,11 +223,19 @@ public partial class SettingsViewModel(
     {
         try
         {
-            if (!await appLock.VerifyPinAsync(pin)) { StatusMessage = "Code PIN incorrect. Suppression annulée."; return; }
+            if (!await appLock.VerifyPinAsync(pin)) { StatusMessage = await PinLockMessages.AfterFailureAsync(appLock, "Code PIN incorrect. Suppression annulée."); return; }
             IsBusy = true; await dataStore.DeleteAllAsync(); StatusMessage = "Toutes les données financières ont été supprimées."; await ReloadCategoriesAsync();
+            await RefreshRemindersAsync();
         }
         catch (Exception ex) { StatusMessage = ex.Message; }
         finally { IsBusy = false; }
+    }
+
+    // Les données ont été remplacées ou effacées : les alarmes de rappel doivent suivre.
+    private async Task RefreshRemindersAsync()
+    {
+        try { await reminders.RefreshAsync(await subscriptionRepository.GetAllAsync()); }
+        catch (Exception ex) { StatusMessage = $"{StatusMessage} Rappels non mis à jour : {ex.Message}"; }
     }
 
     private async Task ReloadCategoriesAsync()

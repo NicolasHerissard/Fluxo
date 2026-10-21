@@ -5,9 +5,9 @@ namespace Finance.Android17.Application;
 
 public sealed record CategoryBackup(Guid Id, string Name, string Color, long? BudgetMinor, DateTime CreatedAtUtc);
 public sealed record ExpenseBackup(Guid Id, long AmountMinor, string CurrencyCode, string Description, DateTime OccurredOn, Guid CategoryId, DateTime CreatedAtUtc);
-public sealed record SubscriptionBackup(Guid Id, string Name, long AmountMinor, string CurrencyCode, int BillingIntervalMonths, DateTime NextBillingDate, bool ReminderEnabled, DateTime CreatedAtUtc);
+public sealed record SubscriptionBackup(Guid Id, string Name, long AmountMinor, string CurrencyCode, int BillingIntervalMonths, DateTime NextBillingDate, bool ReminderEnabled, DateTime CreatedAtUtc, int AnchorDay = 0);
 public sealed record IncomeBackup(Guid Id, long AmountMinor, string CurrencyCode, string Description, DateTime OccurredOn, Guid? RecurringIncomeId, DateTime CreatedAtUtc);
-public sealed record RecurringIncomeBackup(Guid Id, string Name, long AmountMinor, string CurrencyCode, int IntervalMonths, DateTime NextOccurrenceDate, DateTime CreatedAtUtc);
+public sealed record RecurringIncomeBackup(Guid Id, string Name, long AmountMinor, string CurrencyCode, int IntervalMonths, DateTime NextOccurrenceDate, DateTime CreatedAtUtc, int AnchorDay = 0);
 public sealed record SavingsGoalBackup(Guid Id, string Name, long TargetAmountMinor, long SavedAmountMinor, DateTime? TargetDate, DateTime CreatedAtUtc);
 
 public sealed record FinanceBackupSnapshot(

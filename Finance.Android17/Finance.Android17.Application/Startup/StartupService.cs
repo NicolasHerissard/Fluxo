@@ -11,8 +11,8 @@ public sealed class StartupService(
     {
         await database.InitializeAsync(cancellationToken).ConfigureAwait(false);
         await dueOperations.ApplyAsync(cancellationToken).ConfigureAwait(false);
-        // Lus après le rattrapage : les prochaines échéances ont avancé.
-        if (reminders.IsEnabled)
-            await reminders.RefreshAsync(await subscriptions.GetAllAsync(cancellationToken).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
+        // Lus après le rattrapage : les prochaines échéances ont avancé. Toujours appliqué, même rappels désactivés :
+        // c'est ce qui annule les alarmes encore programmées.
+        await reminders.RefreshAsync(await subscriptions.GetAllAsync(cancellationToken).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
     }
 }

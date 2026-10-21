@@ -76,10 +76,17 @@ public sealed class IncomeViewModelTests : IDisposable
     public async Task Amounts_AreHidden_WhenPrivacyIsOn()
     {
         _app.Settings.HideAmounts = true;
+        await _app.SavingsGoals.AddAsync("Vacances", 100_000, 25_000, new DateTime(2027, 6, 1));
         var vm = await LoadedAsync();
 
         Assert.Equal("••••", vm.CurrentBalance);
         Assert.All(vm.RecentOperations, x => Assert.Equal("••••", x.Amount));
+        Assert.NotEmpty(vm.Incomes);
+        Assert.All(vm.Incomes, x => Assert.Equal("••••", x.Amount));
+        Assert.NotEmpty(vm.RecurringIncomes);
+        Assert.All(vm.RecurringIncomes, x => Assert.Equal("••••", x.Amount));
+        var goal = Assert.Single(vm.SavingsGoals);
+        Assert.Equal(("••••", "••••"), (goal.Saved, goal.Target));
     }
 
     [Theory]

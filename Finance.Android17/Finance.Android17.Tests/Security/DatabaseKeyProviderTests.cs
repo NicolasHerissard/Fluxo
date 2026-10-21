@@ -38,6 +38,24 @@ public sealed class DatabaseKeyProviderTests
     }
 
     [Fact]
+    public async Task MissingKey_WithAnExistingDatabase_IsAnError_AndNothingIsOverwritten()
+    {
+        using var host = new InfrastructureHost();
+        await host.Categories.GetAllAsync();
+        var lostKey = host.Secrets.Values["database_key_v2"];
+        var emptySecrets = new FakeSecureValueStore();
+        using var restarted = new InfrastructureHost(secrets: emptySecrets, databaseOf: host);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => restarted.Get<ISecretStore>().GetOrCreateDatabaseKeyAsync());
+
+        Assert.Contains("clé de chiffrement", error.Message);
+        Assert.Empty(emptySecrets.Values);
+        // La clé d'origine revenue, la base se rouvre intacte.
+        emptySecrets.Values["database_key_v2"] = lostKey;
+        Assert.NotEmpty(await restarted.Categories.GetAllAsync());
+    }
+
+    [Fact]
     public async Task Database_ReopensWithTheStoredKey_AfterARestart()
     {
         using var host = new InfrastructureHost();

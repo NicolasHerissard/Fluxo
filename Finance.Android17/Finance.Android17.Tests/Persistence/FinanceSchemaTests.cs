@@ -5,7 +5,7 @@ namespace Finance.Android17.Tests.Persistence;
 
 public sealed class FinanceSchemaTests : IDisposable
 {
-    private const int CurrentVersion = 1;
+    private const int CurrentVersion = 2;
 
     private readonly InfrastructureHost _host = new();
 
@@ -112,6 +112,21 @@ public sealed class FinanceSchemaTests : IDisposable
         Assert.Equal(0, await restarted.Profile.GetInitialBalanceAsync());
         await restarted.Categories.AddAsync("Nouvelle", "#000000", 1234);
         Assert.Equal(1234, (await restarted.Categories.GetAllAsync()).Single(x => x.Name == "Nouvelle").BudgetMinor);
+        Assert.Equal(CurrentVersion, await restarted.ScalarAsync<long>("PRAGMA user_version"));
+    }
+
+    [Fact]
+    public async Task VersionOneDatabase_GainsTheAnchorDay_FromTheNextDueDate()
+    {
+        await _host.Database.InitializeAsync();
+        await _host.Subscriptions.AddAsync("Loyer", 50000, 1, new DateTime(2026, 11, 30));
+        await _host.RecurringIncomes.AddAsync("Salaire", 200000, 1, new DateTime(2026, 11, 28));
+        await _host.ExecuteSqlAsync(
+            "ALTER TABLE Subscriptions DROP COLUMN AnchorDay", "ALTER TABLE RecurringIncomes DROP COLUMN AnchorDay", "PRAGMA user_version = 1");
+        using var restarted = new InfrastructureHost(databaseOf: _host, secrets: _host.Secrets);
+
+        Assert.Equal(30, Assert.Single(await restarted.Subscriptions.GetAllAsync()).AnchorDay);
+        Assert.Equal(28, Assert.Single(await restarted.RecurringIncomes.GetAllAsync()).AnchorDay);
         Assert.Equal(CurrentVersion, await restarted.ScalarAsync<long>("PRAGMA user_version"));
     }
 

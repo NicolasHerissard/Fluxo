@@ -91,7 +91,13 @@ public sealed class FakeAppLock(string? pin = null) : IAppLockService
         return Task.CompletedTask;
     }
 
-    public Task<bool> VerifyPinAsync(string pin, CancellationToken cancellationToken = default) => Task.FromResult(Pin == pin);
+    /// <summary>Attente imposée après des échecs : tant qu'elle est positive, aucun PIN n'est accepté.</summary>
+    public TimeSpan LockoutRemaining { get; set; }
+
+    public Task<bool> VerifyPinAsync(string pin, CancellationToken cancellationToken = default) =>
+        Task.FromResult(LockoutRemaining <= TimeSpan.Zero && Pin == pin);
+
+    public Task<TimeSpan> GetLockoutRemainingAsync(CancellationToken cancellationToken = default) => Task.FromResult(LockoutRemaining);
 }
 
 public sealed class FakeBiometrics(bool isAvailable = false, bool succeeds = true) : IBiometricService

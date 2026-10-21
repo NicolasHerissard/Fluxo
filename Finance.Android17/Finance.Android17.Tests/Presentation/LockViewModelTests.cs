@@ -137,7 +137,27 @@ public sealed class LockViewModelTests : IDisposable
 
         Assert.Empty(await _app.Expenses.GetAllAsync());
         Assert.Empty(await _app.Incomes.GetAllAsync());
-        Assert.Empty(_app.Reminders.Plans);
+        // Rappels désactivés : seul un plan vide est appliqué, pour annuler d'éventuelles alarmes restantes.
+        var plan = Assert.Single(_app.Reminders.Plans);
+        Assert.Empty(plan.Alarms);
+    }
+
+    [Theory]
+    [InlineData(30, "Trop d’essais. Réessayez dans 30 s.")]
+    [InlineData(90, "Trop d’essais. Réessayez dans 2 min.")]
+    public async Task WrongPin_WhileLockedOut_ShowsTheWait_AndDoesNotUnlock(int seconds, string expected)
+    {
+        var appLock = new FakeAppLock("1234") { LockoutRemaining = TimeSpan.FromSeconds(seconds) };
+        var vm = _app.CreateLock(appLock);
+        await vm.InitializeAsync();
+        var unlocked = false;
+        vm.Unlocked += (_, _) => unlocked = true;
+
+        vm.Pin = "1234";
+        await vm.SubmitPinCommand.ExecuteAsync(null);
+
+        Assert.Equal(expected, vm.ErrorMessage);
+        Assert.False(unlocked);
     }
 
     [Fact]

@@ -34,6 +34,31 @@ public sealed class RecurrenceTests
         Assert.Empty(Recurrence.GetDueDates(new DateTime(2026, 10, 21), 1, new DateTime(2026, 10, 20)));
     }
 
+    [Fact]
+    public void GetDueDates_KeepsTheEndOfMonthDay_InsteadOfDriftingTo28()
+    {
+        var dates = Recurrence.GetDueDates(new DateTime(2026, 1, 31), 1, new DateTime(2026, 5, 31));
+
+        Assert.Equal([new DateTime(2026, 1, 31), new DateTime(2026, 2, 28), new DateTime(2026, 3, 31), new DateTime(2026, 4, 30), new DateTime(2026, 5, 31)], dates);
+    }
+
+    [Fact]
+    public void GetDueDates_UsesTheAnchorDay_WhenTheNextDateWasAlreadyClamped()
+    {
+        // 28 février portait l'ancre 31 : l'échéance suivante est bien le 31 mars.
+        var dates = Recurrence.GetDueDates(new DateTime(2026, 2, 28), 1, new DateTime(2026, 4, 30), anchorDay: 31);
+
+        Assert.Equal([new DateTime(2026, 2, 28), new DateTime(2026, 3, 31), new DateTime(2026, 4, 30)], dates);
+    }
+
+    [Fact]
+    public void NextAfter_RestoresTheAnchorDay_AfterAShortMonth()
+    {
+        Assert.Equal(new DateTime(2026, 3, 31), Recurrence.NextAfter(new DateTime(2026, 2, 28), 1, anchorDay: 31));
+        Assert.Equal(new DateTime(2028, 2, 29), Recurrence.NextAfter(new DateTime(2027, 2, 28), 12, anchorDay: 29));
+        Assert.Equal(new DateTime(2026, 12, 31), Recurrence.NextAfter(new DateTime(2026, 9, 30), 3, anchorDay: 31));
+    }
+
     [Theory]
     [InlineData(1, 2026, 11)]
     [InlineData(3, 2027, 1)]

@@ -212,6 +212,20 @@ public sealed class DashboardViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task TogglePrivacy_AlsoMasksTheBudgetFigures()
+    {
+        await _app.SeedScenarioAsync();
+        _app.Settings.MonthlyBudgetMinor = 25_000;
+        _app.Settings.HideAmounts = true;
+        var vm = _app.CreateDashboard();
+        await vm.LoadAsync();
+
+        var food = Assert.Single(vm.CategoryBars, x => x.HasBudget);
+        Assert.Equal("Budget : •••• / ••••", food.BudgetText);
+        Assert.Equal("•••• disponibles sur le budget", vm.BudgetStatus);
+    }
+
+    [Fact]
     public async Task Greeting_BecomesEvening_AfterSixPm()
     {
         using var evening = new AppFixture(new DateTime(2026, 10, 20, 19, 0, 0));

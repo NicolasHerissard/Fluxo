@@ -30,6 +30,30 @@ public sealed class DueOperationsPlannerTests
     }
 
     [Fact]
+    public void Subscriptions_DueOnThe31st_KeepTheirDay_AfterAShortMonth()
+    {
+        var rent = Subscription("Loyer", new DateTime(2026, 1, 31));
+        rent.AnchorDay = 31;
+
+        var plan = DueOperationsPlanner.PlanSubscriptions([rent], new DateTime(2026, 3, 15), "EUR");
+
+        Assert.Equal([new DateTime(2026, 1, 31), new DateTime(2026, 2, 28)], plan.Expenses.Select(x => x.OccurredOn));
+        // Reprise un 31 mars, pas un 28.
+        Assert.Equal(new DateTime(2026, 3, 31), Assert.Single(plan.SubscriptionAdvances).NextDate);
+    }
+
+    [Fact]
+    public void RecurringIncomes_DueOnThe30th_KeepTheirDay_AfterFebruary()
+    {
+        var salary = new RecurringIncome { Name = "Salaire", AmountMinor = 200_000, NextOccurrenceDate = new DateTime(2027, 2, 28), AnchorDay = 30 };
+
+        var plan = DueOperationsPlanner.PlanRecurringIncomes([salary], new DateTime(2027, 3, 1), "EUR");
+
+        Assert.Equal([new DateTime(2027, 2, 28)], plan.Incomes.Select(x => x.OccurredOn));
+        Assert.Equal(new DateTime(2027, 3, 30), Assert.Single(plan.RecurringIncomeAdvances).NextDate);
+    }
+
+    [Fact]
     public void Subscriptions_NotYetDue_OrDeleted_AreLeftAlone()
     {
         var future = Subscription("Assurance", new DateTime(2027, 1, 1), 12);
