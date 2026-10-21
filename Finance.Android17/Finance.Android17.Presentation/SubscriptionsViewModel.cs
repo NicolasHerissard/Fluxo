@@ -85,11 +85,44 @@ public partial class SubscriptionsViewModel(ISubscriptionRepository subscription
         ErrorMessage = string.Empty;
     }
 
+    [ObservableProperty] private bool isUndoVisible;
+    [ObservableProperty] private string undoMessage = string.Empty;
+    private Func<Task>? _undoAction;
+    private int _undoVersion;
+
+    private void OfferUndo(string message, Func<Task> restore)
+    {
+        _undoAction = restore;
+        UndoMessage = message;
+        IsUndoVisible = true;
+        _ = HideUndoLaterAsync(++_undoVersion);
+    }
+
+    private async Task HideUndoLaterAsync(int version)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(8));
+        if (version != _undoVersion) return;
+        IsUndoVisible = false;
+        _undoAction = null;
+    }
+
+    [RelayCommand]
+    private async Task UndoDeleteAsync()
+    {
+        if (_undoAction is not { } restore) return;
+        _undoAction = null;
+        _undoVersion++;
+        IsUndoVisible = false;
+        await restore();
+        await LoadAsync();
+    }
+
     [RelayCommand]
     private async Task DeleteAsync(SubscriptionRow item)
     {
         if (_editingId == item.Id) CancelEdit();
         await subscriptionRepository.DeleteAsync(item.Id);
+        OfferUndo("Abonnement supprimé", () => subscriptionRepository.RestoreAsync(item.Id));
         await LoadAsync();
     }
 }

@@ -26,6 +26,12 @@
                     <Button Text="Annuler la modification" Command="{Binding CancelEditCommand}" IsVisible="{Binding IsEditing}" Style="{StaticResource TextButton}" />
                 </VerticalStackLayout>
             </Border>
+            <Border IsVisible="{Binding IsUndoVisible}" BackgroundColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource OutlineLight}}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="14,8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="{Binding UndoMessage}" TextColor="{AppThemeBinding Light=White, Dark={StaticResource TextPrimaryLight}}" VerticalOptions="Center" SemanticProperties.Description="{Binding UndoMessage}" />
+                    <Button Grid.Column="1" Text="Annuler" Command="{Binding UndoDeleteCommand}" BackgroundColor="Transparent" TextColor="{AppThemeBinding Light={StaticResource PrimaryContainerLight}, Dark={StaticResource PrimaryColor}}" HeightRequest="48" SemanticProperties.Description="Annuler la suppression" />
+                </Grid>
+            </Border>
             <Label Text="Prochaines échéances" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
             <Border IsVisible="{Binding IsEmpty}" Style="{StaticResource Card}"><Label Text="Aucun abonnement. Ajoutez-en un pour calculer vos coûts mensuels et annuels." Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" /></Border>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Subscriptions}" Spacing="8">
@@ -35,13 +41,13 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCommand}" CommandParameter="{Binding .}" />
                             </Border.GestureRecognizers>
-                            <Grid ColumnDefinitions="*,Auto,48,48" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                            <Grid ColumnDefinitions="*,Auto,48,60" RowDefinitions="Auto,Auto" ColumnSpacing="8">
                                 <Label Text="{Binding Name}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding Amount}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                                 <Label Grid.Row="1" Text="{Binding Frequency}" Style="{StaticResource MutedLabel}" />
                                 <Label Grid.Row="1" Grid.Column="1" Text="{Binding NextDate}" Style="{StaticResource MutedLabel}" />
                                 <ImageButton Grid.Column="2" Grid.RowSpan="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Modifier cet abonnement" />
-                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Supprimer cet abonnement" />
+                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Margin="12,0,0,0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Supprimer cet abonnement" />
                             </Grid>
                         </Border>
                     </DataTemplate>

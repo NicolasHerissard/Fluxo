@@ -9,4 +9,6 @@ public interface IIncomeRepository
     Task AddAsync(long amountMinor, string description, DateTime occurredOn, string currencyCode = "EUR", CancellationToken cancellationToken = default);
     Task UpdateAsync(Guid id, long amountMinor, string description, DateTime occurredOn, string currencyCode = "EUR", CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    /// <summary>Annule une suppression logique (annulation juste après la suppression).</summary>
+    Task RestoreAsync(Guid id, CancellationToken cancellationToken = default);
 }

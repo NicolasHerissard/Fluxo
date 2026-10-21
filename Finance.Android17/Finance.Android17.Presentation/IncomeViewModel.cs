@@ -136,11 +136,44 @@ public partial class IncomeViewModel(
         IncomeFormTitle = "Modifier le revenu";
     }
 
+    [ObservableProperty] private bool isUndoVisible;
+    [ObservableProperty] private string undoMessage = string.Empty;
+    private Func<Task>? _undoAction;
+    private int _undoVersion;
+
+    private void OfferUndo(string message, Func<Task> restore)
+    {
+        _undoAction = restore;
+        UndoMessage = message;
+        IsUndoVisible = true;
+        _ = HideUndoLaterAsync(++_undoVersion);
+    }
+
+    private async Task HideUndoLaterAsync(int version)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(8));
+        if (version != _undoVersion) return;
+        IsUndoVisible = false;
+        _undoAction = null;
+    }
+
+    [RelayCommand]
+    private async Task UndoDeleteAsync()
+    {
+        if (_undoAction is not { } restore) return;
+        _undoAction = null;
+        _undoVersion++;
+        IsUndoVisible = false;
+        await restore();
+        await LoadAsync();
+    }
+
     [RelayCommand]
     private async Task DeleteIncomeAsync(IncomeRow row)
     {
         await incomeRepository.DeleteAsync(row.Id);
         if (_editingIncomeId == row.Id) CancelIncomeEdit();
+        OfferUndo("Revenu supprimé", () => incomeRepository.RestoreAsync(row.Id));
         await LoadAsync();
     }
 
@@ -184,6 +217,7 @@ public partial class IncomeViewModel(
     {
         await recurringIncomeRepository.DeleteAsync(row.Id);
         if (_editingRecurringIncomeId == row.Id) CancelRecurringIncomeEdit();
+        OfferUndo("Revenu récurrent supprimé", () => recurringIncomeRepository.RestoreAsync(row.Id));
         await LoadAsync();
     }
 
@@ -231,6 +265,7 @@ public partial class IncomeViewModel(
     {
         await goalRepository.DeleteAsync(row.Id);
         if (_editingGoalId == row.Id) CancelGoalEdit();
+        OfferUndo("Objectif supprimé", () => goalRepository.RestoreAsync(row.Id));
         await LoadAsync();
     }
 

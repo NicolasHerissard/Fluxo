@@ -19,7 +19,7 @@ Règle importante : ne jamais réutiliser une page MAUI après un remplacement d
 
 ## Contenu
 
-- **Pages** (`*Page.xaml` + `*.xaml.cs`) : `LockPage`, `DashboardPage`, `ExpensesPage`, `IncomePage`, `SubscriptionsPage`, `SettingsPage`, `AddExpensePage`. Le code-behind reste minimal : liaison au ViewModel de `Presentation`, chargement dans `OnAppearing`, navigation, boîtes de dialogue de confirmation, quelques réglages d'interface natifs. La logique métier n'y a pas sa place.
+- **Pages** (`*Page.xaml` + `*.xaml.cs`) : `LockPage`, `DashboardPage`, `ExpensesPage`, `IncomePage`, `SubscriptionsPage`, `SettingsPage`, `AddExpensePage`, et les sous-pages modales de Réglages `CategoriesSettingsPage` et `DataSettingsPage` (même `SettingsViewModel`, instance propre). Le code-behind reste minimal : liaison au ViewModel de `Presentation`, chargement dans `OnAppearing`, navigation, boîtes de dialogue de confirmation, quelques réglages d'interface natifs. La logique métier n'y a pas sa place.
 - **Adaptateurs de plateforme** (implémentent les ports d'`Application`) :
   - `MauiSecureValueStore` (`ISecureValueStore`) : lit, écrit et supprime des valeurs dans `SecureStorage`. Le PIN et la clé SQLCipher sont gérés par `Infrastructure` (`PinLockService`, `DatabaseKeyProvider`) ; ce projet ne fournit que le coffre.
   - `MauiFileExchange` (`IFileExchange`) : partage d'un fichier par la feuille de partage native et sélection d'un fichier à importer. Le CSV (`CsvExportService`) et la sauvegarde `.mfbackup` (`EncryptedBackupService`) vivent dans `Infrastructure` et passent par ce port.

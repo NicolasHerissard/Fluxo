@@ -37,4 +37,5 @@ internal sealed class IncomeRepository(FinanceDatabase database) : Repository<In
         }, cancellationToken);
 
     public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default) => MarkDeletedAsync(id, cancellationToken);
+    public Task RestoreAsync(Guid id, CancellationToken cancellationToken = default) => MarkRestoredAsync(id, cancellationToken);
 }

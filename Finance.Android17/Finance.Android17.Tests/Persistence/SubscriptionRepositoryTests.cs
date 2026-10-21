@@ -64,4 +64,16 @@ public sealed class SubscriptionRepositoryTests : IDisposable
         Assert.Empty(await _host.Subscriptions.GetAllAsync());
         Assert.NotEqual(before, await _host.ScalarAsync<string>("SELECT Version FROM Subscriptions"));
     }
+
+    [Fact]
+    public async Task Restore_BringsBackADeletedSubscription()
+    {
+        await _host.Subscriptions.AddAsync("Netflix", 1299, 1, new DateTime(2026, 11, 15));
+        var id = Assert.Single(await _host.Subscriptions.GetAllAsync()).Id;
+        await _host.Subscriptions.DeleteAsync(id);
+
+        await _host.Subscriptions.RestoreAsync(id);
+
+        Assert.Equal(id, Assert.Single(await _host.Subscriptions.GetAllAsync()).Id);
+    }
 }

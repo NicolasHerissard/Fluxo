@@ -42,13 +42,13 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:ExpenseRow">
                         <Border Style="{StaticResource Card}" Margin="0,0,0,8">
-                            <Grid ColumnDefinitions="*,Auto,48,48" RowDefinitions="Auto,Auto" ColumnSpacing="4">
+                            <Grid ColumnDefinitions="*,Auto,48,60" RowDefinitions="Auto,Auto" ColumnSpacing="4">
                                 <Label Text="{Binding Description}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" LineBreakMode="TailTruncation" />
                                 <Label Grid.Column="1" Text="{Binding Amount}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                                 <Label Grid.Row="1" Text="{Binding Category}" Style="{StaticResource MutedLabel}" />
                                 <Label Grid.Row="1" Grid.Column="1" Text="{Binding Date}" Style="{StaticResource MutedLabel}" />
                                 <ImageButton Grid.Column="2" Grid.RowSpan="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Modifier cette dépense" />
-                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Supprimer cette dépense" />
+                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Margin="12,0,0,0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Supprimer cette dépense" />
                             </Grid>
                         </Border>
                     </DataTemplate>

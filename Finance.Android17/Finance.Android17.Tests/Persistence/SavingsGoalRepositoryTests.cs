@@ -36,4 +36,16 @@ public sealed class SavingsGoalRepositoryTests : IDisposable
 
         Assert.Equal("Vélo", Assert.Single(await _host.SavingsGoals.GetAllAsync()).Name);
     }
+
+    [Fact]
+    public async Task Restore_BringsBackADeletedGoal()
+    {
+        await _host.SavingsGoals.AddAsync("Vélo", 100_000, 0, null);
+        var id = Assert.Single(await _host.SavingsGoals.GetAllAsync()).Id;
+        await _host.SavingsGoals.DeleteAsync(id);
+
+        await _host.SavingsGoals.RestoreAsync(id);
+
+        Assert.Equal(id, Assert.Single(await _host.SavingsGoals.GetAllAsync()).Id);
+    }
 }
