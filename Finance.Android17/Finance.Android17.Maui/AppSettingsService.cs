@@ -16,23 +16,24 @@ public sealed class AppSettingsService : ISettingsService
     public string DefaultCategoryId { get => Preferences.Default.Get(nameof(DefaultCategoryId), string.Empty); set => Preferences.Default.Set(nameof(DefaultCategoryId), value); }
     public string LastCategoryId { get => Preferences.Default.Get(nameof(LastCategoryId), string.Empty); set => Preferences.Default.Set(nameof(LastCategoryId), value); }
     public bool RememberLastCategory { get => Preferences.Default.Get(nameof(RememberLastCategory), true); set => Preferences.Default.Set(nameof(RememberLastCategory), value); }
-    public string AfterSaveBehavior { get => Preferences.Default.Get(nameof(AfterSaveBehavior), "Fermer"); set => Preferences.Default.Set(nameof(AfterSaveBehavior), value); }
+    public string AfterSaveBehavior { get => Preferences.Default.Get(nameof(AfterSaveBehavior), AfterSaveOptions.Close); set => Preferences.Default.Set(nameof(AfterSaveBehavior), value); }
     public string Theme
     {
-        get => Preferences.Default.Get(nameof(Theme), "Système");
+        get => Preferences.Default.Get(nameof(Theme), ThemeOptions.FollowSystem);
         set
         {
             Preferences.Default.Set(nameof(Theme), value);
             if (Microsoft.Maui.Controls.Application.Current is { } app)
-                app.UserAppTheme = value switch { "Clair" => AppTheme.Light, "Sombre" => AppTheme.Dark, _ => AppTheme.Unspecified };
+                app.UserAppTheme = ToAppTheme(value);
             SystemBarAppearance.Apply();
         }
     }
 
-    public void ApplyTheme()
+    /// <summary>Le thème MAUI correspondant à un réglage enregistré (le thème de l'appareil si le réglage est inconnu).</summary>
+    public static AppTheme ToAppTheme(string theme) => theme switch
     {
-        if (Microsoft.Maui.Controls.Application.Current is { } app)
-            app.UserAppTheme = Theme switch { "Clair" => AppTheme.Light, "Sombre" => AppTheme.Dark, _ => AppTheme.Unspecified };
-        SystemBarAppearance.Apply();
-    }
+        ThemeOptions.Light => AppTheme.Light,
+        ThemeOptions.Dark => AppTheme.Dark,
+        _ => AppTheme.Unspecified
+    };
 }

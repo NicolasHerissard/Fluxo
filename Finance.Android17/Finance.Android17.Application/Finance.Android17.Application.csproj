@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Finance.Android17.Domain\Finance.Android17.Domain.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
 </Project>

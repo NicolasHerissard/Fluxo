@@ -18,7 +18,7 @@ public partial class DashboardPage : ContentPage
     {
         if (e.Parameter is not ExpenseRow row) return;
         var page = _services.GetRequiredService<AddExpensePage>();
-        await page.BeginEditAsync(row.Source);
+        await page.BeginEditAsync(row.Id);
         await Navigation.PushModalAsync(new NavigationPage(page));
     }
 

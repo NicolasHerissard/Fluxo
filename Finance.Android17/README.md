@@ -19,7 +19,7 @@ API 36 est la cible Android prise en charge par le SDK .NET 10 installé. Androi
 - clé SQLCipher aléatoire de 256 bits stockée dans le magasin sécurisé de la plateforme.
 - base SQLite locale chiffrée.
 - APK Debug autonome : les assemblies sont intégrées et ne dépendent pas du Fast Deployment.
-- aucune ressource `InvertedBoolConverter` ni convertisseur XAML requis.
+- un seul convertisseur XAML (`ColorContrastConverter`, texte noir ou blanc selon la couleur d'une catégorie) ; aucun `InvertedBoolConverter`.
 - APK Release ARM64 non débogable, validé pour l'alignement 16 ko.
 - aucune permission Internet dans le MVP hors connexion.
 - sauvegarde Android désactivée pour ne pas extraire la base chiffrée de son contexte de clé.
@@ -66,3 +66,18 @@ Finance.Android17.Maui\bin\Release\net10.0-android\android-arm64\publish\fr.nico
 ```
 
 Ouvrir `Finance.Android17.slnx` dans Visual Studio 2026 ou avec un SDK .NET prenant en charge le format `.slnx`.
+
+## Organisation du code
+
+Six projets, avec des dépendances dirigées vers le domaine :
+
+| Projet | Rôle |
+| --- | --- |
+| `Finance.Android17.Domain` | Entités persistées. |
+| `Finance.Android17.Application` | Règles et calculs purs, services d'orchestration et ports. |
+| `Finance.Android17.Infrastructure` | Persistance EF Core + SQLCipher (schéma versionné), PIN, sauvegarde chiffrée, export CSV. |
+| `Finance.Android17.Presentation` | ViewModels, sans dépendance à MAUI. |
+| `Finance.Android17.Maui` | Pages XAML et adaptateurs de plateforme ; racine de composition. |
+| `Finance.Android17.Tests` | Tests xUnit : règles pures, dépôts sur une vraie base chiffrée, sécurité, sauvegarde, ViewModels, composition. |
+
+Chaque projet a son propre `CLAUDE.md`, et le `CLAUDE.md` racine donne la carte d'ensemble et les conventions.

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Finance.Android17.Application;
@@ -7,22 +6,27 @@ using Finance.Android17.Domain;
 
 namespace Finance.Android17.Presentation;
 
-public sealed record IncomeRow(string Description, string Date, string Amount, Income Source);
-public sealed record RecurringIncomeRow(string Name, string Amount, string Frequency, string NextDate, RecurringIncome Source);
-public sealed record SavingsGoalRow(string Name, string Saved, string Target, string ProgressText, double Progress, SavingsGoal Source);
-public sealed record OperationRow(string Type, string Description, string Date, string Amount, string Color);
-
-public partial class IncomeViewModel(FinanceService finance, ISettingsService settings) : ObservableObject
+public partial class IncomeViewModel(
+    IIncomeRepository incomeRepository,
+    IRecurringIncomeRepository recurringIncomeRepository,
+    ISavingsGoalRepository goalRepository,
+    IFinancialProfileRepository profileRepository,
+    FinanceDataLoader dataLoader,
+    ISettingsService settings,
+    TimeProvider clock) : ObservableObject
 {
-    private Income? _editingIncome;
-    private RecurringIncome? _editingRecurringIncome;
-    private SavingsGoal? _editingGoal;
+    private IReadOnlyList<Income> _incomes = [];
+    private IReadOnlyList<RecurringIncome> _recurringIncomes = [];
+    private IReadOnlyList<SavingsGoal> _goals = [];
+    private Guid? _editingIncomeId;
+    private Guid? _editingRecurringIncomeId;
+    private Guid? _editingGoalId;
 
     public ObservableCollection<IncomeRow> Incomes { get; } = [];
     public ObservableCollection<RecurringIncomeRow> RecurringIncomes { get; } = [];
     public ObservableCollection<SavingsGoalRow> SavingsGoals { get; } = [];
     public ObservableCollection<OperationRow> RecentOperations { get; } = [];
-    public IReadOnlyList<string> Frequencies { get; } = ["Mensuel", "Trimestriel", "Annuel"];
+    public IReadOnlyList<string> Frequencies { get; } = BillingFrequency.Options;
 
     [ObservableProperty] private string initialBalance = string.Empty;
     [ObservableProperty] private string currentBalance = "0,00 €";
@@ -31,17 +35,17 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     [ObservableProperty] private string forecastBalance = "0,00 €";
     [ObservableProperty] private string incomeDescription = string.Empty;
     [ObservableProperty] private string incomeAmount = string.Empty;
-    [ObservableProperty] private DateTime incomeDate = DateTime.Today;
+    [ObservableProperty] private DateTime incomeDate = clock.GetLocalNow().Date;
     [ObservableProperty] private string incomeFormTitle = "Ajouter un revenu";
     [ObservableProperty] private string recurringName = string.Empty;
     [ObservableProperty] private string recurringAmount = string.Empty;
-    [ObservableProperty] private string selectedFrequency = "Mensuel";
-    [ObservableProperty] private DateTime nextOccurrenceDate = DateTime.Today.AddMonths(1);
+    [ObservableProperty] private string selectedFrequency = BillingFrequency.Monthly;
+    [ObservableProperty] private DateTime nextOccurrenceDate = clock.GetLocalNow().Date.AddMonths(1);
     [ObservableProperty] private string recurringFormTitle = "Ajouter un revenu récurrent";
     [ObservableProperty] private string goalName = string.Empty;
     [ObservableProperty] private string goalTargetAmount = string.Empty;
     [ObservableProperty] private string goalSavedAmount = string.Empty;
-    [ObservableProperty] private DateTime goalTargetDate = DateTime.Today.AddYears(1);
+    [ObservableProperty] private DateTime goalTargetDate = clock.GetLocalNow().Date.AddYears(1);
     [ObservableProperty] private bool goalHasTargetDate;
     [ObservableProperty] private string goalFormTitle = "Ajouter un objectif";
     [ObservableProperty] private string statusMessage = string.Empty;
@@ -54,35 +58,34 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
         IsBusy = true;
         try
         {
-            var incomes = await finance.GetIncomesAsync();
-            var recurring = await finance.GetRecurringIncomesAsync();
-            var goals = await finance.GetSavingsGoalsAsync();
-            var expenses = await finance.GetExpensesAsync();
-            var subscriptions = await finance.GetSubscriptionsAsync();
-            var balance = await finance.GetInitialBalanceAsync();
-            InitialBalance = (balance / 100m).ToString("0.##", CultureInfo.GetCultureInfo("fr-FR"));
+            var data = await dataLoader.LoadAsync();
+            _incomes = data.Incomes;
+            _recurringIncomes = data.RecurringIncomes;
+            _goals = await goalRepository.GetAllAsync();
+            InitialBalance = MoneyFormatter.PlainAmount(data.InitialBalanceMinor);
 
             Incomes.Clear();
-            foreach (var item in incomes)
-                Incomes.Add(new(item.Description, item.OccurredOn.ToString("dd MMM yyyy", CultureInfo.GetCultureInfo("fr-FR")), Money(item.AmountMinor), item));
+            foreach (var item in _incomes)
+                Incomes.Add(new(item.Id, item.Description, MoneyFormatter.Date(item.OccurredOn), Money(item.AmountMinor)));
 
             RecurringIncomes.Clear();
-            foreach (var item in recurring)
-                RecurringIncomes.Add(new(item.Name, Money(item.AmountMinor), Frequency(item.IntervalMonths), item.NextOccurrenceDate.ToString("dd MMM yyyy", CultureInfo.GetCultureInfo("fr-FR")), item));
+            foreach (var item in _recurringIncomes)
+                RecurringIncomes.Add(new(item.Id, item.Name, Money(item.AmountMinor), BillingFrequency.ToDisplay(item.IntervalMonths), MoneyFormatter.Date(item.NextOccurrenceDate)));
 
             SavingsGoals.Clear();
-            foreach (var item in goals)
-                SavingsGoals.Add(new(item.Name, Money(item.SavedAmountMinor), Money(item.TargetAmountMinor), $"{item.Progress:P0}", item.Progress, item));
+            foreach (var item in _goals)
+                SavingsGoals.Add(new(item.Id, item.Name, Money(item.SavedAmountMinor), Money(item.TargetAmountMinor), MoneyFormatter.Percent(item.Progress), item.Progress));
 
             RecentOperations.Clear();
-            var operations = incomes.Select(x => new { x.OccurredOn, x.CreatedAtUtc, Type = "Revenu", x.Description, AmountMinor = x.AmountMinor, Color = "#2E7D32" })
-                .Concat(expenses.Select(x => new { x.OccurredOn, x.CreatedAtUtc, Type = "Dépense", x.Description, AmountMinor = -x.AmountMinor, Color = "#B3261E" }))
-                .OrderByDescending(x => x.OccurredOn).ThenByDescending(x => x.CreatedAtUtc).Take(20);
-            foreach (var item in operations)
-                RecentOperations.Add(new(item.Type, string.IsNullOrWhiteSpace(item.Description) ? item.Type : item.Description,
-                    item.OccurredOn.ToString("dd MMM yyyy", CultureInfo.GetCultureInfo("fr-FR")), HiddenMoney(item.AmountMinor), item.Color));
+            foreach (var operation in OperationsFeed.Recent(data.Expenses, data.Incomes))
+            {
+                var isIncome = operation.Kind == OperationKind.Income;
+                var type = isIncome ? "Revenu" : "Dépense";
+                RecentOperations.Add(new(type, string.IsNullOrWhiteSpace(operation.Description) ? type : operation.Description,
+                    MoneyFormatter.Date(operation.OccurredOn), HiddenMoney(operation.SignedAmountMinor), isIncome ? Palette.IncomeAmount : Palette.ExpenseAmount));
+            }
 
-            var summary = FinanceService.BuildFinancialSummary(expenses, incomes, balance, subscriptions, recurring, DateTime.Today);
+            var summary = FinancialSummaryCalculator.Build(data, clock.GetLocalNow().Date);
             CurrentBalance = HiddenMoney(summary.CurrentBalanceMinor);
             MonthIncome = HiddenMoney(summary.IncomeTotalMinor);
             MonthNet = HiddenMoney(summary.NetTotalMinor);
@@ -94,8 +97,8 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     [RelayCommand]
     private async Task SaveInitialBalanceAsync()
     {
-        if (!TrySignedAmount(InitialBalance, out var amount)) { StatusMessage = "Indiquez un solde initial valide."; return; }
-        await finance.SetInitialBalanceAsync(amount);
+        if (!AmountParser.TryParse(InitialBalance, out var amount)) { StatusMessage = "Indiquez un solde initial valide."; return; }
+        await profileRepository.SetInitialBalanceAsync(amount);
         StatusMessage = "Solde initial enregistré.";
         await LoadAsync();
     }
@@ -104,9 +107,9 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     private async Task SaveIncomeAsync()
     {
         if (string.IsNullOrWhiteSpace(IncomeDescription)) { StatusMessage = "Indiquez l’origine du revenu."; return; }
-        if (!AddExpenseViewModel.TryAmount(IncomeAmount, out var amount) || amount <= 0) { StatusMessage = "Indiquez un montant valide."; return; }
-        if (_editingIncome is null) await finance.AddIncomeAsync(amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
-        else await finance.UpdateIncomeAsync(_editingIncome.Id, amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
+        if (!AmountParser.TryParse(IncomeAmount, out var amount) || amount <= 0) { StatusMessage = "Indiquez un montant valide."; return; }
+        if (_editingIncomeId is not Guid id) await incomeRepository.AddAsync(amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
+        else await incomeRepository.UpdateAsync(id, amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
         CancelIncomeEdit();
         StatusMessage = "Revenu enregistré.";
         await LoadAsync();
@@ -115,27 +118,29 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     [RelayCommand]
     private void EditIncome(IncomeRow row)
     {
-        _editingIncome = row.Source;
-        IncomeDescription = row.Source.Description;
-        IncomeAmount = AmountText(row.Source.AmountMinor);
-        IncomeDate = row.Source.OccurredOn;
+        var income = _incomes.FirstOrDefault(x => x.Id == row.Id);
+        if (income is null) return;
+        _editingIncomeId = income.Id;
+        IncomeDescription = income.Description;
+        IncomeAmount = MoneyFormatter.PlainAmount(income.AmountMinor);
+        IncomeDate = income.OccurredOn;
         IncomeFormTitle = "Modifier le revenu";
     }
 
     [RelayCommand]
     private async Task DeleteIncomeAsync(IncomeRow row)
     {
-        await finance.DeleteIncomeAsync(row.Source.Id);
-        if (_editingIncome?.Id == row.Source.Id) CancelIncomeEdit();
+        await incomeRepository.DeleteAsync(row.Id);
+        if (_editingIncomeId == row.Id) CancelIncomeEdit();
         await LoadAsync();
     }
 
     [RelayCommand]
     private void CancelIncomeEdit()
     {
-        _editingIncome = null;
+        _editingIncomeId = null;
         IncomeDescription = IncomeAmount = string.Empty;
-        IncomeDate = DateTime.Today;
+        IncomeDate = clock.GetLocalNow().Date;
         IncomeFormTitle = "Ajouter un revenu";
     }
 
@@ -143,10 +148,10 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     private async Task SaveRecurringIncomeAsync()
     {
         if (string.IsNullOrWhiteSpace(RecurringName)) { StatusMessage = "Indiquez le nom du revenu récurrent."; return; }
-        if (!AddExpenseViewModel.TryAmount(RecurringAmount, out var amount) || amount <= 0) { StatusMessage = "Indiquez un montant valide."; return; }
-        var interval = SelectedFrequency switch { "Trimestriel" => 3, "Annuel" => 12, _ => 1 };
-        if (_editingRecurringIncome is null) await finance.AddRecurringIncomeAsync(RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
-        else await finance.UpdateRecurringIncomeAsync(_editingRecurringIncome.Id, RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
+        if (!AmountParser.TryParse(RecurringAmount, out var amount) || amount <= 0) { StatusMessage = "Indiquez un montant valide."; return; }
+        var interval = BillingFrequency.ToMonths(SelectedFrequency);
+        if (_editingRecurringIncomeId is not Guid id) await recurringIncomeRepository.AddAsync(RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
+        else await recurringIncomeRepository.UpdateAsync(id, RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
         CancelRecurringIncomeEdit();
         StatusMessage = "Revenu récurrent enregistré.";
         await LoadAsync();
@@ -155,29 +160,31 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     [RelayCommand]
     private void EditRecurringIncome(RecurringIncomeRow row)
     {
-        _editingRecurringIncome = row.Source;
-        RecurringName = row.Source.Name;
-        RecurringAmount = AmountText(row.Source.AmountMinor);
-        SelectedFrequency = row.Source.IntervalMonths switch { 3 => "Trimestriel", 12 => "Annuel", _ => "Mensuel" };
-        NextOccurrenceDate = row.Source.NextOccurrenceDate;
+        var recurring = _recurringIncomes.FirstOrDefault(x => x.Id == row.Id);
+        if (recurring is null) return;
+        _editingRecurringIncomeId = recurring.Id;
+        RecurringName = recurring.Name;
+        RecurringAmount = MoneyFormatter.PlainAmount(recurring.AmountMinor);
+        SelectedFrequency = BillingFrequency.ToOption(recurring.IntervalMonths);
+        NextOccurrenceDate = recurring.NextOccurrenceDate;
         RecurringFormTitle = "Modifier le revenu récurrent";
     }
 
     [RelayCommand]
     private async Task DeleteRecurringIncomeAsync(RecurringIncomeRow row)
     {
-        await finance.DeleteRecurringIncomeAsync(row.Source.Id);
-        if (_editingRecurringIncome?.Id == row.Source.Id) CancelRecurringIncomeEdit();
+        await recurringIncomeRepository.DeleteAsync(row.Id);
+        if (_editingRecurringIncomeId == row.Id) CancelRecurringIncomeEdit();
         await LoadAsync();
     }
 
     [RelayCommand]
     private void CancelRecurringIncomeEdit()
     {
-        _editingRecurringIncome = null;
+        _editingRecurringIncomeId = null;
         RecurringName = RecurringAmount = string.Empty;
-        SelectedFrequency = "Mensuel";
-        NextOccurrenceDate = DateTime.Today.AddMonths(1);
+        SelectedFrequency = BillingFrequency.Monthly;
+        NextOccurrenceDate = clock.GetLocalNow().Date.AddMonths(1);
         RecurringFormTitle = "Ajouter un revenu récurrent";
     }
 
@@ -185,12 +192,12 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     private async Task SaveGoalAsync()
     {
         if (string.IsNullOrWhiteSpace(GoalName)) { StatusMessage = "Indiquez le nom de l’objectif."; return; }
-        if (!AddExpenseViewModel.TryAmount(GoalTargetAmount, out var target) || target <= 0) { StatusMessage = "Indiquez un objectif valide."; return; }
+        if (!AmountParser.TryParse(GoalTargetAmount, out var target) || target <= 0) { StatusMessage = "Indiquez un objectif valide."; return; }
         var saved = 0L;
-        if (!string.IsNullOrWhiteSpace(GoalSavedAmount) && (!AddExpenseViewModel.TryAmount(GoalSavedAmount, out saved) || saved < 0)) { StatusMessage = "Indiquez un montant épargné valide."; return; }
+        if (!string.IsNullOrWhiteSpace(GoalSavedAmount) && (!AmountParser.TryParse(GoalSavedAmount, out saved) || saved < 0)) { StatusMessage = "Indiquez un montant épargné valide."; return; }
         DateTime? targetDate = GoalHasTargetDate ? GoalTargetDate.Date : null;
-        if (_editingGoal is null) await finance.AddSavingsGoalAsync(GoalName, target, saved, targetDate);
-        else await finance.UpdateSavingsGoalAsync(_editingGoal.Id, GoalName, target, saved, targetDate);
+        if (_editingGoalId is not Guid id) await goalRepository.AddAsync(GoalName, target, saved, targetDate);
+        else await goalRepository.UpdateAsync(id, GoalName, target, saved, targetDate);
         CancelGoalEdit();
         StatusMessage = "Objectif enregistré.";
         await LoadAsync();
@@ -199,46 +206,35 @@ public partial class IncomeViewModel(FinanceService finance, ISettingsService se
     [RelayCommand]
     private void EditGoal(SavingsGoalRow row)
     {
-        _editingGoal = row.Source;
-        GoalName = row.Source.Name;
-        GoalTargetAmount = AmountText(row.Source.TargetAmountMinor);
-        GoalSavedAmount = AmountText(row.Source.SavedAmountMinor);
-        GoalHasTargetDate = row.Source.TargetDate is not null;
-        GoalTargetDate = row.Source.TargetDate ?? DateTime.Today.AddYears(1);
+        var goal = _goals.FirstOrDefault(x => x.Id == row.Id);
+        if (goal is null) return;
+        _editingGoalId = goal.Id;
+        GoalName = goal.Name;
+        GoalTargetAmount = MoneyFormatter.PlainAmount(goal.TargetAmountMinor);
+        GoalSavedAmount = MoneyFormatter.PlainAmount(goal.SavedAmountMinor);
+        GoalHasTargetDate = goal.TargetDate is not null;
+        GoalTargetDate = goal.TargetDate ?? clock.GetLocalNow().Date.AddYears(1);
         GoalFormTitle = "Modifier l’objectif";
     }
 
     [RelayCommand]
     private async Task DeleteGoalAsync(SavingsGoalRow row)
     {
-        await finance.DeleteSavingsGoalAsync(row.Source.Id);
-        if (_editingGoal?.Id == row.Source.Id) CancelGoalEdit();
+        await goalRepository.DeleteAsync(row.Id);
+        if (_editingGoalId == row.Id) CancelGoalEdit();
         await LoadAsync();
     }
 
     [RelayCommand]
     private void CancelGoalEdit()
     {
-        _editingGoal = null;
+        _editingGoalId = null;
         GoalName = GoalTargetAmount = GoalSavedAmount = string.Empty;
         GoalHasTargetDate = false;
-        GoalTargetDate = DateTime.Today.AddYears(1);
+        GoalTargetDate = clock.GetLocalNow().Date.AddYears(1);
         GoalFormTitle = "Ajouter un objectif";
     }
 
-    private string Money(long amount) => DashboardViewModel.Money(amount, settings.CurrencyCode);
-    private string HiddenMoney(long amount) => settings.HideAmounts ? "••••" : Money(amount);
-    private static string AmountText(long amount) => (amount / 100m).ToString("0.##", CultureInfo.GetCultureInfo("fr-FR"));
-    private static string Frequency(int months) => months switch { 3 => "Tous les 3 mois", 12 => "Annuel", _ => "Mensuel" };
-
-    private static bool TrySignedAmount(string value, out long amount)
-    {
-        if (decimal.TryParse(value.Trim().Replace(',', '.'), NumberStyles.Number | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var parsed))
-        {
-            amount = checked((long)Math.Round(parsed * 100m, MidpointRounding.AwayFromZero));
-            return true;
-        }
-        amount = 0;
-        return false;
-    }
+    private string Money(long amount) => MoneyFormatter.Money(amount, settings.CurrencyCode);
+    private string HiddenMoney(long amount) => settings.HideAmounts ? MoneyFormatter.Hidden : Money(amount);
 }

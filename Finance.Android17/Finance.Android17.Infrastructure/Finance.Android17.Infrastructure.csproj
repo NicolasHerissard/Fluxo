@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Finance.Android17.Application\Finance.Android17.Application.csproj" />
     <ProjectReference Include="..\Finance.Android17.Domain\Finance.Android17.Domain.csproj" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" />
   </ItemGroup>

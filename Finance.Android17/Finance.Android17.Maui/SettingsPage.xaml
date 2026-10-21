@@ -2,7 +2,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Finance.Android17.Presentation;assembly=Finance.Android17.Presentation"
-             xmlns:domain="clr-namespace:Finance.Android17.Domain;assembly=Finance.Android17.Domain"
              x:Class="Finance.Android17.Maui.SettingsPage"
              x:Name="Page"
              x:DataType="vm:SettingsViewModel"
@@ -124,7 +123,7 @@
                     <Label Text="Touchez le crayon pour modifier le nom, la couleur ou le budget." Style="{StaticResource MutedLabel}" />
                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
                         <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="domain:Category">
+                            <DataTemplate x:DataType="vm:CategoryItem">
                                 <Grid ColumnDefinitions="20,*,48,48" ColumnSpacing="8" MinimumHeightRequest="52">
                                     <Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCategoryCommand}" CommandParameter="{Binding .}" /></Grid.GestureRecognizers>
                                     <Border HeightRequest="18" WidthRequest="18" BackgroundColor="{Binding Color}" StrokeThickness="0" StrokeShape="RoundRectangle 9" VerticalOptions="Center" />

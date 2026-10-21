@@ -63,5 +63,5 @@ public partial class AddExpensePage : ContentPage
         }
         catch (Exception ex) { await DisplayAlertAsync("Scan impossible", ex.Message, "OK"); }
     }
-    public Task BeginEditAsync(Finance.Android17.Domain.Expense expense) => _viewModel.BeginEditAsync(expense);
+    public Task BeginEditAsync(Guid expenseId) => _viewModel.BeginEditAsync(expenseId);
 }
