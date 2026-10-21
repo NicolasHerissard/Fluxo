@@ -54,6 +54,15 @@ public partial class SettingsViewModel(
     [ObservableProperty] private string confirmPin = string.Empty;
     [ObservableProperty] private string backupPassword = string.Empty;
     [ObservableProperty] private string statusMessage = string.Empty;
+    [ObservableProperty] private bool statusIsError;
+
+    partial void OnStatusMessageChanged(string value) => StatusIsError = false;
+
+    private void ShowError(string message)
+    {
+        StatusMessage = message;
+        StatusIsError = true;
+    }
     [ObservableProperty] private bool isBusy;
 
     [RelayCommand]
@@ -112,11 +121,11 @@ public partial class SettingsViewModel(
     private async Task SaveCategoryAsync()
     {
         StatusMessage = string.Empty;
-        if (string.IsNullOrWhiteSpace(NewCategoryName)) { StatusMessage = "Indiquez un nom de catégorie."; return; }
+        if (string.IsNullOrWhiteSpace(NewCategoryName)) { ShowError("Indiquez un nom de catégorie."); return; }
         long? budgetMinor = null;
         if (!string.IsNullOrWhiteSpace(CategoryBudget))
         {
-            if (!AmountParser.TryParse(CategoryBudget, out var parsed) || parsed <= 0) { StatusMessage = "Le budget de catégorie n’est pas valide."; return; }
+            if (!AmountParser.TryParse(CategoryBudget, out var parsed) || parsed <= 0) { ShowError("Le budget de catégorie n’est pas valide."); return; }
             budgetMinor = parsed;
         }
         if (_editingCategoryId is not Guid id)
@@ -157,14 +166,14 @@ public partial class SettingsViewModel(
     private async Task DeleteCategoryAsync(CategoryItem category)
     {
         try { await categoryRepository.DeleteAsync(category.Id); StatusMessage = "Catégorie supprimée."; await ReloadCategoriesAsync(); }
-        catch (Exception ex) { StatusMessage = ex.Message; }
+        catch (Exception ex) { ShowError(ex.Message); }
     }
 
     [RelayCommand]
     private void SaveBudget()
     {
         if (string.IsNullOrWhiteSpace(MonthlyBudget)) { settings.MonthlyBudgetMinor = 0; StatusMessage = "Budget mensuel désactivé."; return; }
-        if (!AmountParser.TryParse(MonthlyBudget, out var minor) || minor <= 0) { StatusMessage = "Indiquez un budget mensuel valide."; return; }
+        if (!AmountParser.TryParse(MonthlyBudget, out var minor) || minor <= 0) { ShowError("Indiquez un budget mensuel valide."); return; }
         settings.MonthlyBudgetMinor = minor;
         StatusMessage = "Budget mensuel enregistré.";
     }
@@ -172,9 +181,9 @@ public partial class SettingsViewModel(
     [RelayCommand]
     private async Task ChangePinAsync()
     {
-        if (!await appLock.VerifyPinAsync(CurrentPin)) { StatusMessage = "Le code PIN actuel est incorrect."; return; }
-        if (!PinPolicy.IsValid(NewPin)) { StatusMessage = $"Le nouveau PIN doit contenir {PinPolicy.RequirementText}."; return; }
-        if (NewPin != ConfirmPin) { StatusMessage = "La confirmation du nouveau PIN ne correspond pas."; return; }
+        if (!await appLock.VerifyPinAsync(CurrentPin)) { ShowError("Le code PIN actuel est incorrect."); return; }
+        if (!PinPolicy.IsValid(NewPin)) { ShowError($"Le nouveau PIN doit contenir {PinPolicy.RequirementText}."); return; }
+        if (NewPin != ConfirmPin) { ShowError("La confirmation du nouveau PIN ne correspond pas."); return; }
         await appLock.SetPinAsync(NewPin);
         CurrentPin = NewPin = ConfirmPin = string.Empty;
         StatusMessage = "Code PIN modifié.";
@@ -191,7 +200,7 @@ public partial class SettingsViewModel(
     private async Task CreateBackupAsync()
     {
         try { IsBusy = true; await backup.ExportEncryptedAsync(BackupPassword); StatusMessage = "Sauvegarde chiffrée prête à être partagée."; }
-        catch (Exception ex) { StatusMessage = ex.Message; }
+        catch (Exception ex) { ShowError(ex.Message); }
         finally { IsBusy = false; }
     }
 
@@ -202,7 +211,7 @@ public partial class SettingsViewModel(
             IsBusy = true;
             if (await backup.ImportEncryptedAsync(BackupPassword)) { StatusMessage = "Sauvegarde restaurée."; await ReloadCategoriesAsync(); }
         }
-        catch (Exception ex) { StatusMessage = ex.Message; }
+        catch (Exception ex) { ShowError(ex.Message); }
         finally { IsBusy = false; }
     }
 
@@ -210,10 +219,10 @@ public partial class SettingsViewModel(
     {
         try
         {
-            if (!await appLock.VerifyPinAsync(pin)) { StatusMessage = "Code PIN incorrect. Suppression annulée."; return; }
+            if (!await appLock.VerifyPinAsync(pin)) { ShowError("Code PIN incorrect. Suppression annulée."); return; }
             IsBusy = true; await dataStore.DeleteAllAsync(); StatusMessage = "Toutes les données financières ont été supprimées."; await ReloadCategoriesAsync();
         }
-        catch (Exception ex) { StatusMessage = ex.Message; }
+        catch (Exception ex) { ShowError(ex.Message); }
         finally { IsBusy = false; }
     }
 

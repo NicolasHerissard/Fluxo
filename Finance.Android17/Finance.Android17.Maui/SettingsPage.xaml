@@ -13,21 +13,21 @@
             <Label Text="Confidentialité" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Masquer les montants" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Remplace les montants par des points" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding HideAmounts}" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Masquer les montants" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Remplace les montants par des points" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding HideAmounts}" SemanticProperties.Description="Masquer les montants" /></Grid>
                     <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Déverrouillage biométrique" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Empreinte ou visage après le premier PIN" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding BiometricsEnabled}" IsEnabled="{Binding BiometricsAvailable}" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Déverrouillage biométrique" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Empreinte ou visage après le premier PIN" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding BiometricsEnabled}" IsEnabled="{Binding BiometricsAvailable}" SemanticProperties.Description="Déverrouillage biométrique" /></Grid>
                     <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Verrouillage automatique" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Après une période d’inactivité" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding AutoLockChoices}" SelectedItem="{Binding AutoLockMinutes}" Title="Minutes" MinimumWidthRequest="120" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Verrouillage automatique" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Après une période d’inactivité" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding AutoLockChoices}" SelectedItem="{Binding AutoLockMinutes}" Title="Minutes" MinimumWidthRequest="120" SemanticProperties.Description="Verrouillage automatique, en minutes" /></Grid>
                 </VerticalStackLayout>
             </Border>
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Modifier le code PIN" Style="{StaticResource SectionTitle}" FontSize="18" />
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Code PIN actuel" Text="{Binding CurrentPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" /></Border>
+                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Code PIN actuel" Text="{Binding CurrentPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Code PIN actuel" /></Border>
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                        <Border Style="{StaticResource InputField}"><Entry Placeholder="Nouveau PIN" Text="{Binding NewPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" /></Border>
-                        <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Placeholder="Confirmation" Text="{Binding ConfirmPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" /></Border>
+                        <Border Style="{StaticResource InputField}"><Entry Placeholder="Nouveau PIN" Text="{Binding NewPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nouveau code PIN" /></Border>
+                        <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Placeholder="Confirmation" Text="{Binding ConfirmPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Confirmation du nouveau code PIN" /></Border>
                     </Grid>
                     <Button Text="Changer le code PIN" Command="{Binding ChangePinCommand}" Style="{StaticResource SecondaryButton}" />
                 </VerticalStackLayout>
@@ -36,12 +36,12 @@
             <Label Text="Préférences financières" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Devise principale" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Utilisée pour les nouveaux montants" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding Currencies}" SelectedItem="{Binding SelectedCurrency}" MinimumWidthRequest="120" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Devise principale" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Utilisée pour les nouveaux montants" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding Currencies}" SelectedItem="{Binding SelectedCurrency}" MinimumWidthRequest="120" SemanticProperties.Description="Devise principale" /></Grid>
                     <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
                     <Label Text="Budget mensuel global" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Border Style="{StaticResource InputField}"><Entry Placeholder="Ex. 1500" Text="{Binding MonthlyBudget}" Keyboard="Numeric" Style="{StaticResource InputEntry}" /></Border>
-                        <Button Grid.Column="1" Text="Enregistrer" Command="{Binding SaveBudgetCommand}" Style="{StaticResource SecondaryButton}" />
+                        <Border Style="{StaticResource InputField}"><Entry Placeholder="Ex. 1500" Text="{Binding MonthlyBudget}" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Budget mensuel global" /></Border>
+                        <Button Grid.Column="1" Text="Enregistrer" Command="{Binding SaveBudgetCommand}" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Enregistrer le budget mensuel" />
                     </Grid>
                     <Label Text="Laissez vide pour désactiver le suivi du budget." Style="{StaticResource MutedLabel}" />
                 </VerticalStackLayout>
@@ -50,10 +50,10 @@
             <Label Text="Abonnements" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Créer les dépenses automatiquement" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Ajoute chaque prélèvement à son échéance, sans doublon" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding AutoCreateSubscriptionExpenses}" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Créer les dépenses automatiquement" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Ajoute chaque prélèvement à son échéance, sans doublon" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding AutoCreateSubscriptionExpenses}" SemanticProperties.Description="Créer les dépenses des abonnements automatiquement" /></Grid>
                     <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Rappels d’échéance" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Notifications programmées, même application fermée" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding SubscriptionRemindersEnabled}" /></Grid>
-                    <Grid ColumnDefinitions="*,Auto"><Label Text="Prévenir avant" Style="{StaticResource BodyLabel}" VerticalOptions="Center" /><Picker Grid.Column="1" ItemsSource="{Binding ReminderDayChoices}" SelectedItem="{Binding SubscriptionReminderDays}" IsEnabled="{Binding SubscriptionRemindersEnabled}" MinimumWidthRequest="120" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Rappels d’échéance" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Notifications programmées, même application fermée" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding SubscriptionRemindersEnabled}" SemanticProperties.Description="Rappels d’échéance" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><Label Text="Prévenir avant" Style="{StaticResource BodyLabel}" VerticalOptions="Center" /><Picker Grid.Column="1" ItemsSource="{Binding ReminderDayChoices}" SelectedItem="{Binding SubscriptionReminderDays}" IsEnabled="{Binding SubscriptionRemindersEnabled}" MinimumWidthRequest="120" SemanticProperties.Description="Prévenir avant l’échéance, en jours" /></Grid>
                 </VerticalStackLayout>
             </Border>
 
@@ -64,29 +64,29 @@
                         <Label Text="Créer les revenus récurrents automatiquement" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                         <Label Text="Ajoute les salaires et autres revenus arrivés à échéance" Style="{StaticResource MutedLabel}" />
                     </VerticalStackLayout>
-                    <Switch Grid.Column="1" IsToggled="{Binding AutoCreateRecurringIncomes}" />
+                    <Switch Grid.Column="1" IsToggled="{Binding AutoCreateRecurringIncomes}" SemanticProperties.Description="Créer les revenus récurrents automatiquement" />
                 </Grid>
             </Border>
 
             <Label Text="Ajout rapide" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Catégorie par défaut" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Utilisée si aucune catégorie récente n’est disponible" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding Categories}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding DefaultCategory}" Title="Aucune" MinimumWidthRequest="140" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Catégorie par défaut" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Utilisée si aucune catégorie récente n’est disponible" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding Categories}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding DefaultCategory}" Title="Aucune" MinimumWidthRequest="140" SemanticProperties.Description="Catégorie par défaut" /></Grid>
                     <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Mémoriser la dernière catégorie" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Accélère les dépenses habituelles" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding RememberLastCategory}" /></Grid>
-                    <Grid ColumnDefinitions="*,Auto"><Label Text="Après l’enregistrement" Style="{StaticResource BodyLabel}" VerticalOptions="Center" /><Picker Grid.Column="1" ItemsSource="{Binding AfterSaveChoices}" SelectedItem="{Binding SelectedAfterSaveBehavior}" MinimumWidthRequest="150" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Mémoriser la dernière catégorie" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Accélère les dépenses habituelles" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding RememberLastCategory}" SemanticProperties.Description="Mémoriser la dernière catégorie" /></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><Label Text="Après l’enregistrement" Style="{StaticResource BodyLabel}" VerticalOptions="Center" /><Picker Grid.Column="1" ItemsSource="{Binding AfterSaveChoices}" SelectedItem="{Binding SelectedAfterSaveBehavior}" MinimumWidthRequest="150" SemanticProperties.Description="Comportement après l’enregistrement" /></Grid>
                 </VerticalStackLayout>
             </Border>
 
             <Label Text="Apparence" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}"><Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Thème" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Appliqué immédiatement" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" MinimumWidthRequest="130" /></Grid></Border>
+            <Border Style="{StaticResource Card}"><Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Thème" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Appliqué immédiatement" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" MinimumWidthRequest="130" SemanticProperties.Description="Thème" /></Grid></Border>
 
             <Label Text="Catégories" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
                     <Label Text="Créer ou modifier une catégorie" Style="{StaticResource FieldLabel}" />
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Nom de la catégorie" Text="{Binding NewCategoryName}" Style="{StaticResource InputEntry}" /></Border>
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Budget mensuel facultatif" Text="{Binding CategoryBudget}" Keyboard="Numeric" Style="{StaticResource InputEntry}" /></Border>
+                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Nom de la catégorie" Text="{Binding NewCategoryName}" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de la catégorie" /></Border>
+                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Budget mensuel facultatif" Text="{Binding CategoryBudget}" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Budget mensuel de la catégorie" /></Border>
 
                     <Grid ColumnDefinitions="64,*" ColumnSpacing="12">
                         <Border WidthRequest="60" HeightRequest="60" BackgroundColor="{Binding SelectedColor}" Stroke="{AppThemeBinding Light={StaticResource OutlineDark}, Dark={StaticResource TextSecondaryDark}}" StrokeThickness="2" StrokeShape="RoundRectangle 18">
@@ -94,7 +94,7 @@
                         </Border>
                         <VerticalStackLayout Grid.Column="1" Spacing="3">
                             <Label Text="Couleur hexadécimale" Style="{StaticResource FieldLabel}" />
-                            <Border Style="{StaticResource InputField}"><Entry Text="{Binding ColorHexInput}" Placeholder="#6750A4" MaxLength="7" Style="{StaticResource InputEntry}" /></Border>
+                            <Border Style="{StaticResource InputField}"><Entry Text="{Binding ColorHexInput}" Placeholder="#6750A4" MaxLength="7" Style="{StaticResource InputEntry}" SemanticProperties.Description="Couleur hexadécimale" /></Border>
                         </VerticalStackLayout>
                     </Grid>
 
@@ -109,12 +109,12 @@
                     </ScrollView>
 
                     <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="24,*" RowSpacing="5">
-                        <Label Text="R" TextColor="#FF6B6B" FontAttributes="Bold" VerticalOptions="Center" />
-                        <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Red}" MinimumTrackColor="#FF6B6B" />
-                        <Label Grid.Row="1" Text="V" TextColor="#51CF66" FontAttributes="Bold" VerticalOptions="Center" />
-                        <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Green}" MinimumTrackColor="#51CF66" />
-                        <Label Grid.Row="2" Text="B" TextColor="#4DABF7" FontAttributes="Bold" VerticalOptions="Center" />
-                        <Slider Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Blue}" MinimumTrackColor="#4DABF7" />
+                        <Label Text="R" TextColor="{StaticResource SliderRedColor}" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Red}" MinimumTrackColor="{StaticResource SliderRedColor}" SemanticProperties.Description="Rouge" />
+                        <Label Grid.Row="1" Text="V" TextColor="{StaticResource SliderGreenColor}" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Green}" MinimumTrackColor="{StaticResource SliderGreenColor}" SemanticProperties.Description="Vert" />
+                        <Label Grid.Row="2" Text="B" TextColor="{StaticResource SliderBlueColor}" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Slider Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Blue}" MinimumTrackColor="{StaticResource SliderBlueColor}" SemanticProperties.Description="Bleu" />
                     </Grid>
 
                     <Button Text="{Binding CategorySaveText}" Command="{Binding SaveCategoryCommand}" Style="{StaticResource PrimaryButton}" />
@@ -146,7 +146,7 @@
                     <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
                     <Label Text="Sauvegarde complète chiffrée" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                     <Label Text="Le même mot de passe sera nécessaire pour restaurer le fichier." Style="{StaticResource MutedLabel}" />
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (8 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" /></Border>
+                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (8 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe de sauvegarde" /></Border>
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Button Text="Sauvegarder" Command="{Binding CreateBackupCommand}" Style="{StaticResource SecondaryButton}" />
                         <Button Grid.Column="1" Text="Restaurer" Clicked="OnRestoreClicked" Style="{StaticResource SecondaryButton}" />
@@ -165,7 +165,13 @@
 
             <Button Text="Verrouiller maintenant" Clicked="OnLockClicked" Style="{StaticResource PrimaryButton}" />
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource PrimaryColor}" />
-            <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" HorizontalTextAlignment="Center">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
+                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" />
+                    </DataTrigger>
+                </Label.Triggers>
+            </Label>
             <Label x:Name="VersionLabel" Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" />
         </VerticalStackLayout>
     </ScrollView>

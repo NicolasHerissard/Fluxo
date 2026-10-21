@@ -49,6 +49,15 @@ public partial class IncomeViewModel(
     [ObservableProperty] private bool goalHasTargetDate;
     [ObservableProperty] private string goalFormTitle = "Ajouter un objectif";
     [ObservableProperty] private string statusMessage = string.Empty;
+    [ObservableProperty] private bool statusIsError;
+
+    partial void OnStatusMessageChanged(string value) => StatusIsError = false;
+
+    private void ShowError(string message)
+    {
+        StatusMessage = message;
+        StatusIsError = true;
+    }
     [ObservableProperty] private bool isBusy;
 
     [RelayCommand]
@@ -97,7 +106,7 @@ public partial class IncomeViewModel(
     [RelayCommand]
     private async Task SaveInitialBalanceAsync()
     {
-        if (!AmountParser.TryParse(InitialBalance, out var amount)) { StatusMessage = "Indiquez un solde initial valide."; return; }
+        if (!AmountParser.TryParse(InitialBalance, out var amount)) { ShowError("Indiquez un solde initial valide."); return; }
         await profileRepository.SetInitialBalanceAsync(amount);
         StatusMessage = "Solde initial enregistré.";
         await LoadAsync();
@@ -106,8 +115,8 @@ public partial class IncomeViewModel(
     [RelayCommand]
     private async Task SaveIncomeAsync()
     {
-        if (string.IsNullOrWhiteSpace(IncomeDescription)) { StatusMessage = "Indiquez l’origine du revenu."; return; }
-        if (!AmountParser.TryParse(IncomeAmount, out var amount) || amount <= 0) { StatusMessage = "Indiquez un montant valide."; return; }
+        if (string.IsNullOrWhiteSpace(IncomeDescription)) { ShowError("Indiquez l’origine du revenu."); return; }
+        if (!AmountParser.TryParse(IncomeAmount, out var amount) || amount <= 0) { ShowError("Indiquez un montant valide."); return; }
         if (_editingIncomeId is not Guid id) await incomeRepository.AddAsync(amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
         else await incomeRepository.UpdateAsync(id, amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
         CancelIncomeEdit();
@@ -147,8 +156,8 @@ public partial class IncomeViewModel(
     [RelayCommand]
     private async Task SaveRecurringIncomeAsync()
     {
-        if (string.IsNullOrWhiteSpace(RecurringName)) { StatusMessage = "Indiquez le nom du revenu récurrent."; return; }
-        if (!AmountParser.TryParse(RecurringAmount, out var amount) || amount <= 0) { StatusMessage = "Indiquez un montant valide."; return; }
+        if (string.IsNullOrWhiteSpace(RecurringName)) { ShowError("Indiquez le nom du revenu récurrent."); return; }
+        if (!AmountParser.TryParse(RecurringAmount, out var amount) || amount <= 0) { ShowError("Indiquez un montant valide."); return; }
         var interval = BillingFrequency.ToMonths(SelectedFrequency);
         if (_editingRecurringIncomeId is not Guid id) await recurringIncomeRepository.AddAsync(RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
         else await recurringIncomeRepository.UpdateAsync(id, RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
@@ -191,10 +200,10 @@ public partial class IncomeViewModel(
     [RelayCommand]
     private async Task SaveGoalAsync()
     {
-        if (string.IsNullOrWhiteSpace(GoalName)) { StatusMessage = "Indiquez le nom de l’objectif."; return; }
-        if (!AmountParser.TryParse(GoalTargetAmount, out var target) || target <= 0) { StatusMessage = "Indiquez un objectif valide."; return; }
+        if (string.IsNullOrWhiteSpace(GoalName)) { ShowError("Indiquez le nom de l’objectif."); return; }
+        if (!AmountParser.TryParse(GoalTargetAmount, out var target) || target <= 0) { ShowError("Indiquez un objectif valide."); return; }
         var saved = 0L;
-        if (!string.IsNullOrWhiteSpace(GoalSavedAmount) && (!AmountParser.TryParse(GoalSavedAmount, out saved) || saved < 0)) { StatusMessage = "Indiquez un montant épargné valide."; return; }
+        if (!string.IsNullOrWhiteSpace(GoalSavedAmount) && (!AmountParser.TryParse(GoalSavedAmount, out saved) || saved < 0)) { ShowError("Indiquez un montant épargné valide."); return; }
         DateTime? targetDate = GoalHasTargetDate ? GoalTargetDate.Date : null;
         if (_editingGoalId is not Guid id) await goalRepository.AddAsync(GoalName, target, saved, targetDate);
         else await goalRepository.UpdateAsync(id, GoalName, target, saved, targetDate);
