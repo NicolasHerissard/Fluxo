@@ -17,6 +17,17 @@
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="10">
+                    <Label Text="Solde de départ" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                    <Label Text="Combien aviez-vous sur votre compte quand vous avez commencé à utiliser Fluxo ? Ce montant sert de base à tous les soldes, avant les opérations enregistrées." Style="{StaticResource MutedLabel}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Border Style="{StaticResource InputField}"><Entry Text="{Binding InitialBalance}" Keyboard="Numeric" Placeholder="Ex. 1250" Style="{StaticResource InputEntry}" SemanticProperties.Description="Solde de départ" /></Border>
+                        <Button Grid.Column="1" Text="Enregistrer" Command="{Binding SaveInitialBalanceCommand}" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Enregistrer le solde de départ" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
                     <Label Text="Export CSV" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                     <Label Text="Crée une copie lisible de l’historique des dépenses." Style="{StaticResource MutedLabel}" />
                     <Button Text="Exporter les dépenses" Command="{Binding ExportCommand}" Style="{StaticResource SecondaryButton}" />

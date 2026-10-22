@@ -10,7 +10,6 @@ public partial class IncomeViewModel(
     IIncomeRepository incomeRepository,
     IRecurringIncomeRepository recurringIncomeRepository,
     ISavingsGoalRepository goalRepository,
-    IFinancialProfileRepository profileRepository,
     FinanceDataLoader dataLoader,
     ISettingsService settings,
     TimeProvider clock) : ObservableObject
@@ -25,23 +24,24 @@ public partial class IncomeViewModel(
     public ObservableCollection<IncomeRow> Incomes { get; } = [];
     public ObservableCollection<RecurringIncomeRow> RecurringIncomes { get; } = [];
     public ObservableCollection<SavingsGoalRow> SavingsGoals { get; } = [];
-    public ObservableCollection<OperationRow> RecentOperations { get; } = [];
     public IReadOnlyList<string> Frequencies { get; } = BillingFrequency.Options;
 
-    [ObservableProperty] private string initialBalance = string.Empty;
     [ObservableProperty] private string currentBalance = "0,00 €";
     [ObservableProperty] private string monthIncome = "0,00 €";
     [ObservableProperty] private string monthNet = "0,00 €";
     [ObservableProperty] private string forecastBalance = "0,00 €";
+    [ObservableProperty] private string expectedIncome = "0,00 €";
     [ObservableProperty] private string incomeDescription = string.Empty;
     [ObservableProperty] private string incomeAmount = string.Empty;
     [ObservableProperty] private DateTime incomeDate = clock.GetLocalNow().Date;
     [ObservableProperty] private string incomeFormTitle = "Ajouter un revenu";
-    [ObservableProperty] private string recurringName = string.Empty;
-    [ObservableProperty] private string recurringAmount = string.Empty;
     [ObservableProperty] private string selectedFrequency = BillingFrequency.Monthly;
-    [ObservableProperty] private DateTime nextOccurrenceDate = clock.GetLocalNow().Date.AddMonths(1);
-    [ObservableProperty] private string recurringFormTitle = "Ajouter un revenu récurrent";
+    [NotifyPropertyChangedFor(nameof(IncomeDateLabel))]
+    [ObservableProperty] private bool incomeRepeats;
+    [NotifyPropertyChangedFor(nameof(IsIncomeFormClosed))]
+    [ObservableProperty] private bool isIncomeFormVisible;
+    [NotifyPropertyChangedFor(nameof(IsGoalFormClosed))]
+    [ObservableProperty] private bool isGoalFormVisible;
     [ObservableProperty] private string goalName = string.Empty;
     [ObservableProperty] private string goalTargetAmount = string.Empty;
     [ObservableProperty] private string goalSavedAmount = string.Empty;
@@ -50,6 +50,12 @@ public partial class IncomeViewModel(
     [ObservableProperty] private string goalFormTitle = "Ajouter un objectif";
     [ObservableProperty] private string statusMessage = string.Empty;
     [ObservableProperty] private bool statusIsError;
+
+    public string IncomeDateLabel => IncomeRepeats ? "Date de la prochaine échéance" : "Date du revenu";
+    public bool IsIncomeFormClosed => !IsIncomeFormVisible;
+    public bool IsGoalFormClosed => !IsGoalFormVisible;
+    /// <summary>On ne transforme pas un revenu en revenu récurrent (ni l'inverse) à la modification : l'option « Se répète » n'est offerte qu'à la création.</summary>
+    public bool CanChooseRepeat => _editingIncomeId is null && _editingRecurringIncomeId is null;
 
     partial void OnStatusMessageChanged(string value) => StatusIsError = false;
 
@@ -71,7 +77,6 @@ public partial class IncomeViewModel(
             _incomes = data.Incomes;
             _recurringIncomes = data.RecurringIncomes;
             _goals = await goalRepository.GetAllAsync();
-            InitialBalance = MoneyFormatter.PlainAmount(data.InitialBalanceMinor);
 
             Incomes.Clear();
             foreach (var item in _incomes)
@@ -85,31 +90,28 @@ public partial class IncomeViewModel(
             foreach (var item in _goals)
                 SavingsGoals.Add(new(item.Id, item.Name, HiddenMoney(item.SavedAmountMinor), HiddenMoney(item.TargetAmountMinor), MoneyFormatter.Percent(item.Progress), item.Progress));
 
-            RecentOperations.Clear();
-            foreach (var operation in OperationsFeed.Recent(data.Expenses, data.Incomes))
-            {
-                var isIncome = operation.Kind == OperationKind.Income;
-                var type = isIncome ? "Revenu" : "Dépense";
-                RecentOperations.Add(new(type, string.IsNullOrWhiteSpace(operation.Description) ? type : operation.Description,
-                    MoneyFormatter.Date(operation.OccurredOn), HiddenMoney(operation.SignedAmountMinor), isIncome ? Palette.IncomeAmount : Palette.ExpenseAmount));
-            }
-
             var summary = FinancialSummaryCalculator.Build(data, clock.GetLocalNow().Date);
             CurrentBalance = HiddenMoney(summary.CurrentBalanceMinor);
             MonthIncome = HiddenMoney(summary.IncomeTotalMinor);
             MonthNet = HiddenMoney(summary.NetTotalMinor);
             ForecastBalance = HiddenMoney(summary.ForecastBalanceMinor);
+            ExpectedIncome = HiddenMoney(ExpectedRestOfMonth(_recurringIncomes, clock.GetLocalNow().Date));
         }
         finally { IsBusy = false; }
     }
 
-    [RelayCommand]
-    private async Task SaveInitialBalanceAsync()
+    /// <summary>Revenus récurrents encore attendus d'ici la fin du mois (après aujourd'hui), comme dans la prévision de fin de mois.</summary>
+    private static long ExpectedRestOfMonth(IEnumerable<RecurringIncome> recurring, DateTime today)
     {
-        if (!AmountParser.TryParse(InitialBalance, out var amount)) { ShowError("Indiquez un solde initial valide."); return; }
-        await profileRepository.SetInitialBalanceAsync(amount);
-        StatusMessage = "Solde initial enregistré.";
-        await LoadAsync();
+        var monthEnd = new DateTime(today.Year, today.Month, 1).AddMonths(1).AddDays(-1);
+        return recurring.Where(x => x.DeletedAtUtc is null && x.NextOccurrenceDate.Date > today.Date && x.NextOccurrenceDate.Date <= monthEnd).Sum(x => x.AmountMinor);
+    }
+
+    [RelayCommand]
+    private void ShowIncomeForm()
+    {
+        CancelIncomeEdit();
+        IsIncomeFormVisible = true;
     }
 
     [RelayCommand]
@@ -117,10 +119,17 @@ public partial class IncomeViewModel(
     {
         if (string.IsNullOrWhiteSpace(IncomeDescription)) { ShowError("Indiquez l’origine du revenu."); return; }
         if (!AmountParser.TryParse(IncomeAmount, out var amount) || amount <= 0) { ShowError("Indiquez un montant valide."); return; }
-        if (_editingIncomeId is not Guid id) await incomeRepository.AddAsync(amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
+        var recurring = IncomeRepeats || _editingRecurringIncomeId is not null;
+        if (recurring)
+        {
+            var interval = BillingFrequency.ToMonths(SelectedFrequency);
+            if (_editingRecurringIncomeId is not Guid recurringId) await recurringIncomeRepository.AddAsync(IncomeDescription, amount, interval, IncomeDate, settings.CurrencyCode);
+            else await recurringIncomeRepository.UpdateAsync(recurringId, IncomeDescription, amount, interval, IncomeDate, settings.CurrencyCode);
+        }
+        else if (_editingIncomeId is not Guid id) await incomeRepository.AddAsync(amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
         else await incomeRepository.UpdateAsync(id, amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
         CancelIncomeEdit();
-        StatusMessage = "Revenu enregistré.";
+        StatusMessage = recurring ? "Revenu récurrent enregistré." : "Revenu enregistré.";
         await LoadAsync();
     }
 
@@ -129,11 +138,14 @@ public partial class IncomeViewModel(
     {
         var income = _incomes.FirstOrDefault(x => x.Id == row.Id);
         if (income is null) return;
+        CancelIncomeEdit();
         _editingIncomeId = income.Id;
         IncomeDescription = income.Description;
         IncomeAmount = MoneyFormatter.PlainAmount(income.AmountMinor);
         IncomeDate = income.OccurredOn;
         IncomeFormTitle = "Modifier le revenu";
+        IsIncomeFormVisible = true;
+        OnPropertyChanged(nameof(CanChooseRepeat));
     }
 
     [ObservableProperty] private bool isUndoVisible;
@@ -181,22 +193,14 @@ public partial class IncomeViewModel(
     private void CancelIncomeEdit()
     {
         _editingIncomeId = null;
+        _editingRecurringIncomeId = null;
         IncomeDescription = IncomeAmount = string.Empty;
         IncomeDate = clock.GetLocalNow().Date;
+        IncomeRepeats = false;
+        SelectedFrequency = BillingFrequency.Monthly;
         IncomeFormTitle = "Ajouter un revenu";
-    }
-
-    [RelayCommand]
-    private async Task SaveRecurringIncomeAsync()
-    {
-        if (string.IsNullOrWhiteSpace(RecurringName)) { ShowError("Indiquez le nom du revenu récurrent."); return; }
-        if (!AmountParser.TryParse(RecurringAmount, out var amount) || amount <= 0) { ShowError("Indiquez un montant valide."); return; }
-        var interval = BillingFrequency.ToMonths(SelectedFrequency);
-        if (_editingRecurringIncomeId is not Guid id) await recurringIncomeRepository.AddAsync(RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
-        else await recurringIncomeRepository.UpdateAsync(id, RecurringName, amount, interval, NextOccurrenceDate, settings.CurrencyCode);
-        CancelRecurringIncomeEdit();
-        StatusMessage = "Revenu récurrent enregistré.";
-        await LoadAsync();
+        IsIncomeFormVisible = false;
+        OnPropertyChanged(nameof(CanChooseRepeat));
     }
 
     [RelayCommand]
@@ -204,31 +208,32 @@ public partial class IncomeViewModel(
     {
         var recurring = _recurringIncomes.FirstOrDefault(x => x.Id == row.Id);
         if (recurring is null) return;
+        CancelIncomeEdit();
         _editingRecurringIncomeId = recurring.Id;
-        RecurringName = recurring.Name;
-        RecurringAmount = MoneyFormatter.PlainAmount(recurring.AmountMinor);
+        IncomeRepeats = true;
+        IncomeDescription = recurring.Name;
+        IncomeAmount = MoneyFormatter.PlainAmount(recurring.AmountMinor);
         SelectedFrequency = BillingFrequency.ToOption(recurring.IntervalMonths);
-        NextOccurrenceDate = recurring.NextOccurrenceDate;
-        RecurringFormTitle = "Modifier le revenu récurrent";
+        IncomeDate = recurring.NextOccurrenceDate;
+        IncomeFormTitle = "Modifier le revenu récurrent";
+        IsIncomeFormVisible = true;
+        OnPropertyChanged(nameof(CanChooseRepeat));
     }
 
     [RelayCommand]
     private async Task DeleteRecurringIncomeAsync(RecurringIncomeRow row)
     {
         await recurringIncomeRepository.DeleteAsync(row.Id);
-        if (_editingRecurringIncomeId == row.Id) CancelRecurringIncomeEdit();
+        if (_editingRecurringIncomeId == row.Id) CancelIncomeEdit();
         OfferUndo("Revenu récurrent supprimé", () => recurringIncomeRepository.RestoreAsync(row.Id));
         await LoadAsync();
     }
 
     [RelayCommand]
-    private void CancelRecurringIncomeEdit()
+    private void ShowGoalForm()
     {
-        _editingRecurringIncomeId = null;
-        RecurringName = RecurringAmount = string.Empty;
-        SelectedFrequency = BillingFrequency.Monthly;
-        NextOccurrenceDate = clock.GetLocalNow().Date.AddMonths(1);
-        RecurringFormTitle = "Ajouter un revenu récurrent";
+        CancelGoalEdit();
+        IsGoalFormVisible = true;
     }
 
     [RelayCommand]
@@ -251,6 +256,7 @@ public partial class IncomeViewModel(
     {
         var goal = _goals.FirstOrDefault(x => x.Id == row.Id);
         if (goal is null) return;
+        CancelGoalEdit();
         _editingGoalId = goal.Id;
         GoalName = goal.Name;
         GoalTargetAmount = MoneyFormatter.PlainAmount(goal.TargetAmountMinor);
@@ -258,6 +264,7 @@ public partial class IncomeViewModel(
         GoalHasTargetDate = goal.TargetDate is not null;
         GoalTargetDate = goal.TargetDate ?? clock.GetLocalNow().Date.AddYears(1);
         GoalFormTitle = "Modifier l’objectif";
+        IsGoalFormVisible = true;
     }
 
     [RelayCommand]
@@ -277,6 +284,7 @@ public partial class IncomeViewModel(
         GoalHasTargetDate = false;
         GoalTargetDate = clock.GetLocalNow().Date.AddYears(1);
         GoalFormTitle = "Ajouter un objectif";
+        IsGoalFormVisible = false;
     }
 
     private string Money(long amount) => MoneyFormatter.Money(amount, settings.CurrencyCode);

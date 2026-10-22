@@ -46,6 +46,7 @@ public sealed class AppFixture : FinancePorts, IDisposable
     public DashboardViewModel CreateDashboard() => Create<DashboardViewModel>();
     public ExpensesViewModel CreateExpenses() => Create<ExpensesViewModel>();
     public IncomeViewModel CreateIncome() => Create<IncomeViewModel>();
+    public SettingsViewModel CreateSettings() => Create<SettingsViewModel>(new FakeAppLock(), new FakeBiometrics());
     public SubscriptionsViewModel CreateSubscriptions() => Create<SubscriptionsViewModel>();
     public AddExpenseViewModel CreateAddExpense(string? ocrText = null) => Create<AddExpenseViewModel>(new FakeOcrService(ocrText));
     public LockViewModel CreateLock(FakeAppLock appLock, FakeBiometrics? biometrics = null) =>

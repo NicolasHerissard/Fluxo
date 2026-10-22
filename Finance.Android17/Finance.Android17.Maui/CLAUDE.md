@@ -13,7 +13,7 @@
 1. `Platforms/Android/MainApplication` appelle `MauiProgram.CreateMauiApp()`.
 2. `MauiProgram` compose l'application en quatre appels : `AddPlatformServices()` (les adaptateurs de ce projet, en **singleton**), puis `AddInfrastructure()`, `AddApplication()` et `AddPresentation()` (les ViewModels, en **transient**), puis `AddPages()` (pages et `AppShell`, en **transient**). Les deux méthodes privées `AddPlatformServices` et `AddPages` sont dans `MauiProgram`.
 3. `App` démarre sur `LockPage`. Après déverrouillage (PIN ou biométrie), `App.ShowMain()` remplace `Window.Page` par `AppShell`. Après `AutoLockMinutes` d'inactivité (mesurée entre `Deactivated` et `Activated`) ou sur demande (`ShowLock()`), l'écran de verrouillage revient.
-4. `AppShell` construit un `TabBar` de cinq onglets : **Accueil** (`DashboardPage`), **Dépenses** (`ExpensesPage`), **Finances** (`IncomePage`), **Abonnements** (`SubscriptionsPage`), **Réglages** (`SettingsPage`). `AddExpensePage` s'ouvre en modal depuis l'accueil et la liste des dépenses.
+4. `AppShell` construit un `TabBar` de cinq onglets : **Accueil** (`DashboardPage`), **Dépenses** (`ExpensesPage`), **Revenus** (`IncomePage`, titre « Revenus & épargne »), **Abonnements** (`SubscriptionsPage`), **Réglages** (`SettingsPage`). `AddExpensePage` s'ouvre en modal depuis l'accueil et la liste des dépenses.
 
 Règle importante : ne jamais réutiliser une page MAUI après un remplacement de `Window.Page` (le contexte MAUI Android est détruit) ; pages et ViewModels restent **transient** et sont résolus via `IServiceProvider`.
 
@@ -55,7 +55,7 @@ Thème proche de Material 3, centralisé dans `Resources/Styles/Colors.xaml` (pa
 - **Espacements** : 8, 12, 16 et 20 reviennent partout ; les pages utilisent généralement 20 de marge latérale.
 - **Rayons** : 12 à 18 pour les contrôles et cartes (`Card` 18, boutons 12 à 16, `InputField` 14), 24 pour les grands panneaux, 28 pour les boutons flottants.
 - **Cartes** : `Border` avec fond blanc ou `#211F26` et trait discret `#E7E0EC` ou `#49454F`. Ne pas réintroduire `Frame`.
-- **Ombres et dégradés** : les ombres sont réservées aux éléments flottants (`Fab`). Seuls les deux grands résumés de solde en tête de `DashboardPage` et d'`IncomePage` (onglet « Finances ») utilisent un dégradé (`#7658B5` vers `#51358D`) ; ne pas en ajouter ailleurs.
+- **Ombres et dégradés** : les ombres sont réservées aux éléments flottants (`Fab`). Seuls les deux grands résumés de solde en tête de `DashboardPage` et d'`IncomePage` (onglet « Revenus ») utilisent un dégradé (`#7658B5` vers `#51358D`) ; ne pas en ajouter ailleurs.
 - **États sélectionnés** : violet principal et texte contrasté ; pour les catégories colorées, contour clair accompagné d'une coche (voir `ExpenseCategoryOption` dans `Presentation`).
 - **Champs** : entourer les `Entry`, `Picker` et `DatePicker` d'un `Border` `InputField`, avec `InputEntry` sur les champs texte. Les mappings globaux de `MauiProgram` retirent le soulignement natif Android ; ne pas les contourner.
 - **Boutons** : employer `PrimaryButton`, `SecondaryButton`, `TextButton`, `DangerButton`, `SegmentButton`, `Fab` ou `ExtendedFab` au lieu de recopier couleurs et dimensions dans les pages.

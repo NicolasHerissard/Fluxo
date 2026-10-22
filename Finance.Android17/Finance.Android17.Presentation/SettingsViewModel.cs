@@ -15,6 +15,7 @@ public partial class SettingsViewModel(
     IBiometricService biometrics,
     IAppLockService appLock,
     ISubscriptionRepository subscriptionRepository,
+    IFinancialProfileRepository profileRepository,
     SubscriptionReminderScheduler reminders) : ObservableObject
 {
     private bool _loading;
@@ -67,6 +68,17 @@ public partial class SettingsViewModel(
     }
     [ObservableProperty] private bool isBusy;
 
+    [ObservableProperty] private string initialBalance = string.Empty;
+
+    [RelayCommand]
+    private async Task SaveInitialBalanceAsync()
+    {
+        if (!AmountParser.TryParse(InitialBalance, out var amount)) { ShowError("Indiquez un solde initial valide."); return; }
+        await profileRepository.SetInitialBalanceAsync(amount);
+        InitialBalance = MoneyFormatter.PlainAmount(amount);
+        StatusMessage = "Solde initial enregistré.";
+    }
+
     [RelayCommand]
     public async Task LoadAsync()
     {
@@ -86,6 +98,7 @@ public partial class SettingsViewModel(
             SelectedCurrency = settings.CurrencyCode;
             RememberLastCategory = settings.RememberLastCategory;
             SelectedAfterSaveBehavior = settings.AfterSaveBehavior;
+            InitialBalance = MoneyFormatter.PlainAmount(await profileRepository.GetInitialBalanceAsync());
             await ReloadCategoriesAsync();
             DefaultCategory = Guid.TryParse(settings.DefaultCategoryId, out var id) ? Categories.FirstOrDefault(x => x.Id == id) : null;
         }
