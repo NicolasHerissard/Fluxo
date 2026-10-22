@@ -61,8 +61,10 @@ public partial class ExpenseCategoryOption(Guid id, string name, string color) :
     [NotifyPropertyChangedFor(nameof(SelectionStroke))]
     [NotifyPropertyChangedFor(nameof(SelectionStrokeThickness))]
     [NotifyPropertyChangedFor(nameof(SelectionMark))]
+    [NotifyPropertyChangedFor(nameof(AccessibilityDescription))]
     private bool isSelected;
     public string SelectionStroke => IsSelected ? Palette.SelectionStroke : Palette.Transparent;
     public double SelectionStrokeThickness => IsSelected ? 3 : 0;
     public string SelectionMark => IsSelected ? "✓" : string.Empty;
+    public string AccessibilityDescription => IsSelected ? $"{Name}, sélectionnée" : $"{Name}, non sélectionnée";
 }

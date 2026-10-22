@@ -77,11 +77,11 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:IncomeRow">
                         <Border Style="{StaticResource Card}" Padding="14">
-                            <Grid ColumnDefinitions="*,Auto,48,48" RowDefinitions="Auto,Auto" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="*,Auto,48,60" RowDefinitions="Auto,Auto" ColumnSpacing="6">
                                 <Label Text="{Binding Description}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding Amount}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" FontAttributes="Bold" />
                                 <ImageButton Grid.Column="2" Grid.RowSpan="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Modifier ce revenu" />
-                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer ce revenu" />
+                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Margin="12,0,0,0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer ce revenu" />
                                 <Label Grid.Row="1" Text="{Binding Date}" Style="{StaticResource MutedLabel}" />
                             </Grid>
                         </Border>
@@ -107,10 +107,10 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:RecurringIncomeRow">
                         <Border Style="{StaticResource Card}" Padding="14">
-                            <Grid ColumnDefinitions="*,Auto,48,48" RowDefinitions="Auto,Auto" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="*,Auto,48,60" RowDefinitions="Auto,Auto" ColumnSpacing="6">
                                 <Label Text="{Binding Name}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Grid.Column="1" Text="{Binding Amount}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                                 <ImageButton Grid.Column="2" Grid.RowSpan="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditRecurringIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Modifier ce revenu récurrent" />
-                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteRecurringIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer ce revenu récurrent" />
+                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Margin="12,0,0,0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteRecurringIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer ce revenu récurrent" />
                                 <Label Grid.Row="1" Text="{Binding Frequency}" Style="{StaticResource MutedLabel}" /><Label Grid.Row="1" Grid.Column="1" Text="{Binding NextDate}" Style="{StaticResource MutedLabel}" />
                             </Grid>
                         </Border>
@@ -133,10 +133,10 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:SavingsGoalRow">
                         <Border Style="{StaticResource Card}" Padding="14">
-                            <Grid ColumnDefinitions="*,48,48" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="6" RowSpacing="6">
+                            <Grid ColumnDefinitions="*,48,60" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="6" RowSpacing="6">
                                 <Label Text="{Binding Name}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
                                 <ImageButton Grid.Column="1" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditGoalCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Modifier cet objectif" />
-                                <ImageButton Grid.Column="2" Source="icon_delete.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteGoalCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer cet objectif" />
+                                <ImageButton Grid.Column="2" Source="icon_delete.png" Margin="12,0,0,0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteGoalCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer cet objectif" />
                                 <Label Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding Saved, StringFormat='{0} épargnés'}" Style="{StaticResource MutedLabel}" />
                                 <Grid Grid.Row="2" Grid.ColumnSpan="3" ColumnDefinitions="*,Auto" ColumnSpacing="10"><ProgressBar Progress="{Binding Progress}" ProgressColor="{StaticResource PrimaryColor}" VerticalOptions="Center" /><Label Grid.Column="1" Text="{Binding ProgressText}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /></Grid>
                             </Grid>
@@ -145,6 +145,12 @@
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
 
+            <Border IsVisible="{Binding IsUndoVisible}" BackgroundColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource OutlineLight}}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="14,8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="{Binding UndoMessage}" TextColor="{AppThemeBinding Light=White, Dark={StaticResource TextPrimaryLight}}" VerticalOptions="Center" SemanticProperties.Description="{Binding UndoMessage}" />
+                    <Button Grid.Column="1" Text="Annuler" Command="{Binding UndoDeleteCommand}" BackgroundColor="Transparent" TextColor="{AppThemeBinding Light={StaticResource PrimaryContainerLight}, Dark={StaticResource PrimaryColor}}" HeightRequest="48" SemanticProperties.Description="Annuler la suppression" />
+                </Grid>
+            </Border>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource PrimaryColor}" />
             <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" HorizontalTextAlignment="Center">
                 <Label.Triggers>

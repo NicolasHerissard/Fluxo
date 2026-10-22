@@ -83,75 +83,18 @@
 
             <Label Text="Catégories" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
             <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Créer ou modifier une catégorie" Style="{StaticResource FieldLabel}" />
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Nom de la catégorie" Text="{Binding NewCategoryName}" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de la catégorie" /></Border>
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Budget mensuel facultatif" Text="{Binding CategoryBudget}" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Budget mensuel de la catégorie" /></Border>
-
-                    <Grid ColumnDefinitions="64,*" ColumnSpacing="12">
-                        <Border WidthRequest="60" HeightRequest="60" BackgroundColor="{Binding SelectedColor}" Stroke="{AppThemeBinding Light={StaticResource OutlineDark}, Dark={StaticResource TextSecondaryDark}}" StrokeThickness="2" StrokeShape="RoundRectangle 18">
-                            <Label Text="Aa" TextColor="{Binding SelectedColor, Converter={StaticResource ColorContrastConverter}}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
-                        </Border>
-                        <VerticalStackLayout Grid.Column="1" Spacing="3">
-                            <Label Text="Couleur hexadécimale" Style="{StaticResource FieldLabel}" />
-                            <Border Style="{StaticResource InputField}"><Entry Text="{Binding ColorHexInput}" Placeholder="#6750A4" MaxLength="7" Style="{StaticResource InputEntry}" SemanticProperties.Description="Couleur hexadécimale" /></Border>
-                        </VerticalStackLayout>
-                    </Grid>
-
-                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding CategoryColors}" Spacing="8">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="{x:Null}">
-                                    <Button Text=" " BackgroundColor="{Binding .}" WidthRequest="48" HeightRequest="48" CornerRadius="24" Padding="0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.SelectSuggestedColorCommand}" CommandParameter="{Binding .}" SemanticProperties.Description="Choisir cette couleur" />
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </HorizontalStackLayout>
-                    </ScrollView>
-
-                    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="24,*" RowSpacing="5">
-                        <Label Text="R" TextColor="{StaticResource SliderRedColor}" FontAttributes="Bold" VerticalOptions="Center" />
-                        <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Red}" MinimumTrackColor="{StaticResource SliderRedColor}" SemanticProperties.Description="Rouge" />
-                        <Label Grid.Row="1" Text="V" TextColor="{StaticResource SliderGreenColor}" FontAttributes="Bold" VerticalOptions="Center" />
-                        <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Green}" MinimumTrackColor="{StaticResource SliderGreenColor}" SemanticProperties.Description="Vert" />
-                        <Label Grid.Row="2" Text="B" TextColor="{StaticResource SliderBlueColor}" FontAttributes="Bold" VerticalOptions="Center" />
-                        <Slider Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Blue}" MinimumTrackColor="{StaticResource SliderBlueColor}" SemanticProperties.Description="Bleu" />
-                    </Grid>
-
-                    <Button Text="{Binding CategorySaveText}" Command="{Binding SaveCategoryCommand}" Style="{StaticResource PrimaryButton}" />
-                    <Button IsVisible="{Binding IsEditingCategory}" Text="Annuler la modification" Command="{Binding CancelCategoryEditCommand}" Style="{StaticResource TextButton}" />
-
-                    <Label Text="Touchez le crayon pour modifier le nom, la couleur ou le budget." Style="{StaticResource MutedLabel}" />
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="vm:CategoryItem">
-                                <Grid ColumnDefinitions="20,*,48,48" ColumnSpacing="8" MinimumHeightRequest="52">
-                                    <Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCategoryCommand}" CommandParameter="{Binding .}" /></Grid.GestureRecognizers>
-                                    <Border HeightRequest="18" WidthRequest="18" BackgroundColor="{Binding Color}" StrokeThickness="0" StrokeShape="RoundRectangle 9" VerticalOptions="Center" />
-                                    <Label Grid.Column="1" Text="{Binding Name}" Style="{StaticResource BodyLabel}" VerticalOptions="Center" />
-                                    <ImageButton Grid.Column="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCategoryCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Modifier cette catégorie" />
-                                    <ImageButton Grid.Column="3" Source="icon_delete.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteCategoryCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer cette catégorie" />
-                                </Grid>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
-                </VerticalStackLayout>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <VerticalStackLayout VerticalOptions="Center"><Label Text="Gérer les catégories" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Créer, modifier, colorer et fixer un budget" Style="{StaticResource MutedLabel}" /></VerticalStackLayout>
+                    <Button Grid.Column="1" Text="Ouvrir" Clicked="OnOpenCategoriesClicked" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Ouvrir la gestion des catégories" />
+                </Grid>
             </Border>
 
             <Label Text="Mes données" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
             <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Export CSV" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                    <Label Text="Crée une copie lisible de l’historique des dépenses." Style="{StaticResource MutedLabel}" />
-                    <Button Text="Exporter les dépenses" Command="{Binding ExportCommand}" Style="{StaticResource SecondaryButton}" />
-                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Label Text="Sauvegarde complète chiffrée" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                    <Label Text="Le même mot de passe sera nécessaire pour restaurer le fichier." Style="{StaticResource MutedLabel}" />
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (8 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe de sauvegarde" /></Border>
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                        <Button Text="Sauvegarder" Command="{Binding CreateBackupCommand}" Style="{StaticResource SecondaryButton}" />
-                        <Button Grid.Column="1" Text="Restaurer" Clicked="OnRestoreClicked" Style="{StaticResource SecondaryButton}" />
-                    </Grid>
-                </VerticalStackLayout>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <VerticalStackLayout VerticalOptions="Center"><Label Text="Export et sauvegarde" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Export CSV, sauvegarde chiffrée et restauration" Style="{StaticResource MutedLabel}" /></VerticalStackLayout>
+                    <Button Grid.Column="1" Text="Ouvrir" Clicked="OnOpenDataClicked" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Ouvrir l’export et la sauvegarde" />
+                </Grid>
             </Border>
 
             <Label Text="Zone sensible" Style="{StaticResource SectionTitle}" TextColor="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" SemanticProperties.HeadingLevel="Level2" />

@@ -12,6 +12,12 @@ public partial class ExpensesPage : ContentPage
         InitializeComponent(); BindingContext = _viewModel = viewModel; _services = services;
         _viewModel.EditRequested += OnEditRequested;
     }
+    protected override bool OnBackButtonPressed()
+    {
+        if (!_viewModel.IsFilterPanelVisible) return base.OnBackButtonPressed();
+        _viewModel.CloseFiltersCommand.Execute(null);
+        return true;
+    }
     protected override void OnAppearing() { base.OnAppearing(); _ = _viewModel.LoadAsync(); }
     private async void OnAddClicked(object? sender, EventArgs e) => await Navigation.PushModalAsync(new NavigationPage(_services.GetRequiredService<AddExpensePage>()));
     private async void OnEditRequested(object? sender, Guid expenseId)

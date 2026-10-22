@@ -65,6 +65,8 @@ public static class MauiProgram
 		services.AddTransient<SubscriptionsPage>();
 		services.AddTransient<SettingsPage>();
 		services.AddTransient<AddExpensePage>();
+		services.AddTransient<CategoriesSettingsPage>();
+		services.AddTransient<DataSettingsPage>();
 		services.AddTransient<AppShell>();
 		return services;
 	}
