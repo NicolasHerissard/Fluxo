@@ -48,6 +48,21 @@ public sealed class CsvExportServiceTests : IDisposable
         ], lines);
     }
 
+    [Theory]
+    [InlineData("=1+1")]
+    [InlineData("+33612345678")]
+    [InlineData("-2+3")]
+    [InlineData("@SUM(A1)")]
+    public async Task Export_NeutralisesTextThatWouldBeReadAsAFormula(string description)
+    {
+        var food = (await _host.Categories.GetAllAsync()).Single(x => x.Name == "Alimentation");
+        await _host.Expenses.AddAsync(1_250, description, new DateTime(2026, 10, 2), food.Id);
+
+        await _host.Get<IExportService>().ExportExpensesCsvAsync();
+
+        Assert.Contains($";\"'{description}\";", Decode(_host.Files.Shared.Single().Content));
+    }
+
     [Fact]
     public async Task Export_IgnoresDeletedExpenses()
     {

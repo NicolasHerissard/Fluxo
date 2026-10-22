@@ -58,7 +58,7 @@ public partial class LockViewModel(StartupService startup, IAppLockService appLo
             if (IsFirstRun) await appLock.SetPinAsync(Pin);
             else if (!await appLock.VerifyPinAsync(Pin))
             {
-                ErrorMessage = "Code PIN incorrect. Réessayez.";
+                ErrorMessage = await PinLockMessages.AfterFailureAsync(appLock, "Code PIN incorrect. Réessayez.");
                 Pin = string.Empty;
                 return;
             }

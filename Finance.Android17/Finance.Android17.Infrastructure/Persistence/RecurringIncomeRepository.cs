@@ -23,6 +23,7 @@ internal sealed class RecurringIncomeRepository(FinanceDatabase database) : Repo
             CurrencyCode = currencyCode,
             IntervalMonths = Math.Max(1, intervalMonths),
             NextOccurrenceDate = nextOccurrenceDate.Date,
+            AnchorDay = nextOccurrenceDate.Day,
             CreatedAtUtc = now,
             UpdatedAtUtc = now
         }, cancellationToken);
@@ -34,6 +35,9 @@ internal sealed class RecurringIncomeRepository(FinanceDatabase database) : Repo
             recurring.AmountMinor = amountMinor;
             recurring.CurrencyCode = currencyCode;
             recurring.IntervalMonths = Math.Max(1, intervalMonths);
+            // Une date inchangée garde son jour d'ancrage ; une date choisie le redéfinit.
+            if (recurring.NextOccurrenceDate != nextOccurrenceDate.Date || recurring.AnchorDay <= 0)
+                recurring.AnchorDay = nextOccurrenceDate.Day;
             recurring.NextOccurrenceDate = nextOccurrenceDate.Date;
         }, cancellationToken);
 

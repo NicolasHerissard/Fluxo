@@ -15,9 +15,9 @@ internal sealed class FinanceDataStore(FinanceDatabase database) : IFinanceDataS
         await using var db = await database.OpenAsync(cancellationToken).ConfigureAwait(false);
         var categories = await db.Categories.AsNoTracking().Where(x => x.DeletedAtUtc == null).Select(x => new CategoryBackup(x.Id, x.Name, x.Color, x.BudgetMinor, x.CreatedAtUtc)).ToListAsync(cancellationToken).ConfigureAwait(false);
         var expenses = await db.Expenses.AsNoTracking().Where(x => x.DeletedAtUtc == null).Select(x => new ExpenseBackup(x.Id, x.AmountMinor, x.CurrencyCode, x.Description, x.OccurredOn, x.CategoryId, x.CreatedAtUtc)).ToListAsync(cancellationToken).ConfigureAwait(false);
-        var subscriptions = await db.Subscriptions.AsNoTracking().Where(x => x.DeletedAtUtc == null).Select(x => new SubscriptionBackup(x.Id, x.Name, x.AmountMinor, x.CurrencyCode, x.BillingIntervalMonths, x.NextBillingDate, x.ReminderEnabled, x.CreatedAtUtc)).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var subscriptions = await db.Subscriptions.AsNoTracking().Where(x => x.DeletedAtUtc == null).Select(x => new SubscriptionBackup(x.Id, x.Name, x.AmountMinor, x.CurrencyCode, x.BillingIntervalMonths, x.NextBillingDate, x.ReminderEnabled, x.CreatedAtUtc, x.AnchorDay)).ToListAsync(cancellationToken).ConfigureAwait(false);
         var incomes = await db.Incomes.AsNoTracking().Where(x => x.DeletedAtUtc == null).Select(x => new IncomeBackup(x.Id, x.AmountMinor, x.CurrencyCode, x.Description, x.OccurredOn, x.RecurringIncomeId, x.CreatedAtUtc)).ToListAsync(cancellationToken).ConfigureAwait(false);
-        var recurringIncomes = await db.RecurringIncomes.AsNoTracking().Where(x => x.DeletedAtUtc == null).Select(x => new RecurringIncomeBackup(x.Id, x.Name, x.AmountMinor, x.CurrencyCode, x.IntervalMonths, x.NextOccurrenceDate, x.CreatedAtUtc)).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var recurringIncomes = await db.RecurringIncomes.AsNoTracking().Where(x => x.DeletedAtUtc == null).Select(x => new RecurringIncomeBackup(x.Id, x.Name, x.AmountMinor, x.CurrencyCode, x.IntervalMonths, x.NextOccurrenceDate, x.CreatedAtUtc, x.AnchorDay)).ToListAsync(cancellationToken).ConfigureAwait(false);
         var savingsGoals = await db.SavingsGoals.AsNoTracking().Where(x => x.DeletedAtUtc == null).Select(x => new SavingsGoalBackup(x.Id, x.Name, x.TargetAmountMinor, x.SavedAmountMinor, x.TargetDate, x.CreatedAtUtc)).ToListAsync(cancellationToken).ConfigureAwait(false);
         var initialBalance = await db.FinancialProfiles.AsNoTracking().Where(x => x.Id == FinancialProfile.SingletonId).Select(x => x.InitialBalanceMinor).SingleAsync(cancellationToken).ConfigureAwait(false);
         return new FinanceBackupSnapshot(SnapshotFormatVersion, database.UtcNow, categories, expenses, subscriptions, incomes, recurringIncomes, savingsGoals, initialBalance);
@@ -35,9 +35,9 @@ internal sealed class FinanceDataStore(FinanceDatabase database) : IFinanceDataS
         db.Categories.AddRange(snapshot.Categories.Select(x => new Category { Id = x.Id, Name = x.Name, Color = x.Color, BudgetMinor = x.BudgetMinor, CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = now }));
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         db.Expenses.AddRange(snapshot.Expenses.Select(x => new Expense { Id = x.Id, AmountMinor = x.AmountMinor, CurrencyCode = x.CurrencyCode, Description = x.Description, OccurredOn = x.OccurredOn, CategoryId = x.CategoryId, CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = now }));
-        db.Subscriptions.AddRange(snapshot.Subscriptions.Select(x => new Subscription { Id = x.Id, Name = x.Name, AmountMinor = x.AmountMinor, CurrencyCode = x.CurrencyCode, BillingIntervalMonths = x.BillingIntervalMonths, NextBillingDate = x.NextBillingDate, ReminderEnabled = x.ReminderEnabled, CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = now }));
+        db.Subscriptions.AddRange(snapshot.Subscriptions.Select(x => new Subscription { Id = x.Id, Name = x.Name, AmountMinor = x.AmountMinor, CurrencyCode = x.CurrencyCode, BillingIntervalMonths = x.BillingIntervalMonths, NextBillingDate = x.NextBillingDate, AnchorDay = AnchorDayOf(x.AnchorDay, x.NextBillingDate), ReminderEnabled = x.ReminderEnabled, CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = now }));
         db.Incomes.AddRange((snapshot.Incomes ?? []).Select(x => new Income { Id = x.Id, AmountMinor = x.AmountMinor, CurrencyCode = x.CurrencyCode, Description = x.Description, OccurredOn = x.OccurredOn, RecurringIncomeId = x.RecurringIncomeId, CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = now }));
-        db.RecurringIncomes.AddRange((snapshot.RecurringIncomes ?? []).Select(x => new RecurringIncome { Id = x.Id, Name = x.Name, AmountMinor = x.AmountMinor, CurrencyCode = x.CurrencyCode, IntervalMonths = x.IntervalMonths, NextOccurrenceDate = x.NextOccurrenceDate, CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = now }));
+        db.RecurringIncomes.AddRange((snapshot.RecurringIncomes ?? []).Select(x => new RecurringIncome { Id = x.Id, Name = x.Name, AmountMinor = x.AmountMinor, CurrencyCode = x.CurrencyCode, IntervalMonths = x.IntervalMonths, NextOccurrenceDate = x.NextOccurrenceDate, AnchorDay = AnchorDayOf(x.AnchorDay, x.NextOccurrenceDate), CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = now }));
         db.SavingsGoals.AddRange((snapshot.SavingsGoals ?? []).Select(x => new SavingsGoal { Id = x.Id, Name = x.Name, TargetAmountMinor = x.TargetAmountMinor, SavedAmountMinor = x.SavedAmountMinor, TargetDate = x.TargetDate, CreatedAtUtc = x.CreatedAtUtc, UpdatedAtUtc = now }));
         var profile = await db.FinancialProfiles.SingleAsync(x => x.Id == FinancialProfile.SingletonId, cancellationToken).ConfigureAwait(false);
         profile.InitialBalanceMinor = snapshot.FormatVersion >= 2 ? snapshot.InitialBalanceMinor : 0;
@@ -56,6 +56,9 @@ internal sealed class FinanceDataStore(FinanceDatabase database) : IFinanceDataS
         db.Categories.AddRange(DefaultCategories.CreateInitialSet());
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    // Une sauvegarde antérieure au jour d'ancrage n'en porte pas : on retombe sur le jour de la date enregistrée.
+    private static int AnchorDayOf(int anchorDay, DateTime date) => anchorDay is >= 1 and <= 31 ? anchorDay : date.Day;
 
     private static async Task RemoveAllAsync(FinanceDbContext db, CancellationToken cancellationToken)
     {

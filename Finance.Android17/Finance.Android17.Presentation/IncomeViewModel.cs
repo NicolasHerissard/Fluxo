@@ -75,15 +75,15 @@ public partial class IncomeViewModel(
 
             Incomes.Clear();
             foreach (var item in _incomes)
-                Incomes.Add(new(item.Id, item.Description, MoneyFormatter.Date(item.OccurredOn), Money(item.AmountMinor)));
+                Incomes.Add(new(item.Id, item.Description, MoneyFormatter.Date(item.OccurredOn), HiddenMoney(item.AmountMinor)));
 
             RecurringIncomes.Clear();
             foreach (var item in _recurringIncomes)
-                RecurringIncomes.Add(new(item.Id, item.Name, Money(item.AmountMinor), BillingFrequency.ToDisplay(item.IntervalMonths), MoneyFormatter.Date(item.NextOccurrenceDate)));
+                RecurringIncomes.Add(new(item.Id, item.Name, HiddenMoney(item.AmountMinor), BillingFrequency.ToDisplay(item.IntervalMonths), MoneyFormatter.Date(item.NextOccurrenceDate)));
 
             SavingsGoals.Clear();
             foreach (var item in _goals)
-                SavingsGoals.Add(new(item.Id, item.Name, Money(item.SavedAmountMinor), Money(item.TargetAmountMinor), MoneyFormatter.Percent(item.Progress), item.Progress));
+                SavingsGoals.Add(new(item.Id, item.Name, HiddenMoney(item.SavedAmountMinor), HiddenMoney(item.TargetAmountMinor), MoneyFormatter.Percent(item.Progress), item.Progress));
 
             RecentOperations.Clear();
             foreach (var operation in OperationsFeed.Recent(data.Expenses, data.Incomes))

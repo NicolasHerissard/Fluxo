@@ -16,6 +16,7 @@ public partial class App : Microsoft.Maui.Controls.Application
 		InitializeComponent();
 		_services = services;
 		_settings = settings;
+		MauiFileExchange.PurgeExports();
 		UserAppTheme = AppSettingsService.ToAppTheme(settings.Theme);
 		RequestedThemeChanged += (_, _) => SystemBarAppearance.Apply();
 	}
@@ -63,6 +64,7 @@ public partial class App : Microsoft.Maui.Controls.Application
 	public void ShowLock()
 	{
 		if (_window is null || _window.Page is LockPage) return;
+		MauiFileExchange.PurgeExports();
 		_window.Page = CreateLockPage();
 		SystemBarAppearance.Apply();
 	}

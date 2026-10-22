@@ -25,13 +25,15 @@ public sealed class SubscriptionReminderSchedulerTests
     }
 
     [Fact]
-    public async Task Refresh_DoesNothing_WhenRemindersAreDisabled()
+    public async Task Refresh_AppliesAnEmptyPlan_ToCancelPendingAlarms_WhenRemindersAreDisabled()
     {
         _settings.SubscriptionRemindersEnabled = false;
 
         await Scheduler.RefreshAsync([Netflix]);
 
-        Assert.Empty(_reminders.Plans);
+        var plan = Assert.Single(_reminders.Plans);
+        Assert.Empty(plan.Alarms);
+        Assert.Null(plan.Notice);
         Assert.False(Scheduler.IsEnabled);
     }
 }

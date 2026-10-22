@@ -23,6 +23,7 @@ internal sealed class SubscriptionRepository(FinanceDatabase database) : Reposit
             CurrencyCode = currencyCode,
             BillingIntervalMonths = Math.Max(1, billingIntervalMonths),
             NextBillingDate = nextBillingDate.Date,
+            AnchorDay = nextBillingDate.Day,
             CreatedAtUtc = now,
             UpdatedAtUtc = now
         }, cancellationToken);
@@ -34,6 +35,9 @@ internal sealed class SubscriptionRepository(FinanceDatabase database) : Reposit
             subscription.AmountMinor = amountMinor;
             subscription.CurrencyCode = currencyCode;
             subscription.BillingIntervalMonths = Math.Max(1, billingIntervalMonths);
+            // Une date inchangée garde son jour d'ancrage (le 31 affiché « 28 février ») ; une date choisie le redéfinit.
+            if (subscription.NextBillingDate != nextBillingDate.Date || subscription.AnchorDay <= 0)
+                subscription.AnchorDay = nextBillingDate.Day;
             subscription.NextBillingDate = nextBillingDate.Date;
         }, cancellationToken);
 

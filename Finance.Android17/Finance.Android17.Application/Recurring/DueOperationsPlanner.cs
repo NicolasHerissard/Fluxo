@@ -11,7 +11,7 @@ public static class DueOperationsPlanner
         var advances = new List<DueAdvance>();
         foreach (var subscription in subscriptions.Where(x => x.DeletedAtUtc is null && x.NextBillingDate.Date <= today.Date))
         {
-            var dueDates = Recurrence.GetDueDates(subscription.NextBillingDate, subscription.BillingIntervalMonths, today);
+            var dueDates = Recurrence.GetDueDates(subscription.NextBillingDate, subscription.BillingIntervalMonths, today, subscription.AnchorDay);
             foreach (var dueDate in dueDates)
             {
                 expenses.Add(new Expense
@@ -23,7 +23,7 @@ public static class DueOperationsPlanner
                 });
             }
             if (dueDates.Count > 0)
-                advances.Add(new DueAdvance(subscription.Id, Recurrence.NextAfter(dueDates[^1], subscription.BillingIntervalMonths)));
+                advances.Add(new DueAdvance(subscription.Id, Recurrence.NextAfter(dueDates[^1], subscription.BillingIntervalMonths, subscription.AnchorDay)));
         }
         return new DueOperationsPlan(expenses, advances, [], []);
     }
@@ -34,7 +34,7 @@ public static class DueOperationsPlanner
         var advances = new List<DueAdvance>();
         foreach (var recurring in recurringIncomes.Where(x => x.DeletedAtUtc is null && x.NextOccurrenceDate.Date <= today.Date))
         {
-            var dueDates = Recurrence.GetDueDates(recurring.NextOccurrenceDate, recurring.IntervalMonths, today);
+            var dueDates = Recurrence.GetDueDates(recurring.NextOccurrenceDate, recurring.IntervalMonths, today, recurring.AnchorDay);
             foreach (var dueDate in dueDates)
             {
                 incomes.Add(new Income
@@ -47,7 +47,7 @@ public static class DueOperationsPlanner
                 });
             }
             if (dueDates.Count > 0)
-                advances.Add(new DueAdvance(recurring.Id, Recurrence.NextAfter(dueDates[^1], recurring.IntervalMonths)));
+                advances.Add(new DueAdvance(recurring.Id, Recurrence.NextAfter(dueDates[^1], recurring.IntervalMonths, recurring.AnchorDay)));
         }
         return new DueOperationsPlan([], [], incomes, advances);
     }

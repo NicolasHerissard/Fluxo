@@ -89,7 +89,7 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
             {
                 var budget = spend.Budget;
                 var budgetText = budget is null ? string.Empty
-                    : $"Budget : {MoneyFormatter.Money(spend.TotalMinor, currency)} / {MoneyFormatter.Money(budget.BudgetMinor, currency)}";
+                    : $"Budget : {Amount(spend.TotalMinor)} / {Amount(budget.BudgetMinor)}";
                 var color = budget?.Level switch { BudgetLevel.Exceeded => Palette.Danger, BudgetLevel.Warning => Palette.Warning, _ => spend.Color };
                 CategoryBars.Add(new ChartBar(spend.Name, Amount(spend.TotalMinor), MoneyFormatter.Percent(spend.Share), spend.Share, spend.Color,
                     budget is not null, budgetText, budget?.Progress ?? 0, color));
@@ -105,8 +105,8 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
             {
                 BudgetProgress = monthly.Progress;
                 BudgetStatus = monthly.RemainingMinor >= 0
-                    ? $"{MoneyFormatter.Money(monthly.RemainingMinor, currency)} disponibles sur le budget"
-                    : $"Budget dépassé de {MoneyFormatter.Money(-monthly.RemainingMinor, currency)}";
+                    ? $"{Amount(monthly.RemainingMinor)} disponibles sur le budget"
+                    : $"Budget dépassé de {Amount(-monthly.RemainingMinor)}";
                 BudgetColor = monthly.Level switch { BudgetLevel.Exceeded => Palette.Danger, BudgetLevel.Warning => Palette.Warning, _ => Palette.Good };
             }
 

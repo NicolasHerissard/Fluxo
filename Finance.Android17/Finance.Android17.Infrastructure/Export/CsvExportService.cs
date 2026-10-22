@@ -32,5 +32,11 @@ internal sealed class CsvExportService(IExpenseRepository expenseRepository, IFi
         return csv.ToString();
     }
 
-    private static string Escape(string value) => $"\"{value.Replace("\"", "\"\"")}\"";
+    // Un texte qui commence par = + - @ (ou tabulation / retour chariot) serait évalué comme une formule à l'ouverture
+    // dans Excel ou LibreOffice : on le préfixe d'une apostrophe, qui reste visible mais neutralise la formule.
+    private static string Escape(string value)
+    {
+        if (value.Length > 0 && value[0] is '=' or '+' or '-' or '@' or '\t' or '\r') value = "'" + value;
+        return $"\"{value.Replace("\"", "\"\"")}\"";
+    }
 }

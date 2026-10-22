@@ -36,14 +36,16 @@ public sealed class StartupServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Prepare_SchedulesNothing_WhenRemindersAreDisabled()
+    public async Task Prepare_SchedulesNothing_AndCancelsPendingAlarms_WhenRemindersAreDisabled()
     {
         _app.Settings.SubscriptionRemindersEnabled = false;
         await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
 
         await Startup.PrepareAsync();
 
-        Assert.Empty(_app.Reminders.Plans);
+        var plan = Assert.Single(_app.Reminders.Plans);
+        Assert.Empty(plan.Alarms);
+        Assert.Null(plan.Notice);
     }
 
     [Fact]

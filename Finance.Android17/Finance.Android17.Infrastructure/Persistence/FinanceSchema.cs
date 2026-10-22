@@ -13,7 +13,7 @@ internal static class FinanceSchema
     public static int CurrentVersion => Migrations.Count;
 
     // L'élément d'indice n fait passer la base de la version n à la version n + 1.
-    private static readonly IReadOnlyList<Func<SqliteConnection, CancellationToken, Task>> Migrations = [CreateInitialSchemaAsync];
+    private static readonly IReadOnlyList<Func<SqliteConnection, CancellationToken, Task>> Migrations = [CreateInitialSchemaAsync, AddAnchorDayAsync];
 
     /// <exception cref="InvalidOperationException">La base porte une version plus récente que celles que cette application connaît.</exception>
     public static async Task UpgradeAsync(SqliteConnection connection, CancellationToken cancellationToken)
@@ -128,6 +128,20 @@ internal static class FinanceSchema
 
         if (!await ColumnExistsAsync(connection, "Categories", "BudgetMinor", cancellationToken).ConfigureAwait(false))
             await ExecuteAsync(connection, "ALTER TABLE \"Categories\" ADD COLUMN \"BudgetMinor\" INTEGER NULL", cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Version 2 : jour d'ancrage des échéances (<c>AnchorDay</c>), pour qu'une échéance du 31 ne dérive plus vers le 28.
+    /// Les lignes existantes reprennent le jour de leur prochaine échéance.
+    /// </summary>
+    private static async Task AddAnchorDayAsync(SqliteConnection connection, CancellationToken cancellationToken)
+    {
+        foreach (var (table, dateColumn) in new[] { ("Subscriptions", "NextBillingDate"), ("RecurringIncomes", "NextOccurrenceDate") })
+        {
+            if (await ColumnExistsAsync(connection, table, "AnchorDay", cancellationToken).ConfigureAwait(false)) continue;
+            await ExecuteAsync(connection, $"ALTER TABLE \"{table}\" ADD COLUMN \"AnchorDay\" INTEGER NOT NULL DEFAULT 0", cancellationToken).ConfigureAwait(false);
+            await ExecuteAsync(connection, $"UPDATE \"{table}\" SET \"AnchorDay\" = CAST(strftime('%d', \"{dateColumn}\") AS INTEGER)", cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private static async Task<bool> ColumnExistsAsync(SqliteConnection connection, string table, string column, CancellationToken cancellationToken)

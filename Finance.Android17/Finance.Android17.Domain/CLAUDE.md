@@ -9,8 +9,8 @@ Couche **domaine** : les entités persistées de l'application. Bibliothèque `n
 | `Entity.cs` | Classe de base abstraite : `Id` (`Guid`), `CreatedAtUtc`, `UpdatedAtUtc`, `DeletedAtUtc` (suppression logique), `Version` (`Guid`). Méthodes `Touch(nowUtc)` (date la mise à jour et **renouvelle `Version`**), `MarkDeleted(nowUtc)` et `MarkRestored(nowUtc)`. |
 | `Expense.cs` | Dépense : montant, devise, description, date, `CategoryId` + navigation `Category`. |
 | `Income.cs` | Revenu ponctuel ; `RecurringIncomeId` renseigné quand il a été généré par un revenu récurrent. |
-| `RecurringIncome.cs` | Revenu récurrent : `IntervalMonths` (1, 3, 12…), `NextOccurrenceDate`, `MonthlyEquivalentMinor`. |
-| `Subscription.cs` | Abonnement : `BillingIntervalMonths`, `NextBillingDate`, `ReminderEnabled`, `MonthlyEquivalentMinor`. |
+| `RecurringIncome.cs` | Revenu récurrent : `IntervalMonths` (1, 3, 12…), `NextOccurrenceDate`, `AnchorDay` (jour du mois voulu), `MonthlyEquivalentMinor`. |
+| `Subscription.cs` | Abonnement : `BillingIntervalMonths`, `NextBillingDate`, `AnchorDay` (jour du mois voulu), `ReminderEnabled`, `MonthlyEquivalentMinor`. |
 | `SavingsGoal.cs` | Objectif d'épargne : cible, montant déjà épargné, date cible facultative, `Progress` (0 à 1). |
 | `Category.cs` | Catégorie : nom, couleur hexadécimale (`#6750A4` par défaut), budget mensuel facultatif `BudgetMinor`. |
 | `FinancialProfile.cs` | Profil mono-solde : une seule ligne (`SingletonId = 1`) qui porte `InitialBalanceMinor`. Ce n'est **pas** une `Entity` (pas de suppression logique). |

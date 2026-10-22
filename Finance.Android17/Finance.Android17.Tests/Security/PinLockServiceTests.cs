@@ -84,6 +84,78 @@ public sealed class PinLockServiceTests : IDisposable
         Assert.False(await Lock.VerifyPinAsync("1234"));
     }
 
+    private async Task FailAsync(int times)
+    {
+        for (var i = 0; i < times; i++) Assert.False(await Lock.VerifyPinAsync("0000"));
+    }
+
+    [Fact]
+    public async Task FirstFourWrongPins_AreNotDelayed()
+    {
+        await Lock.SetPinAsync("4821");
+
+        await FailAsync(4);
+
+        Assert.Equal(TimeSpan.Zero, await Lock.GetLockoutRemainingAsync());
+        Assert.True(await Lock.VerifyPinAsync("4821"));
+    }
+
+    [Fact]
+    public async Task FifthWrongPin_LocksFor30Seconds_EvenForTheRightPin()
+    {
+        await Lock.SetPinAsync("4821");
+
+        await FailAsync(5);
+
+        Assert.Equal(TimeSpan.FromSeconds(30), await Lock.GetLockoutRemainingAsync());
+        Assert.False(await Lock.VerifyPinAsync("4821"));
+        _host.Clock.Now = _host.Clock.Now.AddSeconds(31);
+        Assert.Equal(TimeSpan.Zero, await Lock.GetLockoutRemainingAsync());
+        Assert.True(await Lock.VerifyPinAsync("4821"));
+    }
+
+    [Fact]
+    public async Task EachFurtherFailure_DoublesTheWait_UpToFifteenMinutes()
+    {
+        await Lock.SetPinAsync("4821");
+        var expected = new[] { 30, 60, 120, 240, 480, 900, 900 };
+
+        for (var i = 0; i < expected.Length; i++)
+        {
+            await FailAsync(i == 0 ? 5 : 1);
+            Assert.Equal(TimeSpan.FromSeconds(expected[i]), await Lock.GetLockoutRemainingAsync());
+            _host.Clock.Now = _host.Clock.Now.AddSeconds(expected[i] + 1);
+        }
+    }
+
+    [Fact]
+    public async Task Failures_SurviveARestart_AndASuccessResetsThem()
+    {
+        await Lock.SetPinAsync("4821");
+        await FailAsync(5);
+        using var restarted = new InfrastructureHost(secrets: _host.Secrets, databaseOf: _host);
+        var lockAfterRestart = restarted.Get<IAppLockService>();
+
+        Assert.True(await lockAfterRestart.GetLockoutRemainingAsync() > TimeSpan.Zero);
+
+        restarted.Clock.Now = restarted.Clock.Now.AddMinutes(1);
+        Assert.True(await lockAfterRestart.VerifyPinAsync("4821"));
+        Assert.Equal(TimeSpan.Zero, await lockAfterRestart.GetLockoutRemainingAsync());
+        Assert.False(await lockAfterRestart.VerifyPinAsync("0000"));
+        Assert.Equal(TimeSpan.Zero, await lockAfterRestart.GetLockoutRemainingAsync());
+    }
+
+    [Fact]
+    public async Task AClockSetBackwards_DoesNotShortenTheWait()
+    {
+        await Lock.SetPinAsync("4821");
+        await FailAsync(5);
+
+        _host.Clock.Now = _host.Clock.Now.AddHours(-5);
+
+        Assert.Equal(TimeSpan.FromSeconds(30), await Lock.GetLockoutRemainingAsync());
+    }
+
     [Fact]
     public async Task StoredHash_MatchesPbkdf2Sha256With100000Iterations()
     {
