@@ -1,24 +1,24 @@
 using Finance.Android17.Presentation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Finance.Android17.Maui;
 
 public partial class SettingsPage : ContentPage
 {
     private readonly SettingsViewModel _viewModel;
-    public SettingsPage(SettingsViewModel viewModel)
+    private readonly IServiceProvider _services;
+    public SettingsPage(SettingsViewModel viewModel, IServiceProvider services)
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+        _services = services;
         VersionLabel.Text = $"Mes Finances {AppInfo.Current.VersionString} • Données chiffrées localement";
     }
     protected override void OnAppearing() { base.OnAppearing(); _ = _viewModel.LoadAsync(); }
     private void OnLockClicked(object? sender, EventArgs e) => (Microsoft.Maui.Controls.Application.Current as App)?.ShowLock();
 
-    private async void OnRestoreClicked(object? sender, EventArgs e)
-    {
-        if (await DisplayAlertAsync("Restaurer la sauvegarde ?", "Les données actuelles seront remplacées par celles du fichier sélectionné.", "Restaurer", "Annuler"))
-            await _viewModel.RestoreBackupAsync();
-    }
+    private async void OnOpenCategoriesClicked(object? sender, EventArgs e) => await Navigation.PushModalAsync(_services.GetRequiredService<CategoriesSettingsPage>());
+    private async void OnOpenDataClicked(object? sender, EventArgs e) => await Navigation.PushModalAsync(_services.GetRequiredService<DataSettingsPage>());
 
     private async void OnDeleteAllClicked(object? sender, EventArgs e)
     {

@@ -9,4 +9,6 @@ public interface ISavingsGoalRepository
     Task AddAsync(string name, long targetAmountMinor, long savedAmountMinor, DateTime? targetDate, CancellationToken cancellationToken = default);
     Task UpdateAsync(Guid id, string name, long targetAmountMinor, long savedAmountMinor, DateTime? targetDate, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    /// <summary>Annule une suppression logique (annulation juste après la suppression).</summary>
+    Task RestoreAsync(Guid id, CancellationToken cancellationToken = default);
 }

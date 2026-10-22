@@ -35,7 +35,7 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="vm:ExpenseCategoryOption">
                                 <Grid Padding="2">
-                                    <Border Padding="16,10" BackgroundColor="{Binding Color}" Stroke="{Binding SelectionStroke}" StrokeThickness="{Binding SelectionStrokeThickness}" StrokeShape="RoundRectangle 18" MinimumHeightRequest="52">
+                                    <Border Padding="16,10" SemanticProperties.Description="{Binding AccessibilityDescription}" BackgroundColor="{Binding Color}" Stroke="{Binding SelectionStroke}" StrokeThickness="{Binding SelectionStrokeThickness}" StrokeShape="RoundRectangle 18" MinimumHeightRequest="52">
                                         <Border.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding Source={x:Reference AddPage}, Path=BindingContext.SelectCategoryCommand}" CommandParameter="{Binding .}" />
                                         </Border.GestureRecognizers>
@@ -56,13 +56,13 @@
                     <Label Text="Date" Style="{StaticResource SectionTitle}" FontSize="18" SemanticProperties.HeadingLevel="Level2" />
                     <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                         <Button Text="Aujourd’hui" Command="{Binding SelectDateCommand}" CommandParameter="Aujourd’hui" Style="{StaticResource SegmentButton}">
-                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsTodaySelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsTodaySelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" /><Setter Property="FontAttributes" Value="Bold" /><Setter Property="Text" Value="✓ Aujourd’hui" /><Setter Property="SemanticProperties.Description" Value="Aujourd’hui, sélectionné" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
                         </Button>
                         <Button Grid.Column="1" Text="Hier" Command="{Binding SelectDateCommand}" CommandParameter="Hier" Style="{StaticResource SegmentButton}">
-                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsYesterdaySelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsYesterdaySelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" /><Setter Property="FontAttributes" Value="Bold" /><Setter Property="Text" Value="✓ Hier" /><Setter Property="SemanticProperties.Description" Value="Hier, sélectionné" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
                         </Button>
                         <Button Grid.Column="2" Text="{Binding OtherDateText}" Clicked="OnOtherDateClicked" Style="{StaticResource SegmentButton}">
-                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsOtherDateSelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsOtherDateSelected}" Value="True"><Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" /><Setter Property="FontAttributes" Value="Bold" /><Setter Property="SemanticProperties.Description" Value="Autre date, sélectionné" /><Setter Property="TextColor" Value="White" /></DataTrigger></Button.Triggers>
                         </Button>
                     </Grid>
                     <Border IsVisible="{Binding IsCustomDateVisible}" Style="{StaticResource InputField}">

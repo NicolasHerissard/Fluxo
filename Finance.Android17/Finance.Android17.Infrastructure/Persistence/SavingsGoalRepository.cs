@@ -37,4 +37,5 @@ internal sealed class SavingsGoalRepository(FinanceDatabase database) : Reposito
         }, cancellationToken);
 
     public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default) => MarkDeletedAsync(id, cancellationToken);
+    public Task RestoreAsync(Guid id, CancellationToken cancellationToken = default) => MarkRestoredAsync(id, cancellationToken);
 }

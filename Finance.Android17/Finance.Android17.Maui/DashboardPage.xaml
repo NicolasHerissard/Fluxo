@@ -18,9 +18,15 @@
 
                 <Border Padding="4" BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceContainerLight}, Dark={StaticResource SurfaceDark}}" Stroke="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" StrokeShape="RoundRectangle 16">
                     <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4">
-                        <Button Text="Semaine" Command="{Binding SelectPeriodCommand}" CommandParameter="Semaine" BackgroundColor="{Binding WeekBackground}" TextColor="{Binding WeekTextColor}" CornerRadius="12" HeightRequest="48" SemanticProperties.Description="Afficher les dépenses de la semaine" />
-                        <Button Grid.Column="1" Text="Mois" Command="{Binding SelectPeriodCommand}" CommandParameter="Mois" BackgroundColor="{Binding MonthBackground}" TextColor="{Binding MonthTextColor}" CornerRadius="12" HeightRequest="48" SemanticProperties.Description="Afficher les dépenses du mois" />
-                        <Button Grid.Column="2" Text="Année" Command="{Binding SelectPeriodCommand}" CommandParameter="Année" BackgroundColor="{Binding YearBackground}" TextColor="{Binding YearTextColor}" CornerRadius="12" HeightRequest="48" SemanticProperties.Description="Afficher les dépenses de l’année" />
+                        <Button Text="Semaine" Command="{Binding SelectPeriodCommand}" CommandParameter="Semaine" BackgroundColor="{Binding WeekBackground}" TextColor="{Binding WeekTextColor}" CornerRadius="12" HeightRequest="48" SemanticProperties.Description="Afficher les dépenses de la semaine">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding SelectedPeriod}" Value="Semaine"><Setter Property="Text" Value="✓ Semaine" /><Setter Property="FontAttributes" Value="Bold" /></DataTrigger></Button.Triggers>
+                        </Button>
+                        <Button Grid.Column="1" Text="Mois" Command="{Binding SelectPeriodCommand}" CommandParameter="Mois" BackgroundColor="{Binding MonthBackground}" TextColor="{Binding MonthTextColor}" CornerRadius="12" HeightRequest="48" SemanticProperties.Description="Afficher les dépenses du mois">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding SelectedPeriod}" Value="Mois"><Setter Property="Text" Value="✓ Mois" /><Setter Property="FontAttributes" Value="Bold" /></DataTrigger></Button.Triggers>
+                        </Button>
+                        <Button Grid.Column="2" Text="Année" Command="{Binding SelectPeriodCommand}" CommandParameter="Année" BackgroundColor="{Binding YearBackground}" TextColor="{Binding YearTextColor}" CornerRadius="12" HeightRequest="48" SemanticProperties.Description="Afficher les dépenses de l’année">
+                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding SelectedPeriod}" Value="Année"><Setter Property="Text" Value="✓ Année" /><Setter Property="FontAttributes" Value="Bold" /></DataTrigger></Button.Triggers>
+                        </Button>
                     </Grid>
                 </Border>
 

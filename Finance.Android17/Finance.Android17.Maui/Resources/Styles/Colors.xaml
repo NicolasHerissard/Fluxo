@@ -29,8 +29,8 @@
     <Color x:Key="TextPrimaryDark">#F2EDF7</Color>
     <Color x:Key="TextSecondaryLight">#625B71</Color>
     <Color x:Key="TextSecondaryDark">#CAC4D0</Color>
-    <Color x:Key="PlaceholderLight">#79747E</Color>
-    <Color x:Key="PlaceholderDark">#938F99</Color>
+    <Color x:Key="PlaceholderLight">#6B6672</Color>
+    <Color x:Key="PlaceholderDark">#AEA9B4</Color>
     <Color x:Key="OutlineLight">#E7E0EC</Color>
     <Color x:Key="OutlineDark">#49454F</Color>
 
@@ -38,6 +38,13 @@
     <Color x:Key="DangerDarkColor">#FFB4AB</Color>
     <Color x:Key="SuccessColor">#2E7D32</Color>
     <Color x:Key="SuccessDarkColor">#81C995</Color>
+    <Color x:Key="HeroGradientStartColor">#7658B5</Color>
+    <Color x:Key="HeroGradientEndColor">#51358D</Color>
+    <Color x:Key="HeroTextColor">#FFFFFF</Color>
+    <Color x:Key="HeroMutedTextColor">#F0E7FF</Color>
+    <Color x:Key="SliderRedColor">#FF6B6B</Color>
+    <Color x:Key="SliderGreenColor">#51CF66</Color>
+    <Color x:Key="SliderBlueColor">#4DABF7</Color>
     <Color x:Key="ScrimColor">#99000000</Color>
     <Color x:Key="FabShadowColor">#55000000</Color>
 

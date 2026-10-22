@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Finance.Android17.Presentation;assembly=Finance.Android17.Presentation"
+             xmlns:maui="clr-namespace:Finance.Android17.Maui"
+             x:Class="Finance.Android17.Maui.DataSettingsPage"
+             x:Name="Page"
+             x:DataType="vm:SettingsViewModel"
+             NavigationPage.HasNavigationBar="False"
+             Style="{StaticResource AppPage}">
+    <ScrollView>
+        <VerticalStackLayout Padding="20,16,20,100" Spacing="18" MaximumWidthRequest="760" HorizontalOptions="Center">
+            <Grid ColumnDefinitions="48,*" ColumnSpacing="8">
+                <ImageButton Source="icon_close.png" Clicked="OnBackClicked" BackgroundColor="Transparent" Padding="13" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Retour aux réglages" />
+                <Label Grid.Column="1" Text="Mes données" Style="{StaticResource PageTitle}" VerticalOptions="Center" SemanticProperties.HeadingLevel="Level1" />
+            </Grid>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Export CSV" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                    <Label Text="Crée une copie lisible de l’historique des dépenses." Style="{StaticResource MutedLabel}" />
+                    <Button Text="Exporter les dépenses" Command="{Binding ExportCommand}" Style="{StaticResource SecondaryButton}" />
+                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
+                    <Label Text="Sauvegarde complète chiffrée" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                    <Label Text="Le même mot de passe sera nécessaire pour restaurer le fichier." Style="{StaticResource MutedLabel}" />
+                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (8 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe de sauvegarde" /></Border>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Button Text="Sauvegarder" Command="{Binding CreateBackupCommand}" Style="{StaticResource SecondaryButton}" />
+                        <Button Grid.Column="1" Text="Restaurer" Clicked="OnRestoreClicked" Style="{StaticResource SecondaryButton}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource PrimaryColor}" />
+            <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" HorizontalTextAlignment="Center">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
+                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" />
+                    </DataTrigger>
+                </Label.Triggers>
+            </Label>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
