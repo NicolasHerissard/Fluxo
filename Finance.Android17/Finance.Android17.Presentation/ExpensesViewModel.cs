@@ -11,7 +11,7 @@ public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICa
     private const string AllDates = "Toutes les dates";
     private const string CustomPeriodLabel = "Période personnalisée";
     private const string NewestSort = "Plus récentes";
-    private const string EmptyListTitle = "Aucune dépense enregistrée";
+    private const string EmptyListTitle = "Aucune transaction enregistrée";
 
     private static readonly (string Label, ExpensePeriod Period)[] PeriodOptions =
     [
@@ -54,11 +54,11 @@ public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICa
     [ObservableProperty] private bool isEmpty;
     [ObservableProperty] private bool isUndoVisible;
     [ObservableProperty] private string statusMessage = string.Empty;
-    [ObservableProperty] private string resultSummary = "0 dépense";
+    [ObservableProperty] private string resultSummary = "0 transaction";
     [ObservableProperty] private string filterButtonText = "Filtres";
     [ObservableProperty] private string applyButtonText = "Afficher les résultats";
     [ObservableProperty] private string emptyTitle = EmptyListTitle;
-    [ObservableProperty] private string emptySubtitle = "Ajoutez votre première dépense pour commencer.";
+    [ObservableProperty] private string emptySubtitle = "Ajoutez votre première transaction pour commencer.";
     private Guid? _pendingDeletedId;
     private CancellationTokenSource? _searchDelay;
     private IReadOnlyList<Expense> _allExpenses = [];
@@ -90,11 +90,11 @@ public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICa
             Expenses.Clear();
             foreach (var expense in ExpenseSearch.Apply(_allExpenses, CurrentCriteria())) Expenses.Add(ExpenseRow.From(expense, settings.HideAmounts));
             IsEmpty = Expenses.Count == 0;
-            ResultSummary = $"{Expenses.Count} dépense{(Expenses.Count == 1 ? string.Empty : "s")} · {SelectedSort.ToLowerInvariant()}";
+            ResultSummary = $"{Expenses.Count} transaction{(Expenses.Count == 1 ? string.Empty : "s")} · {SelectedSort.ToLowerInvariant()}";
             RefreshActiveFilters();
             var filtered = HasActiveFilters || !string.IsNullOrWhiteSpace(SearchText);
             EmptyTitle = filtered ? "Aucun résultat" : EmptyListTitle;
-            EmptySubtitle = filtered ? "Essayez d’élargir votre recherche ou de retirer un filtre." : "Ajoutez votre première dépense pour commencer.";
+            EmptySubtitle = filtered ? "Essayez d’élargir votre recherche ou de retirer un filtre." : "Ajoutez votre première transaction pour commencer.";
         }
         finally { IsBusy = false; }
     }
@@ -144,7 +144,7 @@ public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICa
     {
         await expenseRepository.DeleteAsync(row.Id);
         _pendingDeletedId = row.Id;
-        StatusMessage = "Dépense supprimée";
+        StatusMessage = "Transaction supprimée";
         IsUndoVisible = true;
         await LoadAsync();
     }
@@ -156,7 +156,7 @@ public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICa
         await expenseRepository.RestoreAsync(id);
         _pendingDeletedId = null;
         IsUndoVisible = false;
-        StatusMessage = "Dépense restaurée";
+        StatusMessage = "Transaction restaurée";
         await LoadAsync();
     }
 

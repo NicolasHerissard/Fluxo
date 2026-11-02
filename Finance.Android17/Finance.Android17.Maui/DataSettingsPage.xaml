@@ -38,8 +38,8 @@
                         <maui:IconTile Icon="database" Tone="success" Size="40" />
                         <Label Grid.Column="1" Text="Export CSV" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
                     </Grid>
-                    <Label Text="Crée une copie lisible de l’historique des dépenses." Style="{StaticResource MutedLabel}" />
-                    <Button Text="Exporter les dépenses" Command="{Binding ExportCommand}" Style="{StaticResource SecondaryButton}" />
+                    <Label Text="Crée une copie lisible de l’historique des transactions." Style="{StaticResource MutedLabel}" />
+                    <Button Text="Exporter les transactions" Command="{Binding ExportCommand}" Style="{StaticResource SecondaryButton}" />
                 </VerticalStackLayout>
             </Border>
 

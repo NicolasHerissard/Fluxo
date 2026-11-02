@@ -26,7 +26,7 @@
                         <Grid ColumnDefinitions="48,190,48" HorizontalOptions="Center">
                             <Entry x:Name="AmountEntry" Grid.Column="1" Placeholder="0,00" Text="{Binding Amount}" Keyboard="Numeric" ReturnType="Done"
                                    FontFamily="{StaticResource DisplayFont}" FontSize="48" HorizontalTextAlignment="Center" BackgroundColor="Transparent"
-                                   ClearButtonVisibility="Never" SemanticProperties.Description="Montant de la dépense" />
+                                   ClearButtonVisibility="Never" SemanticProperties.Description="Montant de la transaction" />
                             <Label Grid.Column="2" Text="{Binding CurrencySymbol}" Style="{StaticResource SectionTitle}" FontSize="28" VerticalOptions="Center" HorizontalOptions="Start" Margin="8,0,0,0" />
                         </Grid>
                         <Button Text="Scanner un ticket" Clicked="OnScanReceiptClicked" Style="{StaticResource TextButton}" IsVisible="False" />

@@ -15,8 +15,8 @@ internal sealed class CsvExportService(IExpenseRepository expenseRepository, IFi
         var expenses = await expenseRepository.GetAllAsync(cancellationToken).ConfigureAwait(false);
         var content = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
         byte[] bytes = [.. content.GetPreamble(), .. content.GetBytes(Build(expenses))];
-        var fileName = $"depenses-{clock.GetLocalNow():yyyyMMdd-HHmm}.csv";
-        await files.ShareAsync(fileName, bytes, "Exporter les dépenses", cancellationToken).ConfigureAwait(false);
+        var fileName = $"transactions-{clock.GetLocalNow():yyyyMMdd-HHmm}.csv";
+        await files.ShareAsync(fileName, bytes, "Exporter les transactions", cancellationToken).ConfigureAwait(false);
     }
 
     private static string Build(IEnumerable<Expense> expenses)

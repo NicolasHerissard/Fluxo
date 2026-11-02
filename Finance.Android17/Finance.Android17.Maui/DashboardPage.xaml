@@ -165,10 +165,10 @@
                         <VerticalStackLayout Spacing="18">
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="Par catégorie" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" VerticalOptions="Center" />
-                                <Button Grid.Column="1" Text="Voir tout" Clicked="OnSeeAllExpensesClicked" Style="{StaticResource TextButton}" SemanticProperties.Description="Voir toutes les dépenses" />
+                                <Button Grid.Column="1" Text="Voir tout" Clicked="OnSeeAllExpensesClicked" Style="{StaticResource TextButton}" SemanticProperties.Description="Voir toutes les transactions" />
                             </Grid>
                             <Grid WidthRequest="172" HeightRequest="172" HorizontalOptions="Center">
-                                <local:DonutChart Slices="{Binding CategorySlices}" Thickness="18" SemanticProperties.Description="Répartition des dépenses par catégorie" />
+                                <local:DonutChart Slices="{Binding CategorySlices}" Thickness="18" SemanticProperties.Description="Répartition des transactions par catégorie" />
                                 <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="2">
                                     <Label Text="Total" Style="{StaticResource Eyebrow}" HorizontalTextAlignment="Center" />
                                     <Label Text="{Binding Total}" Style="{StaticResource SectionTitle}" FontSize="19" HorizontalTextAlignment="Center" />
@@ -217,21 +217,21 @@
                         </Border>
                     </Grid>
 
-                    <!-- Aucune dépense -->
+                    <!-- Aucune transaction -->
                     <Border IsVisible="{Binding IsEmpty}" Style="{StaticResource Card}" Padding="24">
                         <VerticalStackLayout Spacing="10" HorizontalOptions="Fill">
                             <local:IconTile Icon="wallet" Tone="primary" Size="64" HorizontalOptions="Center" />
-                            <Label Text="Aucune dépense sur cette période" Style="{StaticResource SectionTitle}" FontSize="19" HorizontalTextAlignment="Center" />
-                            <Label Text="Ajoutez votre première dépense pour commencer à suivre vos finances." Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" />
-                            <Button Text="Ajouter une dépense" Clicked="OnAddClicked" Style="{StaticResource PrimaryButton}" Margin="0,6,0,0" />
+                            <Label Text="Aucune transaction sur cette période" Style="{StaticResource SectionTitle}" FontSize="19" HorizontalTextAlignment="Center" />
+                            <Label Text="Ajoutez votre première transaction pour commencer à suivre vos finances." Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" />
+                            <Button Text="Ajouter une transaction" Clicked="OnAddClicked" Style="{StaticResource PrimaryButton}" Margin="0,6,0,0" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <!-- Dépenses récentes -->
+                    <!-- Transactions récentes -->
                     <VerticalStackLayout IsVisible="{Binding HasData}" Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="Dépenses récentes" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" VerticalOptions="Center" />
-                            <Button Grid.Column="1" Text="Voir toutes" Clicked="OnSeeAllExpensesClicked" Style="{StaticResource TextButton}" SemanticProperties.Description="Ouvrir l’historique des dépenses" />
+                            <Label Text="Transactions récentes" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" VerticalOptions="Center" />
+                            <Button Grid.Column="1" Text="Voir toutes" Clicked="OnSeeAllExpensesClicked" Style="{StaticResource TextButton}" SemanticProperties.Description="Ouvrir l’historique des transactions" />
                         </Grid>
                         <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentExpenses}" Spacing="9">
                             <BindableLayout.ItemTemplate>
@@ -258,6 +258,6 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <local:IconButton Grid.Row="1" Icon="plus" ButtonStyle="Fab" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,20,24" Description="Ajouter une dépense" Clicked="OnAddClicked" />
+        <local:IconButton Grid.Row="1" Icon="plus" ButtonStyle="Fab" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,20,24" Description="Ajouter une transaction" Clicked="OnAddClicked" />
     </Grid>
 </ContentPage>

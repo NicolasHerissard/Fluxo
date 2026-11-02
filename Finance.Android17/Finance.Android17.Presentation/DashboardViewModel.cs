@@ -37,7 +37,7 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
     [ObservableProperty] private string comparison = "Pas encore de comparaison";
     [ObservableProperty] private bool comparisonIsGood;
     [ObservableProperty] private bool comparisonIsBad;
-    [ObservableProperty] private string expenseCount = "0 dépense";
+    [ObservableProperty] private string expenseCount = "0 transaction";
     [ObservableProperty] private string topCategory = "—";
     [ObservableProperty] private string nextSubscription = "Aucun abonnement";
     [ObservableProperty] private string currentBalance = "0,00 €";
@@ -92,7 +92,7 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
             PeriodTitle = period switch { DashboardPeriod.Week => "Cette semaine", DashboardPeriod.Year => "Cette année", _ => "Ce mois" };
             Total = hide ? HiddenTotal : MoneyFormatter.Money(report.TotalMinor, currency);
             PrivacyIcon = hide ? "eye-off" : "eye";
-            ExpenseCount = $"{report.ExpenseCount} dépense{(report.ExpenseCount > 1 ? "s" : string.Empty)}";
+            ExpenseCount = $"{report.ExpenseCount} transaction{(report.ExpenseCount > 1 ? "s" : string.Empty)}";
             NextSubscription = report.NextSubscription is { } next
                 ? $"{next.Name} · {next.NextBillingDate.ToString("dd MMM", french)}"
                 : "Aucun abonnement";

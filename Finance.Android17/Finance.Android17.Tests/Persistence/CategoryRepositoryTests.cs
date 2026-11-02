@@ -44,7 +44,7 @@ public sealed class CategoryRepositoryTests : IDisposable
         var expenseId = Assert.Single(await _host.Expenses.GetAllAsync()).Id;
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => _host.Categories.DeleteAsync(food.Id));
-        Assert.Equal("Cette catégorie est utilisée par une dépense.", error.Message);
+        Assert.Equal("Cette catégorie est utilisée par une transaction.", error.Message);
 
         await _host.Expenses.DeleteAsync(expenseId);
         await _host.Categories.DeleteAsync(food.Id);
