@@ -2,147 +2,235 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Finance.Android17.Presentation;assembly=Finance.Android17.Presentation"
+             xmlns:local="clr-namespace:Finance.Android17.Maui"
              x:Class="Finance.Android17.Maui.DashboardPage"
              x:DataType="vm:DashboardViewModel"
              Style="{StaticResource AppPage}">
-    <Grid>
-        <ScrollView x:Name="DashboardScroll" Scrolled="OnDashboardScrolled">
-            <VerticalStackLayout Padding="20,12,20,112" Spacing="16">
-                <Grid ColumnDefinitions="*,48">
-                    <VerticalStackLayout Spacing="0">
-                        <Label Text="{Binding Greeting}" Style="{StaticResource PageTitle}" SemanticProperties.HeadingLevel="Level1" />
-                        <Label Text="{Binding CurrentDate}" Style="{StaticResource MutedLabel}" />
-                    </VerticalStackLayout>
-                    <ImageButton Grid.Column="1" Source="icon_lock.png" Clicked="OnLockClicked" BackgroundColor="Transparent" Padding="11" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Verrouiller l’application" />
-                </Grid>
+    <Grid RowDefinitions="Auto,*">
+        <local:PageHeader Eyebrow="{Binding CurrentDate}" Title="{Binding Greeting}" ShowLock="True" />
 
-                <Border Padding="4" BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceContainerLight}, Dark={StaticResource SurfaceDark}}" Stroke="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" StrokeShape="RoundRectangle 16">
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4">
-                        <Button Text="Semaine" Command="{Binding SelectPeriodCommand}" CommandParameter="Semaine" BackgroundColor="{Binding WeekBackground}" TextColor="{Binding WeekTextColor}" CornerRadius="12" HeightRequest="48" SemanticProperties.Description="Afficher les dépenses de la semaine">
-                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding SelectedPeriod}" Value="Semaine"><Setter Property="Text" Value="✓ Semaine" /><Setter Property="FontAttributes" Value="Bold" /></DataTrigger></Button.Triggers>
-                        </Button>
-                        <Button Grid.Column="1" Text="Mois" Command="{Binding SelectPeriodCommand}" CommandParameter="Mois" BackgroundColor="{Binding MonthBackground}" TextColor="{Binding MonthTextColor}" CornerRadius="12" HeightRequest="48" SemanticProperties.Description="Afficher les dépenses du mois">
-                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding SelectedPeriod}" Value="Mois"><Setter Property="Text" Value="✓ Mois" /><Setter Property="FontAttributes" Value="Bold" /></DataTrigger></Button.Triggers>
-                        </Button>
-                        <Button Grid.Column="2" Text="Année" Command="{Binding SelectPeriodCommand}" CommandParameter="Année" BackgroundColor="{Binding YearBackground}" TextColor="{Binding YearTextColor}" CornerRadius="12" HeightRequest="48" SemanticProperties.Description="Afficher les dépenses de l’année">
-                            <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding SelectedPeriod}" Value="Année"><Setter Property="Text" Value="✓ Année" /><Setter Property="FontAttributes" Value="Bold" /></DataTrigger></Button.Triggers>
-                        </Button>
-                    </Grid>
-                </Border>
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20,12,20,112" Spacing="16">
+                <local:SegmentedControl Items="{Binding Periods}" SelectedItem="{Binding SelectedPeriod}" Command="{Binding SelectPeriodCommand}" />
 
                 <VerticalStackLayout IsVisible="{Binding IsSkeletonVisible}" Spacing="12">
-                    <BoxView HeightRequest="184" CornerRadius="22" BackgroundColor="{AppThemeBinding Light={StaticResource SkeletonLight}, Dark={StaticResource SkeletonDark}}" />
-                    <HorizontalStackLayout Spacing="12">
-                        <BoxView WidthRequest="156" HeightRequest="92" CornerRadius="18" BackgroundColor="{AppThemeBinding Light={StaticResource SkeletonLight}, Dark={StaticResource SkeletonDark}}" />
-                        <BoxView WidthRequest="156" HeightRequest="92" CornerRadius="18" BackgroundColor="{AppThemeBinding Light={StaticResource SkeletonLight}, Dark={StaticResource SkeletonDark}}" />
-                    </HorizontalStackLayout>
-                    <BoxView HeightRequest="118" CornerRadius="18" BackgroundColor="{AppThemeBinding Light={StaticResource SkeletonLight}, Dark={StaticResource SkeletonDark}}" />
+                    <BoxView HeightRequest="176" CornerRadius="14" Color="{AppThemeBinding Light={StaticResource SkeletonLight}, Dark={StaticResource SkeletonDark}}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <BoxView HeightRequest="104" CornerRadius="14" Color="{AppThemeBinding Light={StaticResource SkeletonLight}, Dark={StaticResource SkeletonDark}}" />
+                        <BoxView Grid.Column="1" HeightRequest="104" CornerRadius="14" Color="{AppThemeBinding Light={StaticResource SkeletonLight}, Dark={StaticResource SkeletonDark}}" />
+                    </Grid>
+                    <BoxView HeightRequest="120" CornerRadius="14" Color="{AppThemeBinding Light={StaticResource SkeletonLight}, Dark={StaticResource SkeletonDark}}" />
                 </VerticalStackLayout>
 
-                <VerticalStackLayout IsVisible="{Binding IsDashboardVisible}" Spacing="18">
-                    <Border Padding="22" StrokeThickness="0" StrokeShape="RoundRectangle 24">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#7658B5" Offset="0" />
-                                <GradientStop Color="#51358D" Offset="1" />
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,48" RowSpacing="8">
-                            <Label Text="{Binding PeriodTitle}" TextColor="#F0E7FF" FontSize="15" />
-                            <ImageButton Grid.Column="1" Source="{Binding PrivacyIcon}" Command="{Binding TogglePrivacyCommand}" BackgroundColor="#22FFFFFF" CornerRadius="14" Padding="12" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Afficher ou masquer les montants" />
-                            <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Total}" TextColor="White" FontSize="38" FontAttributes="Bold" SemanticProperties.Description="Total dépensé sur la période" />
-                            <Border Grid.Row="2" Grid.ColumnSpan="2" Padding="10,6" HorizontalOptions="Start" BackgroundColor="#24FFFFFF" StrokeThickness="0" StrokeShape="RoundRectangle 12">
-                                <Label Text="{Binding Comparison}" TextColor="{Binding ComparisonColor}" FontSize="12" />
+                <VerticalStackLayout IsVisible="{Binding IsDashboardVisible}" Spacing="16">
+                    <!-- Total dépensé sur la période -->
+                    <Border Style="{StaticResource Card}" Padding="20">
+                        <VerticalStackLayout Spacing="12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding PeriodTitle, StringFormat='Dépensé · {0}'}" Style="{StaticResource Eyebrow}" />
+                                    <Label Text="{Binding ExpenseCount}" Style="{StaticResource CaptionLabel}" />
+                                </VerticalStackLayout>
+                                <local:IconButton Grid.Column="1" Icon="{Binding PrivacyIcon}" ButtonStyle="Plain" Command="{Binding TogglePrivacyCommand}" Description="Afficher ou masquer les montants" />
+                            </Grid>
+                            <Label Text="{Binding Total}" Style="{StaticResource DisplayAmount}" SemanticProperties.Description="Total dépensé sur la période" />
+                            <Border Style="{StaticResource Pill}">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding ComparisonIsGood}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SuccessSoftLight}, Dark={StaticResource SuccessSoftDark}}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding ComparisonIsBad}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ExpenseSoftLight}, Dark={StaticResource ExpenseSoftDark}}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{Binding Comparison}" Style="{StaticResource PrimaryText}" FontSize="12">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding ComparisonIsGood}" Value="True">
+                                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SuccessInkLight}, Dark={StaticResource SuccessInkDark}}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding ComparisonIsBad}" Value="True">
+                                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                             </Border>
-                        </Grid>
+                        </VerticalStackLayout>
                     </Border>
 
+                    <!-- Solde, revenus, résultat net, prévision de fin de mois -->
                     <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" RowSpacing="10" ColumnSpacing="10">
                         <Border Style="{StaticResource Card}" Padding="14">
-                            <VerticalStackLayout Spacing="5"><Label Text="SOLDE ACTUEL" Style="{StaticResource MutedLabel}" FontSize="11" CharacterSpacing="1" /><Label Text="{Binding CurrentBalance}" Style="{StaticResource SectionTitle}" FontSize="18" /></VerticalStackLayout>
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <local:IconTile Icon="wallet" Tone="blue" Size="34" />
+                                    <Label Grid.Column="1" Text="Solde actuel" Style="{StaticResource Eyebrow}" VerticalOptions="Center" />
+                                </Grid>
+                                <Label Text="{Binding CurrentBalance}" Style="{StaticResource SectionTitle}" FontSize="20" />
+                            </VerticalStackLayout>
                         </Border>
                         <Border Grid.Column="1" Style="{StaticResource Card}" Padding="14">
-                            <VerticalStackLayout Spacing="5"><Label Text="REVENUS DU MOIS" Style="{StaticResource MutedLabel}" FontSize="11" CharacterSpacing="1" /><Label Text="{Binding MonthlyIncome}" Style="{StaticResource SectionTitle}" FontSize="18" /></VerticalStackLayout>
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <local:IconTile Icon="arrow-down-left" Tone="success" Size="34" />
+                                    <Label Grid.Column="1" Text="Revenus" Style="{StaticResource Eyebrow}" VerticalOptions="Center" />
+                                </Grid>
+                                <Label Text="{Binding MonthlyIncome}" Style="{StaticResource SectionTitle}" FontSize="20" />
+                            </VerticalStackLayout>
                         </Border>
                         <Border Grid.Row="1" Style="{StaticResource Card}" Padding="14">
-                            <VerticalStackLayout Spacing="5"><Label Text="RÉSULTAT NET" Style="{StaticResource MutedLabel}" FontSize="11" CharacterSpacing="1" /><Label Text="{Binding MonthlyNet}" Style="{StaticResource SectionTitle}" FontSize="18" /><Label Text="{Binding SavingsRate, StringFormat='Épargne : {0}'}" Style="{StaticResource MutedLabel}" /></VerticalStackLayout>
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <local:IconTile Icon="trending-up" Tone="violet" Size="34" />
+                                    <Label Grid.Column="1" Text="Résultat net" Style="{StaticResource Eyebrow}" VerticalOptions="Center" />
+                                </Grid>
+                                <Label Text="{Binding MonthlyNet}" Style="{StaticResource SectionTitle}" FontSize="20" />
+                                <Label Text="{Binding SavingsRate, StringFormat='Épargne : {0}'}" Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
                         </Border>
                         <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Padding="14">
-                            <VerticalStackLayout Spacing="5"><Label Text="FIN DE MOIS" Style="{StaticResource MutedLabel}" FontSize="11" CharacterSpacing="1" /><Label Text="{Binding ForecastBalance}" Style="{StaticResource SectionTitle}" FontSize="18" /><Label Text="{Binding ForecastStatus}" Style="{StaticResource MutedLabel}" /></VerticalStackLayout>
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <local:IconTile Icon="calendar" Tone="primary" Size="34" />
+                                    <Label Grid.Column="1" Text="Fin de mois" Style="{StaticResource Eyebrow}" VerticalOptions="Center" />
+                                </Grid>
+                                <Label Text="{Binding ForecastBalance}" Style="{StaticResource SectionTitle}" FontSize="20" />
+                                <Border Style="{StaticResource Pill}" Padding="9,3" BackgroundColor="{AppThemeBinding Light={StaticResource SuccessSoftLight}, Dark={StaticResource SuccessSoftDark}}">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding ForecastIsHealthy}" Value="False">
+                                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource WarningSoftLight}, Dark={StaticResource WarningSoftDark}}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="{Binding ForecastBadge}" FontFamily="OpenSansSemibold" FontSize="11"
+                                           TextColor="{AppThemeBinding Light={StaticResource SuccessInkLight}, Dark={StaticResource SuccessInkDark}}">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding ForecastIsHealthy}" Value="False">
+                                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource WarningInkLight}, Dark={StaticResource WarningInkDark}}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+                            </VerticalStackLayout>
                         </Border>
                     </Grid>
 
-                    <Border IsVisible="{Binding IsBudgetVisible}" Style="{StaticResource Card}" Padding="16,13">
-                        <VerticalStackLayout Spacing="7">
+                    <!-- Budget mensuel -->
+                    <Border IsVisible="{Binding IsBudgetVisible}" Style="{StaticResource Card}" Padding="16">
+                        <VerticalStackLayout Spacing="9">
                             <Grid ColumnDefinitions="*,Auto">
-                                <Label Text="Budget mensuel" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                                <Label Grid.Column="1" Text="{Binding BudgetProgress, StringFormat='{0:P0}'}" TextColor="{Binding BudgetColor}" FontAttributes="Bold" />
+                                <Label Text="Budget mensuel" Style="{StaticResource StrongLabel}" />
+                                <Label Grid.Column="1" Text="{Binding BudgetProgress, StringFormat='{0:P0}'}" TextColor="{Binding BudgetColor}" FontFamily="OpenSansSemibold" />
                             </Grid>
-                            <ProgressBar Progress="{Binding BudgetProgress}" ProgressColor="{Binding BudgetColor}" BackgroundColor="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" HeightRequest="8" />
+                            <ProgressBar Progress="{Binding BudgetProgress}" ProgressColor="{Binding BudgetColor}" BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}" HeightRequest="8" />
                             <Label Text="{Binding BudgetStatus}" Style="{StaticResource MutedLabel}" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                        <HorizontalStackLayout Spacing="12">
-                            <Border Style="{StaticResource Card}" WidthRequest="196" HeightRequest="104">
-                                <VerticalStackLayout Spacing="6">
-                                    <Label Text="PROCHAIN ABONNEMENT" Style="{StaticResource MutedLabel}" FontSize="11" CharacterSpacing="1" />
-                                    <Label Text="{Binding NextSubscription}" Style="{StaticResource SectionTitle}" FontSize="16" MaxLines="2" LineBreakMode="TailTruncation" />
-                                </VerticalStackLayout>
-                            </Border>
-                            <Border Style="{StaticResource Card}" WidthRequest="156" HeightRequest="104">
-                                <VerticalStackLayout Spacing="6">
-                                    <Label Text="CATÉGORIE N°1" Style="{StaticResource MutedLabel}" FontSize="11" CharacterSpacing="1" />
-                                    <Label Text="{Binding TopCategory}" Style="{StaticResource SectionTitle}" FontSize="17" LineBreakMode="TailTruncation" />
-                                </VerticalStackLayout>
-                            </Border>
-                            <Border Style="{StaticResource Card}" WidthRequest="156" HeightRequest="104">
-                                <VerticalStackLayout Spacing="6">
-                                    <Label Text="DÉPENSES" Style="{StaticResource MutedLabel}" FontSize="11" CharacterSpacing="1" />
-                                    <Label Text="{Binding ExpenseCount}" Style="{StaticResource SectionTitle}" FontSize="17" LineBreakMode="TailTruncation" />
-                                </VerticalStackLayout>
-                            </Border>
-                        </HorizontalStackLayout>
-                    </ScrollView>
-
-                    <Border IsVisible="{Binding IsEmpty}" Style="{StaticResource Card}" Padding="22">
-                        <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
-                            <Image Source="icon_empty_wallet.png" WidthRequest="76" HeightRequest="76" SemanticProperties.Description="Portefeuille vide" />
-                            <Label Text="Aucune dépense sur cette période" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" />
-                            <Label Text="Ajoutez votre première dépense pour commencer à suivre vos finances." Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" MaxLines="2" />
-                            <Button Text="Ajouter une dépense" Clicked="OnAddClicked" Style="{StaticResource PrimaryButton}" />
+                    <!-- Flux de trésorerie sur six mois -->
+                    <Border IsVisible="{Binding HasCashflow}" Style="{StaticResource Card}" Padding="18,18,18,14">
+                        <VerticalStackLayout Spacing="16">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="Flux de trésorerie" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
+                                <Label Text="Revenus et dépenses des six derniers mois" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <FlexLayout BindableLayout.ItemsSource="{Binding CashflowBars}" Direction="Row" JustifyContent="SpaceAround" AlignItems="End">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:CashflowBar">
+                                        <VerticalStackLayout Spacing="6" WidthRequest="44">
+                                            <Grid HeightRequest="112">
+                                                <HorizontalStackLayout Spacing="3" HorizontalOptions="Center" VerticalOptions="End">
+                                                    <BoxView WidthRequest="13" HeightRequest="{Binding IncomeHeight}" VerticalOptions="End" CornerRadius="4,4,0,0" Color="{StaticResource IncomeBarColor}" />
+                                                    <BoxView WidthRequest="13" HeightRequest="{Binding ExpenseHeight}" VerticalOptions="End" CornerRadius="4,4,0,0" Color="{StaticResource ExpenseBarColor}" />
+                                                </HorizontalStackLayout>
+                                            </Grid>
+                                            <Label Text="{Binding Label}" Style="{StaticResource CaptionLabel}" HorizontalTextAlignment="Center" />
+                                        </VerticalStackLayout>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+                            <HorizontalStackLayout Spacing="18" HorizontalOptions="Center">
+                                <HorizontalStackLayout Spacing="7">
+                                    <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5" Color="{StaticResource IncomeBarColor}" VerticalOptions="Center" />
+                                    <Label Text="Revenus" Style="{StaticResource CaptionLabel}" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="7">
+                                    <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5" Color="{StaticResource ExpenseBarColor}" VerticalOptions="Center" />
+                                    <Label Text="Dépenses" Style="{StaticResource CaptionLabel}" />
+                                </HorizontalStackLayout>
+                            </HorizontalStackLayout>
                         </VerticalStackLayout>
                     </Border>
 
-                    <VerticalStackLayout IsVisible="{Binding HasData}" Spacing="12">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="Catégories principales" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" VerticalOptions="Center" />
-                            <Button Grid.Column="1" Text="Voir tout" Clicked="OnSeeAllExpensesClicked" Style="{StaticResource TextButton}" SemanticProperties.Description="Voir toutes les dépenses" />
-                        </Grid>
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding CategoryBars}" Spacing="14">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="vm:ChartBar">
-                                    <VerticalStackLayout Spacing="6">
-                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                                            <Label Text="{Binding Label}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                                            <Label Grid.Column="1" Text="{Binding Percent}" Style="{StaticResource MutedLabel}" />
-                                            <Label Grid.Column="2" Text="{Binding Amount}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                                        </Grid>
-                                        <ProgressBar Progress="{Binding Ratio}" ProgressColor="{Binding Color}" BackgroundColor="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" HeightRequest="8" />
-                                        <VerticalStackLayout IsVisible="{Binding HasBudget}" Spacing="4" Margin="0,2,0,0">
-                                            <Label Text="{Binding BudgetText}" Style="{StaticResource MutedLabel}" />
-                                            <ProgressBar Progress="{Binding BudgetProgress}" ProgressColor="{Binding BudgetColor}" BackgroundColor="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" HeightRequest="5" />
+                    <!-- Répartition par catégorie -->
+                    <Border IsVisible="{Binding HasData}" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="18">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Par catégorie" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" VerticalOptions="Center" />
+                                <Button Grid.Column="1" Text="Voir tout" Clicked="OnSeeAllExpensesClicked" Style="{StaticResource TextButton}" SemanticProperties.Description="Voir toutes les dépenses" />
+                            </Grid>
+                            <Grid WidthRequest="172" HeightRequest="172" HorizontalOptions="Center">
+                                <local:DonutChart Slices="{Binding CategorySlices}" Thickness="18" SemanticProperties.Description="Répartition des dépenses par catégorie" />
+                                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="2">
+                                    <Label Text="Total" Style="{StaticResource Eyebrow}" HorizontalTextAlignment="Center" />
+                                    <Label Text="{Binding Total}" Style="{StaticResource SectionTitle}" FontSize="19" HorizontalTextAlignment="Center" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding CategoryBars}" Spacing="14">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ChartBar">
+                                        <VerticalStackLayout Spacing="6">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                                                <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5" Color="{Binding Color}" VerticalOptions="Center" />
+                                                <Label Grid.Column="1" Text="{Binding Label}" Style="{StaticResource StrongLabel}" LineBreakMode="TailTruncation" />
+                                                <Label Grid.Column="2" Text="{Binding Percent}" Style="{StaticResource MutedLabel}" />
+                                                <Label Grid.Column="3" Text="{Binding Amount}" Style="{StaticResource StrongLabel}" />
+                                            </Grid>
+                                            <VerticalStackLayout IsVisible="{Binding HasBudget}" Spacing="4" Margin="20,0,0,0">
+                                                <Label Text="{Binding BudgetText}" Style="{StaticResource CaptionLabel}" />
+                                                <ProgressBar Progress="{Binding BudgetProgress}" ProgressColor="{Binding BudgetColor}" BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}" HeightRequest="5" />
+                                            </VerticalStackLayout>
                                         </VerticalStackLayout>
-                                    </VerticalStackLayout>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
                         </VerticalStackLayout>
-                    </VerticalStackLayout>
+                    </Border>
 
+                    <!-- Prochain abonnement et première catégorie -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Border Style="{StaticResource Card}" Padding="14">
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <local:IconTile Icon="repeat" Tone="warning" Size="34" />
+                                    <Label Grid.Column="1" Text="Prochain abonnement" Style="{StaticResource Eyebrow}" VerticalOptions="Center" MaxLines="2" />
+                                </Grid>
+                                <Label Text="{Binding NextSubscription}" Style="{StaticResource StrongLabel}" MaxLines="2" LineBreakMode="TailTruncation" />
+                            </VerticalStackLayout>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource Card}" Padding="14">
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <local:IconTile Icon="tag" Tone="danger" Size="34" />
+                                    <Label Grid.Column="1" Text="Catégorie n° 1" Style="{StaticResource Eyebrow}" VerticalOptions="Center" MaxLines="2" />
+                                </Grid>
+                                <Label Text="{Binding TopCategory}" Style="{StaticResource StrongLabel}" MaxLines="2" LineBreakMode="TailTruncation" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- Aucune dépense -->
+                    <Border IsVisible="{Binding IsEmpty}" Style="{StaticResource Card}" Padding="24">
+                        <VerticalStackLayout Spacing="10" HorizontalOptions="Fill">
+                            <local:IconTile Icon="wallet" Tone="primary" Size="64" HorizontalOptions="Center" />
+                            <Label Text="Aucune dépense sur cette période" Style="{StaticResource SectionTitle}" FontSize="19" HorizontalTextAlignment="Center" />
+                            <Label Text="Ajoutez votre première dépense pour commencer à suivre vos finances." Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" />
+                            <Button Text="Ajouter une dépense" Clicked="OnAddClicked" Style="{StaticResource PrimaryButton}" Margin="0,6,0,0" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Dépenses récentes -->
                     <VerticalStackLayout IsVisible="{Binding HasData}" Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="Dépenses récentes" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" VerticalOptions="Center" />
+                            <Label Text="Dépenses récentes" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" VerticalOptions="Center" />
                             <Button Grid.Column="1" Text="Voir toutes" Clicked="OnSeeAllExpensesClicked" Style="{StaticResource TextButton}" SemanticProperties.Description="Ouvrir l’historique des dépenses" />
                         </Grid>
                         <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentExpenses}" Spacing="9">
@@ -153,11 +241,11 @@
                                             <TapGestureRecognizer Tapped="OnRecentExpenseTapped" CommandParameter="{Binding .}" />
                                         </Border.GestureRecognizers>
                                         <Grid ColumnDefinitions="44,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
-                                            <Border Grid.RowSpan="2" WidthRequest="42" HeightRequest="42" Padding="0" BackgroundColor="{Binding CategoryColor}" StrokeThickness="0" StrokeShape="RoundRectangle 13" VerticalOptions="Center">
-                                                <Label Text="{Binding CategoryInitial}" TextColor="{Binding CategoryColor, Converter={StaticResource ColorContrastConverter}}" FontAttributes="Bold" FontSize="17" HorizontalOptions="Center" VerticalOptions="Center" />
+                                            <Border Grid.RowSpan="2" WidthRequest="42" HeightRequest="42" Padding="0" BackgroundColor="{Binding CategoryColor}" StrokeThickness="0" StrokeShape="RoundRectangle 12" VerticalOptions="Center">
+                                                <Label Text="{Binding CategoryInitial}" TextColor="{Binding CategoryColor, Converter={StaticResource ColorContrastConverter}}" FontFamily="OpenSansSemibold" FontSize="17" HorizontalOptions="Center" VerticalOptions="Center" />
                                             </Border>
-                                            <Label Grid.Column="1" Text="{Binding Description}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" LineBreakMode="TailTruncation" />
-                                            <Label Grid.Column="2" Text="{Binding Amount}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                                            <Label Grid.Column="1" Text="{Binding Description}" Style="{StaticResource StrongLabel}" LineBreakMode="TailTruncation" />
+                                            <Label Grid.Column="2" Text="{Binding Amount}" Style="{StaticResource StrongLabel}" />
                                             <Label Grid.Row="1" Grid.Column="1" Text="{Binding Category}" Style="{StaticResource MutedLabel}" />
                                             <Label Grid.Row="1" Grid.Column="2" Text="{Binding Date}" Style="{StaticResource MutedLabel}" />
                                         </Grid>
@@ -170,6 +258,6 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <Button x:Name="AddExpenseButton" Text="+  Ajouter" Clicked="OnAddClicked" Style="{StaticResource ExtendedFab}" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,20,24" SemanticProperties.Description="Ajouter une dépense" />
+        <local:IconButton Grid.Row="1" Icon="plus" ButtonStyle="Fab" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,20,24" Description="Ajouter une dépense" Clicked="OnAddClicked" />
     </Grid>
 </ContentPage>

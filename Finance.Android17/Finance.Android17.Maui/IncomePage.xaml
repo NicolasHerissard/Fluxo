@@ -2,136 +2,191 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Finance.Android17.Presentation;assembly=Finance.Android17.Presentation"
+             xmlns:local="clr-namespace:Finance.Android17.Maui"
              x:Class="Finance.Android17.Maui.IncomePage"
              x:Name="Page"
              x:DataType="vm:IncomeViewModel"
              Style="{StaticResource AppPage}">
-    <ScrollView>
-        <VerticalStackLayout Padding="20,16,20,100" Spacing="18" MaximumWidthRequest="760" HorizontalOptions="Center">
-            <VerticalStackLayout Spacing="1">
-                <Label Text="Revenus &amp; épargne" Style="{StaticResource PageTitle}" SemanticProperties.HeadingLevel="Level1" />
-                <Label Text="Ce que vous recevez et ce que vous mettez de côté" Style="{StaticResource MutedLabel}" />
-            </VerticalStackLayout>
+    <Grid RowDefinitions="Auto,*,Auto">
+        <local:PageHeader Title="Revenus &amp; épargne" Subtitle="Ce que vous recevez et ce que vous mettez de côté" />
 
-            <Border Padding="20" StrokeThickness="0" StrokeShape="RoundRectangle 24">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="{StaticResource HeroGradientStartColor}" Offset="0" />
-                        <GradientStop Color="{StaticResource HeroGradientEndColor}" Offset="1" />
-                    </LinearGradientBrush>
-                </Border.Background>
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="SOLDE ACTUEL" TextColor="{StaticResource HeroMutedTextColor}" FontSize="12" CharacterSpacing="1" />
-                    <Label Text="{Binding CurrentBalance}" TextColor="{StaticResource HeroTextColor}" FontSize="34" FontAttributes="Bold" />
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                        <VerticalStackLayout><Label Text="REVENUS DU MOIS" TextColor="{StaticResource HeroMutedTextColor}" FontSize="12" /><Label Text="{Binding MonthIncome}" TextColor="{StaticResource HeroTextColor}" FontAttributes="Bold" /></VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="1"><Label Text="RESTE CE MOIS-CI" TextColor="{StaticResource HeroMutedTextColor}" FontSize="12" /><Label Text="{Binding MonthNet}" TextColor="{StaticResource HeroTextColor}" FontAttributes="Bold" /></VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="2"><Label Text="FIN DE MOIS" TextColor="{StaticResource HeroMutedTextColor}" FontSize="12" /><Label Text="{Binding ForecastBalance}" TextColor="{StaticResource HeroTextColor}" FontAttributes="Bold" /></VerticalStackLayout>
-                    </Grid>
-                    <Label Text="{Binding ExpectedIncome, StringFormat='Encore attendu d’ici la fin du mois : {0}'}" TextColor="{StaticResource HeroMutedTextColor}" FontSize="12" />
-                    <Label Text="Reste ce mois-ci = revenus − dépenses du mois. Fin de mois = solde estimé au dernier jour, avec revenus récurrents et abonnements à venir." TextColor="{StaticResource HeroMutedTextColor}" FontSize="12" />
-                </VerticalStackLayout>
-            </Border>
-
-            <Label Text="Revenus" Style="{StaticResource SectionTitle}" />
-            <Button Text="+ Ajouter un revenu" Command="{Binding ShowIncomeFormCommand}" IsVisible="{Binding IsIncomeFormClosed}" Style="{StaticResource PrimaryButton}" SemanticProperties.Description="Ajouter un revenu" />
-            <Border IsVisible="{Binding IsIncomeFormVisible}" Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="{Binding IncomeFormTitle}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                    <Border Style="{StaticResource InputField}"><Entry Text="{Binding IncomeDescription}" Placeholder="Origine du revenu (ex. Salaire)" Style="{StaticResource InputEntry}" SemanticProperties.Description="Origine du revenu" /></Border>
-                    <Border Style="{StaticResource InputField}"><Entry Text="{Binding IncomeAmount}" Placeholder="Montant" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant du revenu" /></Border>
-                    <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding CanChooseRepeat}">
-                        <VerticalStackLayout>
-                            <Label Text="Se répète" Style="{StaticResource BodyLabel}" />
-                            <Label Text="Salaire, loyer perçu… ajouté automatiquement à chaque échéance" Style="{StaticResource MutedLabel}" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20,12,20,28" Spacing="16" MaximumWidthRequest="760" HorizontalOptions="Fill">
+                <!-- Synthèse du mois -->
+                <Border Style="{StaticResource Card}" Padding="20">
+                    <VerticalStackLayout Spacing="14">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Solde actuel" Style="{StaticResource Eyebrow}" />
+                            <Label Text="{Binding CurrentBalance}" Style="{StaticResource DisplayAmount}" SemanticProperties.Description="Solde actuel" />
                         </VerticalStackLayout>
-                        <Switch Grid.Column="1" IsToggled="{Binding IncomeRepeats}" SemanticProperties.Description="Le revenu se répète" />
-                    </Grid>
-                    <Border IsVisible="{Binding IncomeRepeats}" Style="{StaticResource InputField}"><Picker ItemsSource="{Binding Frequencies}" SelectedItem="{Binding SelectedFrequency}" SemanticProperties.Description="Fréquence du revenu" /></Border>
-                    <Label Text="{Binding IncomeDateLabel}" Style="{StaticResource FieldLabel}" />
-                    <Border Style="{StaticResource InputField}"><DatePicker Date="{Binding IncomeDate}" SemanticProperties.Description="{Binding IncomeDateLabel}" /></Border>
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Button Text="Enregistrer le revenu" Command="{Binding SaveIncomeCommand}" Style="{StaticResource PrimaryButton}" SemanticProperties.Description="Enregistrer le revenu" />
-                        <Button Grid.Column="1" Text="Annuler" Command="{Binding CancelIncomeEditCommand}" Style="{StaticResource TextButton}" SemanticProperties.Description="Fermer sans enregistrer" />
-                    </Grid>
+                        <BoxView HeightRequest="1" />
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                            <VerticalStackLayout Spacing="5">
+                                <local:IconTile Icon="arrow-down-left" Tone="success" Size="32" HorizontalOptions="Start" />
+                                <Label Text="Revenus du mois" Style="{StaticResource CaptionLabel}" />
+                                <Label Text="{Binding MonthIncome}" Style="{StaticResource StrongLabel}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="5">
+                                <local:IconTile Icon="trending-up" Tone="violet" Size="32" HorizontalOptions="Start" />
+                                <Label Text="Reste ce mois-ci" Style="{StaticResource CaptionLabel}" />
+                                <Label Text="{Binding MonthNet}" Style="{StaticResource StrongLabel}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2" Spacing="5">
+                                <local:IconTile Icon="calendar" Tone="primary" Size="32" HorizontalOptions="Start" />
+                                <Label Text="Fin de mois" Style="{StaticResource CaptionLabel}" />
+                                <Label Text="{Binding ForecastBalance}" Style="{StaticResource StrongLabel}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Label Text="{Binding ExpectedIncome, StringFormat='Encore attendu d’ici la fin du mois : {0}'}" Style="{StaticResource MutedLabel}" FontSize="12" />
+                        <Label Text="Reste ce mois-ci = revenus − dépenses du mois. Fin de mois = solde estimé au dernier jour, avec revenus récurrents et abonnements à venir." Style="{StaticResource CaptionLabel}" TextColor="{AppThemeBinding Light={StaticResource TextFaintLight}, Dark={StaticResource TextFaintDark}}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Revenus -->
+                <Label Text="Revenus" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
+                <Button Text="+  Ajouter un revenu" Command="{Binding ShowIncomeFormCommand}" IsVisible="{Binding IsIncomeFormClosed}" Style="{StaticResource PrimaryButton}" SemanticProperties.Description="Ajouter un revenu" />
+                <Border IsVisible="{Binding IsIncomeFormVisible}" Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="{Binding IncomeFormTitle}" Style="{StaticResource StrongLabel}" />
+                        <Border Style="{StaticResource InputField}"><Entry Text="{Binding IncomeDescription}" Placeholder="Origine du revenu (ex. Salaire)" Style="{StaticResource InputEntry}" SemanticProperties.Description="Origine du revenu" /></Border>
+                        <Border Style="{StaticResource InputField}"><Entry Text="{Binding IncomeAmount}" Placeholder="Montant" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant du revenu" /></Border>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding CanChooseRepeat}">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="Se répète" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Salaire, loyer perçu… ajouté automatiquement à chaque échéance" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding IncomeRepeats}" VerticalOptions="Center" SemanticProperties.Description="Le revenu se répète" />
+                        </Grid>
+                        <Border IsVisible="{Binding IncomeRepeats}" Style="{StaticResource InputField}"><Picker ItemsSource="{Binding Frequencies}" SelectedItem="{Binding SelectedFrequency}" SemanticProperties.Description="Fréquence du revenu" /></Border>
+                        <Label Text="{Binding IncomeDateLabel}" Style="{StaticResource FieldLabel}" />
+                        <Border Style="{StaticResource InputField}"><DatePicker Date="{Binding IncomeDate}" SemanticProperties.Description="{Binding IncomeDateLabel}" /></Border>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Button Text="Enregistrer le revenu" Command="{Binding SaveIncomeCommand}" Style="{StaticResource PrimaryButton}" SemanticProperties.Description="Enregistrer le revenu" />
+                            <Button Grid.Column="1" Text="Annuler" Command="{Binding CancelIncomeEditCommand}" Style="{StaticResource TextButton}" SemanticProperties.Description="Fermer sans enregistrer" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Label Text="À venir (revenus récurrents)" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecurringIncomes}" Spacing="9">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RecurringIncomeRow">
+                            <Border Style="{StaticResource Card}" Padding="14,12,8,12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditRecurringIncomeCommand}" CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12" SemanticProperties.Hint="Touchez pour modifier ce revenu récurrent">
+                                    <local:IconTile Icon="repeat" Tone="blue" Size="42" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding Name}" Style="{StaticResource StrongLabel}" LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding Frequency}" Style="{StaticResource MutedLabel}" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="2" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding Amount}" Style="{StaticResource StrongLabel}" HorizontalTextAlignment="End" />
+                                        <Label Text="{Binding NextDate}" Style="{StaticResource CaptionLabel}" HorizontalTextAlignment="End" />
+                                    </VerticalStackLayout>
+                                    <local:IconButton Grid.Column="3" Icon="trash" ButtonStyle="Small" VerticalOptions="Center"
+                                                      Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteRecurringIncomeCommand}" CommandParameter="{Binding .}"
+                                                      IconColor="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}"
+                                                      Description="Supprimer ce revenu récurrent" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
-            </Border>
 
-            <Label Text="À venir (revenus récurrents)" Style="{StaticResource SectionTitle}" />
-            <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecurringIncomes}" Spacing="8">
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="vm:RecurringIncomeRow">
-                        <Border Style="{StaticResource Card}" Padding="14">
-                            <Grid ColumnDefinitions="*,Auto,48,60" RowDefinitions="Auto,Auto" ColumnSpacing="6">
-                                <Label Text="{Binding Name}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Grid.Column="1" Text="{Binding Amount}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                                <ImageButton Grid.Column="2" Grid.RowSpan="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditRecurringIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Modifier ce revenu récurrent" />
-                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Margin="12,0,0,0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteRecurringIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer ce revenu récurrent" />
-                                <Label Grid.Row="1" Text="{Binding Frequency}" Style="{StaticResource MutedLabel}" /><Label Grid.Row="1" Grid.Column="1" Text="{Binding NextDate}" Style="{StaticResource MutedLabel}" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </VerticalStackLayout>
-
-            <Label Text="Reçus" Style="{StaticResource SectionTitle}" />
-            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Incomes}" Spacing="8">
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="vm:IncomeRow">
-                        <Border Style="{StaticResource Card}" Padding="14">
-                            <Grid ColumnDefinitions="*,Auto,48,60" RowDefinitions="Auto,Auto" ColumnSpacing="6">
-                                <Label Text="{Binding Description}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                                <Label Grid.Column="1" Text="{Binding Amount}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" FontAttributes="Bold" />
-                                <ImageButton Grid.Column="2" Grid.RowSpan="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Modifier ce revenu" />
-                                <ImageButton Grid.Column="3" Grid.RowSpan="2" Source="icon_delete.png" Margin="12,0,0,0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteIncomeCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer ce revenu" />
-                                <Label Grid.Row="1" Text="{Binding Date}" Style="{StaticResource MutedLabel}" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </VerticalStackLayout>
-
-            <Label Text="Objectifs d’épargne" Style="{StaticResource SectionTitle}" />
-            <Button Text="+ Ajouter un objectif" Command="{Binding ShowGoalFormCommand}" IsVisible="{Binding IsGoalFormClosed}" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Ajouter un objectif d’épargne" />
-            <Border IsVisible="{Binding IsGoalFormVisible}" Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="{Binding GoalFormTitle}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                    <Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalName}" Placeholder="Nom de l’objectif" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de l’objectif" /></Border>
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8"><Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalTargetAmount}" Placeholder="Montant cible" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant cible" /></Border><Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Text="{Binding GoalSavedAmount}" Placeholder="Déjà épargné" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant déjà épargné" /></Border></Grid>
-                    <Grid ColumnDefinitions="*,Auto"><Label Text="Ajouter une date cible" Style="{StaticResource BodyLabel}" VerticalOptions="Center" /><Switch Grid.Column="1" IsToggled="{Binding GoalHasTargetDate}" SemanticProperties.Description="Ajouter une date cible" /></Grid>
-                    <Border IsVisible="{Binding GoalHasTargetDate}" Style="{StaticResource InputField}"><DatePicker Date="{Binding GoalTargetDate}" SemanticProperties.Description="Date cible de l’objectif" /></Border>
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8"><Button Text="Enregistrer" Command="{Binding SaveGoalCommand}" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Enregistrer l’objectif" /><Button Grid.Column="1" Text="Annuler" Command="{Binding CancelGoalEditCommand}" Style="{StaticResource TextButton}" SemanticProperties.Description="Annuler la modification de l’objectif" /></Grid>
+                <Label Text="Reçus" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Incomes}" Spacing="9">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:IncomeRow">
+                            <Border Style="{StaticResource Card}" Padding="14,12,8,12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditIncomeCommand}" CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12" SemanticProperties.Hint="Touchez pour modifier ce revenu">
+                                    <local:IconTile Icon="arrow-down-left" Tone="success" Size="42" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding Description}" Style="{StaticResource StrongLabel}" LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding Date}" Style="{StaticResource MutedLabel}" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="2" Text="{Binding Amount}" Style="{StaticResource StrongLabel}" VerticalOptions="Center"
+                                           TextColor="{AppThemeBinding Light={StaticResource SuccessInkLight}, Dark={StaticResource SuccessInkDark}}" />
+                                    <local:IconButton Grid.Column="3" Icon="trash" ButtonStyle="Small" VerticalOptions="Center"
+                                                      Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteIncomeCommand}" CommandParameter="{Binding .}"
+                                                      IconColor="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}"
+                                                      Description="Supprimer ce revenu" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
-            </Border>
-            <VerticalStackLayout BindableLayout.ItemsSource="{Binding SavingsGoals}" Spacing="8">
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="vm:SavingsGoalRow">
-                        <Border Style="{StaticResource Card}" Padding="14">
-                            <Grid ColumnDefinitions="*,48,60" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="6" RowSpacing="6">
-                                <Label Text="{Binding Name}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                                <ImageButton Grid.Column="1" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditGoalCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Modifier cet objectif" />
-                                <ImageButton Grid.Column="2" Source="icon_delete.png" Margin="12,0,0,0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteGoalCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer cet objectif" />
-                                <Label Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding Saved, StringFormat='{0} épargnés'}" Style="{StaticResource MutedLabel}" />
-                                <Grid Grid.Row="2" Grid.ColumnSpan="3" ColumnDefinitions="*,Auto" ColumnSpacing="10"><ProgressBar Progress="{Binding Progress}" ProgressColor="{StaticResource PrimaryColor}" VerticalOptions="Center" /><Label Grid.Column="1" Text="{Binding ProgressText}" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /></Grid>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </VerticalStackLayout>
 
-            <Border IsVisible="{Binding IsUndoVisible}" BackgroundColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource OutlineLight}}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="14,8">
-                <Grid ColumnDefinitions="*,Auto">
-                    <Label Text="{Binding UndoMessage}" TextColor="{AppThemeBinding Light=White, Dark={StaticResource TextPrimaryLight}}" VerticalOptions="Center" SemanticProperties.Description="{Binding UndoMessage}" />
-                    <Button Grid.Column="1" Text="Annuler" Command="{Binding UndoDeleteCommand}" BackgroundColor="Transparent" TextColor="{AppThemeBinding Light={StaticResource PrimaryContainerLight}, Dark={StaticResource PrimaryColor}}" HeightRequest="48" SemanticProperties.Description="Annuler la suppression" />
-                </Grid>
-            </Border>
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource PrimaryColor}" />
-            <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" HorizontalTextAlignment="Center">
-                <Label.Triggers>
-                    <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
-                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" />
-                    </DataTrigger>
-                </Label.Triggers>
-            </Label>
-        </VerticalStackLayout>
-    </ScrollView>
+                <!-- Objectifs d'épargne -->
+                <Label Text="Objectifs d’épargne" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
+                <Button Text="+  Ajouter un objectif" Command="{Binding ShowGoalFormCommand}" IsVisible="{Binding IsGoalFormClosed}" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Ajouter un objectif d’épargne" />
+                <Border IsVisible="{Binding IsGoalFormVisible}" Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="{Binding GoalFormTitle}" Style="{StaticResource StrongLabel}" />
+                        <Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalName}" Placeholder="Nom de l’objectif" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de l’objectif" /></Border>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalTargetAmount}" Placeholder="Montant cible" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant cible" /></Border>
+                            <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Text="{Binding GoalSavedAmount}" Placeholder="Déjà épargné" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant déjà épargné" /></Border>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="Ajouter une date cible" Style="{StaticResource BodyLabel}" VerticalOptions="Center" />
+                            <Switch Grid.Column="1" IsToggled="{Binding GoalHasTargetDate}" SemanticProperties.Description="Ajouter une date cible" />
+                        </Grid>
+                        <Border IsVisible="{Binding GoalHasTargetDate}" Style="{StaticResource InputField}"><DatePicker Date="{Binding GoalTargetDate}" SemanticProperties.Description="Date cible de l’objectif" /></Border>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Button Text="Enregistrer" Command="{Binding SaveGoalCommand}" Style="{StaticResource PrimaryButton}" SemanticProperties.Description="Enregistrer l’objectif" />
+                            <Button Grid.Column="1" Text="Annuler" Command="{Binding CancelGoalEditCommand}" Style="{StaticResource TextButton}" SemanticProperties.Description="Annuler la modification de l’objectif" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding SavingsGoals}" Spacing="9">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SavingsGoalRow">
+                            <Border Style="{StaticResource Card}" Padding="14,12,8,14">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditGoalCommand}" CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10" SemanticProperties.Hint="Touchez pour modifier cet objectif">
+                                    <local:IconTile Icon="target" Tone="violet" Size="42" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="{Binding Name}" Style="{StaticResource StrongLabel}" LineBreakMode="TailTruncation" />
+                                        <Label Text="{Binding Saved, StringFormat='{0} épargnés'}" Style="{StaticResource MutedLabel}" />
+                                    </VerticalStackLayout>
+                                    <local:IconButton Grid.Column="2" Icon="trash" ButtonStyle="Small" VerticalOptions="Center"
+                                                      Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteGoalCommand}" CommandParameter="{Binding .}"
+                                                      IconColor="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}"
+                                                      Description="Supprimer cet objectif" />
+                                    <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,0,6,0">
+                                        <ProgressBar Progress="{Binding Progress}" ProgressColor="{AppThemeBinding Light={StaticResource VioletInkLight}, Dark={StaticResource VioletInkDark}}"
+                                                     BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}" VerticalOptions="Center" HeightRequest="8" />
+                                        <Label Grid.Column="1" Text="{Binding ProgressText}" Style="{StaticResource StrongLabel}" FontSize="13" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border Grid.Row="2" IsVisible="{Binding IsUndoVisible}" Style="{StaticResource Toast}" Margin="20,0,20,12">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{Binding UndoMessage}" Style="{StaticResource ToastText}" SemanticProperties.Description="{Binding UndoMessage}" />
+                <Button Grid.Column="1" Text="Annuler" Command="{Binding UndoDeleteCommand}" Style="{StaticResource ToastAction}" SemanticProperties.Description="Annuler la suppression" />
+            </Grid>
+        </Border>
+    </Grid>
 </ContentPage>

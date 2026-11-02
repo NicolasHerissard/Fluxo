@@ -1,22 +1,21 @@
 namespace Finance.Android17.Presentation;
 
-/// <summary>Couleurs que les ViewModels transmettent aux vues sous forme de texte (états calculés).</summary>
+/// <summary>
+/// Couleurs que les ViewModels transmettent aux vues sous forme de texte. Ce sont des tons moyens, lisibles aussi
+/// bien sur une carte claire que sur une carte sombre (barres de progression, pastilles) : un ViewModel ne connaît
+/// pas le thème. Les textes qui doivent changer de teinte avec le thème passent par un indicateur booléen que la
+/// vue associe à une couleur du thème.
+/// </summary>
 internal static class Palette
 {
+    /// <summary>Couleur suggérée en premier pour une nouvelle catégorie (celle des catégories existantes sans couleur).</summary>
     public const string Primary = "#6750A4";
-    public const string OnPrimary = "#FFFFFF";
-    public const string OnPrimaryMuted = "#CAC4D0";
     public const string Transparent = "Transparent";
 
-    public const string Neutral = "#E9DDFF";
-    public const string Good = "#B7F5C5";
-    public const string Warning = "#FFD8A8";
-    public const string Danger = "#FFB4AB";
-    public const string DangerSoft = "#FFDAD6";
-    public const string BudgetInitial = "#81C995";
+    public const string Good = "#22A06B";
+    public const string Warning = "#F59E0B";
+    public const string Danger = "#F43F5E";
+    public const string BudgetInitial = Good;
 
-    public const string SelectionStroke = "#D0BCFF";
-
-    public const string IncomeAmount = "#2E7D32";
-    public const string ExpenseAmount = "#B3261E";
+    public const string SelectionStroke = "#818CF8";
 }

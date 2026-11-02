@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Finance.Android17.Maui"
+             x:Class="Finance.Android17.Maui.PageHeader">
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Padding="20,18,20,4">
+        <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+            <Label x:Name="EyebrowLabel" Style="{StaticResource Eyebrow}" IsVisible="False" />
+            <Label x:Name="TitleLabel" Style="{StaticResource PageTitle}" LineBreakMode="TailTruncation" MaxLines="2" SemanticProperties.HeadingLevel="Level1" />
+            <Label x:Name="SubtitleLabel" Style="{StaticResource MutedLabel}" FontSize="14" IsVisible="False" />
+        </VerticalStackLayout>
+        <HorizontalStackLayout Grid.Column="1" Spacing="9" VerticalOptions="Start">
+            <local:IconButton x:Name="LockButton" Icon="lock" ButtonStyle="Tile" IsVisible="False" Description="Verrouiller l’application" Clicked="OnLockClicked" />
+            <local:IconButton x:Name="BellButton" Icon="bell" ButtonStyle="Tile" Description="Notifications" Clicked="OnBellClicked" />
+        </HorizontalStackLayout>
+    </Grid>
+</ContentView>

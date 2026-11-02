@@ -10,7 +10,7 @@ Un dossier par sujet, qui reprend le nom du dossier testé dans `Application`, `
 
 | Dossier | Ce qu'il vérifie |
 | --- | --- |
-| `Dashboard/`, `Overview/`, `Expenses/`, `Operations/`, `Subscriptions/`, `Money/`, `Receipts/`, `Recurring/` (planificateur, `Recurrence`), `Reminders/` (planificateur), `Security/PinPolicyTests` | Les **règles pures** d'`Application`, sans base ni conteneur (entités fabriquées par `Support/Samples`). |
+| `Dashboard/` (dont `CashflowCalculatorTests` et `NotificationBuilderTests`), `Overview/`, `Expenses/`, `Operations/`, `Subscriptions/`, `Money/`, `Receipts/`, `Recurring/` (planificateur, `Recurrence`), `Reminders/` (planificateur), `Security/PinPolicyTests` | Les **règles pures** d'`Application`, sans base ni conteneur (entités fabriquées par `Support/Samples`). |
 | `Domain/` | `Entity.Touch/MarkDeleted/MarkRestored`. |
 | `Persistence/` | Les dépôts, `FinanceDataStore`, l'initialisation concurrente, le **schéma versionné** (base neuve, base de la première version, tables ajoutées plus tard, base plus récente refusée) et les catégories par défaut, sur une vraie base SQLCipher temporaire. |
 | `Security/` | `PinLockService` et `DatabaseKeyProvider`, dont des vecteurs de référence calculés indépendamment (Python) pour que le format du PIN ne change pas sans qu'on le voie. |

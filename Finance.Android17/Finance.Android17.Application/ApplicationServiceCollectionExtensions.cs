@@ -14,6 +14,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<StartupService>();
         services.AddSingleton<FinanceDataLoader>();
         services.AddSingleton<DashboardService>();
+        services.AddSingleton<NotificationService>();
         return services;
     }
 }

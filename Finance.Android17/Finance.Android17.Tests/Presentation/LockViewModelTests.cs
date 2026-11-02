@@ -188,6 +188,6 @@ public sealed class LockViewModelTests : IDisposable
         vm.TogglePinVisibilityCommand.Execute(null);
 
         Assert.False(vm.IsPinHidden);
-        Assert.Equal("icon_visibility_off.png", vm.PinVisibilityIcon);
+        Assert.Equal("eye-off", vm.PinVisibilityIcon);
     }
 }

@@ -10,7 +10,6 @@ public partial class DashboardPage : ContentPage
     public DashboardPage(DashboardViewModel viewModel, IServiceProvider services) { InitializeComponent(); BindingContext = _viewModel = viewModel; _services = services; }
     protected override void OnAppearing() { base.OnAppearing(); _ = _viewModel.LoadAsync(); }
     private async void OnAddClicked(object? sender, EventArgs e) => await Navigation.PushModalAsync(new NavigationPage(_services.GetRequiredService<AddExpensePage>()));
-    private void OnLockClicked(object? sender, EventArgs e) => (Microsoft.Maui.Controls.Application.Current as App)?.ShowLock();
 
     private async void OnSeeAllExpensesClicked(object? sender, EventArgs e) => await Shell.Current.GoToAsync("//expenses");
 
@@ -20,12 +19,5 @@ public partial class DashboardPage : ContentPage
         var page = _services.GetRequiredService<AddExpensePage>();
         await page.BeginEditAsync(row.Id);
         await Navigation.PushModalAsync(new NavigationPage(page));
-    }
-
-    private void OnDashboardScrolled(object? sender, ScrolledEventArgs e)
-    {
-        var compact = e.ScrollY > 72;
-        AddExpenseButton.Text = compact ? "+" : "+  Ajouter";
-        AddExpenseButton.WidthRequest = compact ? 56 : 132;
     }
 }

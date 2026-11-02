@@ -2,120 +2,219 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Finance.Android17.Presentation;assembly=Finance.Android17.Presentation"
+             xmlns:local="clr-namespace:Finance.Android17.Maui"
              x:Class="Finance.Android17.Maui.SettingsPage"
              x:Name="Page"
              x:DataType="vm:SettingsViewModel"
              Style="{StaticResource AppPage}">
-    <ScrollView>
-        <VerticalStackLayout Padding="20,16,20,100" Spacing="18" MaximumWidthRequest="760" HorizontalOptions="Center">
-            <VerticalStackLayout Spacing="1"><Label Text="Réglages" Style="{StaticResource PageTitle}" SemanticProperties.HeadingLevel="Level1" /><Label Text="Sécurité, automatisation et préférences" Style="{StaticResource MutedLabel}" /></VerticalStackLayout>
+    <Grid RowDefinitions="Auto,*">
+        <local:PageHeader Title="Réglages" Subtitle="Sécurité, automatisation et préférences" />
 
-            <Label Text="Confidentialité" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Masquer les montants" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Remplace les montants par des points" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding HideAmounts}" SemanticProperties.Description="Masquer les montants" /></Grid>
-                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Déverrouillage biométrique" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Empreinte ou visage après le premier PIN" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding BiometricsEnabled}" IsEnabled="{Binding BiometricsAvailable}" SemanticProperties.Description="Déverrouillage biométrique" /></Grid>
-                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Verrouillage automatique" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Après une période d’inactivité" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding AutoLockChoices}" SelectedItem="{Binding AutoLockMinutes}" Title="Minutes" MinimumWidthRequest="120" SemanticProperties.Description="Verrouillage automatique, en minutes" /></Grid>
-                </VerticalStackLayout>
-            </Border>
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20,12,20,28" Spacing="10" MaximumWidthRequest="760" HorizontalOptions="Fill">
 
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Modifier le code PIN" Style="{StaticResource SectionTitle}" FontSize="18" />
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Code PIN actuel" Text="{Binding CurrentPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Code PIN actuel" /></Border>
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                        <Border Style="{StaticResource InputField}"><Entry Placeholder="Nouveau PIN" Text="{Binding NewPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nouveau code PIN" /></Border>
-                        <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Placeholder="Confirmation" Text="{Binding ConfirmPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Confirmation du nouveau code PIN" /></Border>
-                    </Grid>
-                    <Button Text="Changer le code PIN" Command="{Binding ChangePinCommand}" Style="{StaticResource SecondaryButton}" />
-                </VerticalStackLayout>
-            </Border>
-
-            <Label Text="Préférences financières" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Devise principale" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Utilisée pour les nouveaux montants" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding Currencies}" SelectedItem="{Binding SelectedCurrency}" MinimumWidthRequest="120" SemanticProperties.Description="Devise principale" /></Grid>
-                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Label Text="Budget mensuel global" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Border Style="{StaticResource InputField}"><Entry Placeholder="Ex. 1500" Text="{Binding MonthlyBudget}" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Budget mensuel global" /></Border>
-                        <Button Grid.Column="1" Text="Enregistrer" Command="{Binding SaveBudgetCommand}" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Enregistrer le budget mensuel" />
-                    </Grid>
-                    <Label Text="Laissez vide pour désactiver le suivi du budget." Style="{StaticResource MutedLabel}" />
-                </VerticalStackLayout>
-            </Border>
-
-            <Label Text="Abonnements" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Créer les dépenses automatiquement" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Ajoute chaque prélèvement à son échéance, sans doublon" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding AutoCreateSubscriptionExpenses}" SemanticProperties.Description="Créer les dépenses des abonnements automatiquement" /></Grid>
-                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Rappels d’échéance" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Notifications programmées, même application fermée" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding SubscriptionRemindersEnabled}" SemanticProperties.Description="Rappels d’échéance" /></Grid>
-                    <Grid ColumnDefinitions="*,Auto"><Label Text="Prévenir avant" Style="{StaticResource BodyLabel}" VerticalOptions="Center" /><Picker Grid.Column="1" ItemsSource="{Binding ReminderDayChoices}" SelectedItem="{Binding SubscriptionReminderDays}" IsEnabled="{Binding SubscriptionRemindersEnabled}" MinimumWidthRequest="120" SemanticProperties.Description="Prévenir avant l’échéance, en jours" /></Grid>
-                </VerticalStackLayout>
-            </Border>
-
-            <Label Text="Revenus" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}">
-                <Grid ColumnDefinitions="*,Auto">
-                    <VerticalStackLayout>
-                        <Label Text="Créer les revenus récurrents automatiquement" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                        <Label Text="Ajoute les salaires et autres revenus arrivés à échéance" Style="{StaticResource MutedLabel}" />
+                <!-- Apparence -->
+                <Label Text="Apparence" Style="{StaticResource Eyebrow}" Margin="2,8,0,0" SemanticProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Thème" Style="{StaticResource StrongLabel}" />
+                            <Label Text="Appliqué immédiatement, sans redémarrer" Style="{StaticResource MutedLabel}" />
+                        </VerticalStackLayout>
+                        <local:SegmentedControl Items="{Binding ThemeChoices}" Icons="sun,moon,monitor" SelectedItem="{Binding SelectedTheme}" Command="{Binding SelectThemeCommand}" />
                     </VerticalStackLayout>
-                    <Switch Grid.Column="1" IsToggled="{Binding AutoCreateRecurringIncomes}" SemanticProperties.Description="Créer les revenus récurrents automatiquement" />
-                </Grid>
-            </Border>
+                </Border>
 
-            <Label Text="Ajout rapide" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Catégorie par défaut" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Utilisée si aucune catégorie récente n’est disponible" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding Categories}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding DefaultCategory}" Title="Aucune" MinimumWidthRequest="140" SemanticProperties.Description="Catégorie par défaut" /></Grid>
-                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Mémoriser la dernière catégorie" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Accélère les dépenses habituelles" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Switch Grid.Column="1" IsToggled="{Binding RememberLastCategory}" SemanticProperties.Description="Mémoriser la dernière catégorie" /></Grid>
-                    <Grid ColumnDefinitions="*,Auto"><Label Text="Après l’enregistrement" Style="{StaticResource BodyLabel}" VerticalOptions="Center" /><Picker Grid.Column="1" ItemsSource="{Binding AfterSaveChoices}" SelectedItem="{Binding SelectedAfterSaveBehavior}" MinimumWidthRequest="150" SemanticProperties.Description="Comportement après l’enregistrement" /></Grid>
-                </VerticalStackLayout>
-            </Border>
+                <!-- Confidentialité et sécurité -->
+                <Label Text="Confidentialité" Style="{StaticResource Eyebrow}" Margin="2,10,0,0" SemanticProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <local:IconTile Icon="eye-off" Tone="blue" Size="40" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="Masquer les montants" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Remplace les montants par des points" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="2" IsToggled="{Binding HideAmounts}" VerticalOptions="Center" SemanticProperties.Description="Masquer les montants" />
+                        </Grid>
+                        <BoxView HeightRequest="1" />
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <local:IconTile Icon="shield" Tone="success" Size="40" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="Déverrouillage biométrique" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Empreinte ou visage après le premier PIN" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="2" IsToggled="{Binding BiometricsEnabled}" IsEnabled="{Binding BiometricsAvailable}" VerticalOptions="Center" SemanticProperties.Description="Déverrouillage biométrique" />
+                        </Grid>
+                        <BoxView HeightRequest="1" />
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <local:IconTile Icon="lock" Tone="violet" Size="40" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="Verrouillage automatique" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Après une période d’inactivité (minutes)" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Border Grid.Column="2" Style="{StaticResource InputField}" Padding="12,0" MinimumHeightRequest="44" VerticalOptions="Center">
+                                <Picker ItemsSource="{Binding AutoLockChoices}" SelectedItem="{Binding AutoLockMinutes}" Title="Minutes" MinimumWidthRequest="64" SemanticProperties.Description="Verrouillage automatique, en minutes" />
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
 
-            <Label Text="Apparence" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}"><Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="Thème" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Appliqué immédiatement" Style="{StaticResource MutedLabel}" /></VerticalStackLayout><Picker Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" MinimumWidthRequest="130" SemanticProperties.Description="Thème" /></Grid></Border>
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Modifier le code PIN" Style="{StaticResource StrongLabel}" />
+                        <Border Style="{StaticResource InputField}"><Entry Placeholder="Code PIN actuel" Text="{Binding CurrentPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Code PIN actuel" /></Border>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Border Style="{StaticResource InputField}"><Entry Placeholder="Nouveau PIN" Text="{Binding NewPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nouveau code PIN" /></Border>
+                            <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Placeholder="Confirmation" Text="{Binding ConfirmPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Confirmation du nouveau code PIN" /></Border>
+                        </Grid>
+                        <Button Text="Changer le code PIN" Command="{Binding ChangePinCommand}" Style="{StaticResource SecondaryButton}" />
+                    </VerticalStackLayout>
+                </Border>
 
-            <Label Text="Catégories" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    <VerticalStackLayout VerticalOptions="Center"><Label Text="Gérer les catégories" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Créer, modifier, colorer et fixer un budget" Style="{StaticResource MutedLabel}" /></VerticalStackLayout>
-                    <Button Grid.Column="1" Text="Ouvrir" Clicked="OnOpenCategoriesClicked" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Ouvrir la gestion des catégories" />
-                </Grid>
-            </Border>
+                <!-- Préférences financières -->
+                <Label Text="Préférences financières" Style="{StaticResource Eyebrow}" Margin="2,10,0,0" SemanticProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Devise principale" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Utilisée pour les nouveaux montants" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1" Style="{StaticResource InputField}" Padding="12,0" MinimumHeightRequest="44" VerticalOptions="Center">
+                                <Picker ItemsSource="{Binding Currencies}" SelectedItem="{Binding SelectedCurrency}" MinimumWidthRequest="72" SemanticProperties.Description="Devise principale" />
+                            </Border>
+                        </Grid>
+                        <BoxView HeightRequest="1" />
+                        <Label Text="Budget mensuel global" Style="{StaticResource StrongLabel}" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Border Style="{StaticResource InputField}"><Entry Placeholder="Ex. 1500" Text="{Binding MonthlyBudget}" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Budget mensuel global" /></Border>
+                            <Button Grid.Column="1" Text="Enregistrer" Command="{Binding SaveBudgetCommand}" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Enregistrer le budget mensuel" />
+                        </Grid>
+                        <Label Text="Laissez vide pour désactiver le suivi du budget." Style="{StaticResource MutedLabel}" />
+                    </VerticalStackLayout>
+                </Border>
 
-            <Label Text="Mes données" Style="{StaticResource SectionTitle}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    <VerticalStackLayout VerticalOptions="Center"><Label Text="Export et sauvegarde" Style="{StaticResource BodyLabel}" FontAttributes="Bold" /><Label Text="Export CSV, sauvegarde chiffrée et restauration" Style="{StaticResource MutedLabel}" /></VerticalStackLayout>
-                    <Button Grid.Column="1" Text="Ouvrir" Clicked="OnOpenDataClicked" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Ouvrir l’export et la sauvegarde" />
-                </Grid>
-            </Border>
+                <!-- Abonnements et revenus -->
+                <Label Text="Automatisation" Style="{StaticResource Eyebrow}" Margin="2,10,0,0" SemanticProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Dépenses d’abonnement automatiques" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Ajoute chaque prélèvement à son échéance, sans doublon" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding AutoCreateSubscriptionExpenses}" VerticalOptions="Center" SemanticProperties.Description="Créer les dépenses des abonnements automatiquement" />
+                        </Grid>
+                        <BoxView HeightRequest="1" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Revenus récurrents automatiques" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Ajoute les salaires et autres revenus arrivés à échéance" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding AutoCreateRecurringIncomes}" VerticalOptions="Center" SemanticProperties.Description="Créer les revenus récurrents automatiquement" />
+                        </Grid>
+                        <BoxView HeightRequest="1" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Rappels d’échéance" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Notifications programmées, même application fermée" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding SubscriptionRemindersEnabled}" VerticalOptions="Center" SemanticProperties.Description="Rappels d’échéance" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <Label Text="Prévenir avant (jours)" Style="{StaticResource BodyLabel}" VerticalOptions="Center" />
+                            <Border Grid.Column="1" Style="{StaticResource InputField}" Padding="12,0" MinimumHeightRequest="44" VerticalOptions="Center">
+                                <Picker ItemsSource="{Binding ReminderDayChoices}" SelectedItem="{Binding SubscriptionReminderDays}" IsEnabled="{Binding SubscriptionRemindersEnabled}" MinimumWidthRequest="64" SemanticProperties.Description="Prévenir avant l’échéance, en jours" />
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
 
-            <Label Text="Zone sensible" Style="{StaticResource SectionTitle}" TextColor="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" SemanticProperties.HeadingLevel="Level2" />
-            <Border Style="{StaticResource Card}" Stroke="{StaticResource DangerColor}">
-                <VerticalStackLayout Spacing="9">
-                    <Label Text="Supprimer toutes les données financières" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
-                    <Label Text="Efface définitivement dépenses, revenus, objectifs, abonnements et catégories personnalisées." Style="{StaticResource MutedLabel}" />
-                    <Button Text="Tout supprimer" Clicked="OnDeleteAllClicked" Style="{StaticResource DangerButton}" />
-                </VerticalStackLayout>
-            </Border>
+                <!-- Ajout rapide -->
+                <Label Text="Ajout rapide" Style="{StaticResource Eyebrow}" Margin="2,10,0,0" SemanticProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Catégorie par défaut" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Utilisée si aucune catégorie récente n’est disponible" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1" Style="{StaticResource InputField}" Padding="12,0" MinimumHeightRequest="44" VerticalOptions="Center">
+                                <Picker ItemsSource="{Binding Categories}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding DefaultCategory}" Title="Aucune" MinimumWidthRequest="104" SemanticProperties.Description="Catégorie par défaut" />
+                            </Border>
+                        </Grid>
+                        <BoxView HeightRequest="1" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Mémoriser la dernière catégorie" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Accélère les dépenses habituelles" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding RememberLastCategory}" VerticalOptions="Center" SemanticProperties.Description="Mémoriser la dernière catégorie" />
+                        </Grid>
+                        <BoxView HeightRequest="1" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <Label Text="Après l’enregistrement" Style="{StaticResource BodyLabel}" VerticalOptions="Center" />
+                            <Border Grid.Column="1" Style="{StaticResource InputField}" Padding="12,0" MinimumHeightRequest="44" VerticalOptions="Center">
+                                <Picker ItemsSource="{Binding AfterSaveChoices}" SelectedItem="{Binding SelectedAfterSaveBehavior}" MinimumWidthRequest="110" SemanticProperties.Description="Comportement après l’enregistrement" />
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
 
-            <Button Text="Verrouiller maintenant" Clicked="OnLockClicked" Style="{StaticResource PrimaryButton}" />
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource PrimaryColor}" />
-            <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" HorizontalTextAlignment="Center">
-                <Label.Triggers>
-                    <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
-                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" />
-                    </DataTrigger>
-                </Label.Triggers>
-            </Label>
-            <Label x:Name="VersionLabel" Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" />
-        </VerticalStackLayout>
-    </ScrollView>
+                <!-- Catégories et données -->
+                <Label Text="Catégories et données" Style="{StaticResource Eyebrow}" Margin="2,10,0,0" SemanticProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource Card}" Padding="16,14" SemanticProperties.Description="Ouvrir la gestion des catégories">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenCategoriesTapped" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <local:IconTile Icon="tag" Tone="primary" Size="40" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Gérer les catégories" Style="{StaticResource StrongLabel}" />
+                            <Label Text="Créer, modifier, colorer et fixer un budget" Style="{StaticResource MutedLabel}" />
+                        </VerticalStackLayout>
+                        <local:IconView Grid.Column="2" Icon="chevron-right" WidthRequest="18" HeightRequest="18"
+                                        IconColor="{AppThemeBinding Light={StaticResource TextFaintLight}, Dark={StaticResource TextFaintDark}}" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource Card}" Padding="16,14" SemanticProperties.Description="Ouvrir l’export et la sauvegarde">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOpenDataTapped" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <local:IconTile Icon="database" Tone="blue" Size="40" />
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="Export et sauvegarde" Style="{StaticResource StrongLabel}" />
+                            <Label Text="Export CSV, sauvegarde chiffrée, restauration et solde initial" Style="{StaticResource MutedLabel}" />
+                        </VerticalStackLayout>
+                        <local:IconView Grid.Column="2" Icon="chevron-right" WidthRequest="18" HeightRequest="18"
+                                        IconColor="{AppThemeBinding Light={StaticResource TextFaintLight}, Dark={StaticResource TextFaintDark}}" />
+                    </Grid>
+                </Border>
+
+                <!-- Zone sensible -->
+                <Label Text="Zone sensible" Style="{StaticResource Eyebrow}" Margin="2,10,0,0" SemanticProperties.HeadingLevel="Level2"
+                       TextColor="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
+                <Border Style="{StaticResource Card}" Stroke="{StaticResource ExpenseAccentColor}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Supprimer toutes les données financières" Style="{StaticResource StrongLabel}" />
+                        <Label Text="Efface définitivement dépenses, revenus, objectifs, abonnements et catégories personnalisées." Style="{StaticResource MutedLabel}" />
+                        <Button Text="Tout supprimer" Clicked="OnDeleteAllClicked" Style="{StaticResource DangerButton}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Button Text="Verrouiller maintenant" Clicked="OnLockClicked" Style="{StaticResource PrimaryButton}" Margin="0,10,0,0" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+                <Label x:Name="VersionLabel" Style="{StaticResource CaptionLabel}" HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>

@@ -23,6 +23,14 @@ public sealed record ExpenseRow(Guid Id, string Description, string Category, st
 
 public sealed record ChartBar(string Label, string Amount, string Percent, double Ratio, string Color, bool HasBudget, string BudgetText, double BudgetProgress, string BudgetColor);
 
+/// <summary>Part d'un anneau de répartition : <paramref name="Share"/> entre 0 et 1, couleur hexadécimale.</summary>
+public sealed record DonutSlice(double Share, string Color);
+
+/// <summary>Une paire de barres du flux de trésorerie : hauteurs en unités d'écran.</summary>
+public sealed record CashflowBar(string Label, double IncomeHeight, double ExpenseHeight);
+
+public sealed record NotificationRow(string Key, string Title, string Message, string Icon, string Severity, bool IsNew);
+
 public sealed record SubscriptionRow(Guid Id, string Name, string Amount, string Frequency, string NextDate);
 
 public sealed record ActiveFilterChip(string Key, string Label);

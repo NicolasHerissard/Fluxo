@@ -17,7 +17,7 @@ public partial class LockViewModel(StartupService startup, IAppLockService appLo
     [ObservableProperty] private string pinTitle = "Déverrouillage";
     [ObservableProperty] private string pinHelp = "Saisissez votre code PIN.";
     [ObservableProperty] private string pinDots = "○ ○ ○ ○";
-    [ObservableProperty] private string pinVisibilityIcon = "icon_visibility.png";
+    [ObservableProperty] private string pinVisibilityIcon = "eye";
     [ObservableProperty] private string currencySymbol = "€";
     [ObservableProperty] private string errorMessage = string.Empty;
 
@@ -27,7 +27,7 @@ public partial class LockViewModel(StartupService startup, IAppLockService appLo
         PinDots = string.Join(" ", Enumerable.Range(0, count).Select(i => i < value.Length ? "●" : "○"));
     }
 
-    partial void OnIsPinHiddenChanged(bool value) => PinVisibilityIcon = value ? "icon_visibility.png" : "icon_visibility_off.png";
+    partial void OnIsPinHiddenChanged(bool value) => PinVisibilityIcon = value ? "eye" : "eye-off";
 
     [RelayCommand]
     public async Task InitializeAsync()

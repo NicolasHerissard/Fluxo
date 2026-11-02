@@ -44,6 +44,7 @@ public sealed class AppFixture : FinancePorts, IDisposable
     private T Create<T>(params object[] overrides) => ActivatorUtilities.CreateInstance<T>(_provider, overrides);
 
     public DashboardViewModel CreateDashboard() => Create<DashboardViewModel>();
+    public NotificationsViewModel CreateNotifications() => Create<NotificationsViewModel>();
     public ExpensesViewModel CreateExpenses() => Create<ExpensesViewModel>();
     public IncomeViewModel CreateIncome() => Create<IncomeViewModel>();
     public SettingsViewModel CreateSettings() => Create<SettingsViewModel>(new FakeAppLock(), new FakeBiometrics());

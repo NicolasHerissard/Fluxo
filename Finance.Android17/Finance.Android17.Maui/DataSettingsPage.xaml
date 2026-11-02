@@ -9,15 +9,21 @@
              NavigationPage.HasNavigationBar="False"
              Style="{StaticResource AppPage}">
     <ScrollView>
-        <VerticalStackLayout Padding="20,16,20,100" Spacing="18" MaximumWidthRequest="760" HorizontalOptions="Center">
-            <Grid ColumnDefinitions="48,*" ColumnSpacing="8">
-                <ImageButton Source="icon_close.png" Clicked="OnBackClicked" BackgroundColor="Transparent" Padding="13" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Retour aux réglages" />
-                <Label Grid.Column="1" Text="Mes données" Style="{StaticResource PageTitle}" VerticalOptions="Center" SemanticProperties.HeadingLevel="Level1" />
+        <VerticalStackLayout Padding="20,18,20,28" Spacing="16" MaximumWidthRequest="760" HorizontalOptions="Fill">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                    <Label Text="Réglages" Style="{StaticResource Eyebrow}" />
+                    <Label Text="Mes données" Style="{StaticResource PageTitle}" SemanticProperties.HeadingLevel="Level1" />
+                </VerticalStackLayout>
+                <maui:IconButton Grid.Column="1" Icon="x" ButtonStyle="Tile" VerticalOptions="Start" Description="Retour aux réglages" Clicked="OnBackClicked" />
             </Grid>
 
             <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Solde de départ" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <maui:IconTile Icon="wallet" Tone="blue" Size="40" />
+                        <Label Grid.Column="1" Text="Solde de départ" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
+                    </Grid>
                     <Label Text="Combien aviez-vous sur votre compte quand vous avez commencé à utiliser Fluxo ? Ce montant sert de base à tous les soldes, avant les opérations enregistrées." Style="{StaticResource MutedLabel}" />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <Border Style="{StaticResource InputField}"><Entry Text="{Binding InitialBalance}" Keyboard="Numeric" Placeholder="Ex. 1250" Style="{StaticResource InputEntry}" SemanticProperties.Description="Solde de départ" /></Border>
@@ -27,26 +33,36 @@
             </Border>
 
             <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Export CSV" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <maui:IconTile Icon="database" Tone="success" Size="40" />
+                        <Label Grid.Column="1" Text="Export CSV" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
+                    </Grid>
                     <Label Text="Crée une copie lisible de l’historique des dépenses." Style="{StaticResource MutedLabel}" />
                     <Button Text="Exporter les dépenses" Command="{Binding ExportCommand}" Style="{StaticResource SecondaryButton}" />
-                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
-                    <Label Text="Sauvegarde complète chiffrée" Style="{StaticResource BodyLabel}" FontAttributes="Bold" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <maui:IconTile Icon="shield" Tone="violet" Size="40" />
+                        <Label Grid.Column="1" Text="Sauvegarde complète chiffrée" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
+                    </Grid>
                     <Label Text="Le même mot de passe sera nécessaire pour restaurer le fichier." Style="{StaticResource MutedLabel}" />
                     <Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (8 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe de sauvegarde" /></Border>
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                        <Button Text="Sauvegarder" Command="{Binding CreateBackupCommand}" Style="{StaticResource SecondaryButton}" />
+                        <Button Text="Sauvegarder" Command="{Binding CreateBackupCommand}" Style="{StaticResource PrimaryButton}" />
                         <Button Grid.Column="1" Text="Restaurer" Clicked="OnRestoreClicked" Style="{StaticResource SecondaryButton}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
 
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource PrimaryColor}" />
-            <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" HorizontalTextAlignment="Center">
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
                 <Label.Triggers>
                     <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
-                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" />
+                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
                     </DataTrigger>
                 </Label.Triggers>
             </Label>

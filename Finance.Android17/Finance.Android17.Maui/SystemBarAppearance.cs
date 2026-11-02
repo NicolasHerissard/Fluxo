@@ -15,7 +15,7 @@ internal static class SystemBarAppearance
             return;
 
         var isDark = Microsoft.Maui.Controls.Application.Current?.RequestedTheme == AppTheme.Dark;
-        var background = Android.Graphics.Color.ParseColor(isDark ? "#121212" : "#F7F5FA");
+        var background = Android.Graphics.Color.ParseColor(isDark ? "#0B0E1A" : "#F6F5FF");
 
         // Android 15+ dessine les barres en transparence : la couleur du décor
         // devient alors leur fond. Les anciennes versions acceptent encore une

@@ -17,6 +17,7 @@ public sealed class AppSettingsService : ISettingsService
     public string LastCategoryId { get => Preferences.Default.Get(nameof(LastCategoryId), string.Empty); set => Preferences.Default.Set(nameof(LastCategoryId), value); }
     public bool RememberLastCategory { get => Preferences.Default.Get(nameof(RememberLastCategory), true); set => Preferences.Default.Set(nameof(RememberLastCategory), value); }
     public string AfterSaveBehavior { get => Preferences.Default.Get(nameof(AfterSaveBehavior), AfterSaveOptions.Close); set => Preferences.Default.Set(nameof(AfterSaveBehavior), value); }
+    public string SeenNotifications { get => Preferences.Default.Get(nameof(SeenNotifications), string.Empty); set => Preferences.Default.Set(nameof(SeenNotifications), value); }
     public string Theme
     {
         get => Preferences.Default.Get(nameof(Theme), ThemeOptions.FollowSystem);

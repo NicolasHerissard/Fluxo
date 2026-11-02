@@ -30,6 +30,6 @@ public static class DashboardCalculator
 
         return new DashboardReport(
             range, total, current.Count, PeriodComparison.Between(total, previousTotal),
-            categories, recent, next, budget, FinancialSummaryCalculator.Build(data, today));
+            categories, recent, next, budget, FinancialSummaryCalculator.Build(data, today), CashflowCalculator.Build(data, today));
     }
 }

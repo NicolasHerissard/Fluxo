@@ -16,13 +16,14 @@ Un seul espace de noms, `Finance.Android17.Application`, pour tout le projet : l
 | `Subscriptions/` | `ISubscriptionRepository` ; `SubscriptionCosts` (coût mensuel et annuel). |
 | `Savings/` | `ISavingsGoalRepository`. |
 | `Overview/` | `IFinancialProfileRepository` (solde initial) ; `FinanceData` + `FinanceDataLoader` (lecture groupée) ; `FinancialSummaryCalculator` → `FinancialSummary` (mois en cours, solde actuel, prévision de fin de mois, taux d'épargne). |
-| `Dashboard/` | `DashboardService` (charge puis calcule) ; `DashboardCalculator` → `DashboardReport` ; `PeriodRange` (semaine du lundi, mois, année + période précédente entière), `PeriodComparison`, `BudgetStatus` (alerte à 80 % puis 100 %). |
+| `Notifications/` | `NotificationBuilder` (règle pure : découvert probable, budget mensuel et budgets de catégorie à 80 % / 100 %, prélèvements des 7 prochains jours → `AppNotification`, triées par gravité) ; `NotificationService` (charge, puis mémorise dans `ISettingsService.SeenNotifications` les clés d'alertes déjà vues → `NotificationFeed`, pour le point de la cloche). |
+| `Dashboard/` | `DashboardService` (charge puis calcule) ; `DashboardCalculator` → `DashboardReport` (dont le flux de trésorerie `Cashflow`) ; `CashflowCalculator` (revenus et dépenses des 6 derniers mois → `MonthlyFlow`) ; `PeriodRange` (semaine du lundi, mois, année + période précédente entière), `PeriodComparison`, `BudgetStatus` (alerte à 80 % puis 100 %). |
 | `Operations/` | `OperationsFeed` : revenus et dépenses mêlés, du plus récent au plus ancien. |
 | `Money/` | `AmountParser` : lecture d'un montant saisi (virgule ou point, arrondi `AwayFromZero`, refuse ce qui dépasserait un `long` en centimes). |
 | `Recurring/` | `Recurrence` (échéances manquées), `DueOperationsPlanner` (plan des dépenses/revenus à créer), `DueOperationsService` (selon les réglages), `IDueOperationsStore`. |
 | `Reminders/` | `ReminderPlanner` (quand sonner, quoi afficher) → `ReminderPlan` ; `SubscriptionReminderScheduler` ; port `IReminderService`. |
 | `Security/` | `PinPolicy` (4 à 8 chiffres) ; ports `IAppLockService`, `IBiometricService`, `ISecretStore` (clé de la base). |
-| `Settings/` | Port `ISettingsService` ; `ThemeOptions` et `AfterSaveOptions` (valeurs **enregistrées telles quelles** dans les préférences). |
+| `Settings/` | Port `ISettingsService` (dont `SeenNotifications`, les clés d'alertes déjà consultées, séparées par des retours à la ligne) ; `ThemeOptions` et `AfterSaveOptions` (valeurs **enregistrées telles quelles** dans les préférences). |
 | `Startup/` | `StartupService` : après le déverrouillage, ouvre la base, rattrape les échéances, reprogramme les rappels. |
 | `Backup/` | `FinanceBackupSnapshot` et ses enregistrements (le contenu d'une sauvegarde) ; port `IDataBackupService`. |
 | `Export/` | Port `IExportService`. |
