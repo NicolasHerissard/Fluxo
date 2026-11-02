@@ -8,7 +8,7 @@ public partial class AppShell : Shell
 		var tabs = new TabBar();
 		tabs.Items.Add(CreateTab("Accueil", "home", "tab_home.png", dashboard));
 		tabs.Items.Add(CreateTab("Dépenses", "expenses", "tab_expenses.png", expenses));
-		tabs.Items.Add(CreateTab("Finances", "income", "tab_income.png", income));
+		tabs.Items.Add(CreateTab("Revenus", "income", "tab_income.png", income));
 		tabs.Items.Add(CreateTab("Abonnements", "subscriptions", "tab_subscriptions.png", subscriptions));
 		tabs.Items.Add(CreateTab("Réglages", "settings", "tab_settings.png", settings));
 		Items.Add(tabs);

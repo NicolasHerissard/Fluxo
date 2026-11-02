@@ -12,16 +12,31 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
     private const string YearLabel = "Année";
     private const string HiddenTotal = "••••••";
 
+    /// <summary>Catégories détaillées dans la légende du graphique ; les suivantes sont regroupées dans « Autres ».</summary>
+    private const int LegendCategories = 4;
+
+    /// <summary>Couleur de la part « Autres » du graphique par catégorie.</summary>
+    private const string OthersColor = "#A78BFA";
+
+    /// <summary>Hauteur (en unités d'écran) de la plus grande barre du flux de trésorerie.</summary>
+    private const double CashflowBarHeight = 112;
+
     private bool _hasLoaded;
+
+    /// <summary>Les périodes proposées par le sélecteur de l'accueil, dans l'ordre d'affichage.</summary>
+    public IReadOnlyList<string> Periods { get; } = [WeekLabel, MonthLabel, YearLabel];
     public ObservableCollection<ExpenseRow> RecentExpenses { get; } = [];
     public ObservableCollection<ChartBar> CategoryBars { get; } = [];
+    public ObservableCollection<DonutSlice> CategorySlices { get; } = [];
+    public ObservableCollection<CashflowBar> CashflowBars { get; } = [];
     [ObservableProperty] private string selectedPeriod = MonthLabel;
     [ObservableProperty] private string greeting = "Bonjour";
     [ObservableProperty] private string currentDate = string.Empty;
     [ObservableProperty] private string periodTitle = "Ce mois";
     [ObservableProperty] private string total = "0,00 €";
     [ObservableProperty] private string comparison = "Pas encore de comparaison";
-    [ObservableProperty] private string comparisonColor = Palette.Neutral;
+    [ObservableProperty] private bool comparisonIsGood;
+    [ObservableProperty] private bool comparisonIsBad;
     [ObservableProperty] private string expenseCount = "0 dépense";
     [ObservableProperty] private string topCategory = "—";
     [ObservableProperty] private string nextSubscription = "Aucun abonnement";
@@ -30,6 +45,8 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
     [ObservableProperty] private string monthlyNet = "0,00 €";
     [ObservableProperty] private string forecastBalance = "0,00 €";
     [ObservableProperty] private string forecastStatus = "Après échéances connues";
+    [ObservableProperty] private string forecastBadge = "En bonne voie";
+    [ObservableProperty] private bool forecastIsHealthy = true;
     [ObservableProperty] private string savingsRate = "0 %";
     [ObservableProperty] private string budgetStatus = string.Empty;
     [ObservableProperty] private double budgetProgress;
@@ -37,16 +54,11 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
     [ObservableProperty] private string budgetColor = Palette.BudgetInitial;
     [ObservableProperty] private bool isEmpty;
     [ObservableProperty] private bool hasData;
+    [ObservableProperty] private bool hasCashflow;
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private bool isSkeletonVisible = true;
     [ObservableProperty] private bool isDashboardVisible;
-    [ObservableProperty] private string privacyIcon = "icon_visibility.png";
-    [ObservableProperty] private string weekBackground = Palette.Transparent;
-    [ObservableProperty] private string monthBackground = Palette.Primary;
-    [ObservableProperty] private string yearBackground = Palette.Transparent;
-    [ObservableProperty] private string weekTextColor = Palette.OnPrimaryMuted;
-    [ObservableProperty] private string monthTextColor = Palette.OnPrimary;
-    [ObservableProperty] private string yearTextColor = Palette.OnPrimaryMuted;
+    [ObservableProperty] private string privacyIcon = "eye";
 
     [RelayCommand]
     public async Task LoadAsync()
@@ -72,12 +84,14 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
             MonthlyIncome = Amount(financial.IncomeTotalMinor);
             MonthlyNet = Amount(financial.NetTotalMinor);
             ForecastBalance = Amount(financial.ForecastBalanceMinor);
-            ForecastStatus = financial.ForecastBalanceMinor < 0 ? "Découvert probable en fin de mois" : "Après échéances connues";
+            ForecastIsHealthy = financial.ForecastBalanceMinor >= 0;
+            ForecastBadge = ForecastIsHealthy ? "En bonne voie" : "À surveiller";
+            ForecastStatus = ForecastIsHealthy ? "Après échéances connues" : "Découvert probable en fin de mois";
             SavingsRate = MoneyFormatter.Percent(financial.SavingsRate);
 
             PeriodTitle = period switch { DashboardPeriod.Week => "Cette semaine", DashboardPeriod.Year => "Cette année", _ => "Ce mois" };
             Total = hide ? HiddenTotal : MoneyFormatter.Money(report.TotalMinor, currency);
-            PrivacyIcon = hide ? "icon_visibility_off.png" : "icon_visibility.png";
+            PrivacyIcon = hide ? "eye-off" : "eye";
             ExpenseCount = $"{report.ExpenseCount} dépense{(report.ExpenseCount > 1 ? "s" : string.Empty)}";
             NextSubscription = report.NextSubscription is { } next
                 ? $"{next.Name} · {next.NextBillingDate.ToString("dd MMM", french)}"
@@ -85,7 +99,7 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
             TopCategory = report.TopCategoryName ?? "—";
 
             CategoryBars.Clear();
-            foreach (var spend in report.Categories.Take(3))
+            foreach (var spend in report.Categories.Take(LegendCategories))
             {
                 var budget = spend.Budget;
                 var budgetText = budget is null ? string.Empty
@@ -95,8 +109,15 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
                     budget is not null, budgetText, budget?.Progress ?? 0, color));
             }
 
+            CategorySlices.Clear();
+            foreach (var spend in report.Categories.Take(LegendCategories)) CategorySlices.Add(new DonutSlice(spend.Share, spend.Color));
+            var others = report.Categories.Skip(LegendCategories).Sum(x => x.Share);
+            if (others > 0) CategorySlices.Add(new DonutSlice(others, OthersColor));
+
             RecentExpenses.Clear();
             foreach (var expense in report.RecentExpenses) RecentExpenses.Add(ExpenseRow.From(expense, hide));
+
+            BuildCashflow(report.Cashflow, french);
 
             IsEmpty = report.ExpenseCount == 0;
             HasData = !IsEmpty;
@@ -112,13 +133,15 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
 
             var comparison = report.Comparison;
             var percent = comparison.Percent.ToString("0", french);
-            (Comparison, ComparisonColor) = comparison.Direction switch
+            Comparison = comparison.Direction switch
             {
-                TrendDirection.NoReference => ("Aucune donnée sur la période précédente", Palette.Neutral),
-                TrendDirection.Down => ($"↓ {percent} % par rapport à la période précédente", Palette.Good),
-                TrendDirection.Up => ($"↑ {percent} % par rapport à la période précédente", Palette.DangerSoft),
-                _ => ("→ Identique à la période précédente", Palette.Neutral)
+                TrendDirection.NoReference => "Aucune donnée sur la période précédente",
+                TrendDirection.Down => $"↓ {percent} % par rapport à la période précédente",
+                TrendDirection.Up => $"↑ {percent} % par rapport à la période précédente",
+                _ => "→ Identique à la période précédente"
             };
+            ComparisonIsGood = comparison.Direction == TrendDirection.Down;
+            ComparisonIsBad = comparison.Direction == TrendDirection.Up;
         }
         finally
         {
@@ -129,16 +152,22 @@ public partial class DashboardViewModel(DashboardService dashboard, ISettingsSer
         }
     }
 
+    private void BuildCashflow(IReadOnlyList<MonthlyFlow> flows, System.Globalization.CultureInfo french)
+    {
+        CashflowBars.Clear();
+        var peak = flows.Select(x => Math.Max(x.ExpenseMinor, x.IncomeMinor)).DefaultIfEmpty(0).Max();
+        HasCashflow = peak > 0;
+        if (!HasCashflow) return;
+
+        double Height(long minor) => minor <= 0 ? 0 : Math.Max(3, CashflowBarHeight * minor / peak);
+        foreach (var flow in flows)
+            CashflowBars.Add(new CashflowBar(french.TextInfo.ToTitleCase(flow.Month.ToString("MMM", french).TrimEnd('.')), Height(flow.IncomeMinor), Height(flow.ExpenseMinor)));
+    }
+
     [RelayCommand]
     private async Task SelectPeriodAsync(string period)
     {
         SelectedPeriod = period;
-        WeekBackground = period == WeekLabel ? Palette.Primary : Palette.Transparent;
-        MonthBackground = period == MonthLabel ? Palette.Primary : Palette.Transparent;
-        YearBackground = period == YearLabel ? Palette.Primary : Palette.Transparent;
-        WeekTextColor = period == WeekLabel ? Palette.OnPrimary : Palette.OnPrimaryMuted;
-        MonthTextColor = period == MonthLabel ? Palette.OnPrimary : Palette.OnPrimaryMuted;
-        YearTextColor = period == YearLabel ? Palette.OnPrimary : Palette.OnPrimaryMuted;
         await LoadAsync();
     }
 

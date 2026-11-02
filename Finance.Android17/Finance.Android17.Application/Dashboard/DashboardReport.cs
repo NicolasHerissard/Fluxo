@@ -17,7 +17,8 @@ public sealed record DashboardReport(
     IReadOnlyList<Expense> RecentExpenses,
     Subscription? NextSubscription,
     BudgetStatus? MonthlyBudget,
-    FinancialSummary Financial)
+    FinancialSummary Financial,
+    IReadOnlyList<MonthlyFlow> Cashflow)
 {
     public string? TopCategoryName => Categories.Count > 0 ? Categories[0].Name : null;
 }

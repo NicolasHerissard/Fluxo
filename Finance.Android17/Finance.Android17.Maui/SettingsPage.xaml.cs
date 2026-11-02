@@ -17,8 +17,8 @@ public partial class SettingsPage : ContentPage
     protected override void OnAppearing() { base.OnAppearing(); _ = _viewModel.LoadAsync(); }
     private void OnLockClicked(object? sender, EventArgs e) => (Microsoft.Maui.Controls.Application.Current as App)?.ShowLock();
 
-    private async void OnOpenCategoriesClicked(object? sender, EventArgs e) => await Navigation.PushModalAsync(_services.GetRequiredService<CategoriesSettingsPage>());
-    private async void OnOpenDataClicked(object? sender, EventArgs e) => await Navigation.PushModalAsync(_services.GetRequiredService<DataSettingsPage>());
+    private async void OnOpenCategoriesTapped(object? sender, TappedEventArgs e) => await Navigation.PushModalAsync(_services.GetRequiredService<CategoriesSettingsPage>());
+    private async void OnOpenDataTapped(object? sender, TappedEventArgs e) => await Navigation.PushModalAsync(_services.GetRequiredService<DataSettingsPage>());
 
     private async void OnDeleteAllClicked(object? sender, EventArgs e)
     {

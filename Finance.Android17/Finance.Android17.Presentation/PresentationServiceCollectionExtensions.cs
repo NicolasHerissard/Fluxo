@@ -17,6 +17,7 @@ public static class PresentationServiceCollectionExtensions
         services.AddTransient<SubscriptionsViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<AddExpenseViewModel>();
+        services.AddTransient<NotificationsViewModel>();
         return services;
     }
 }

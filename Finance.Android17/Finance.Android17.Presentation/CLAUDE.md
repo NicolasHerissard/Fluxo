@@ -8,10 +8,10 @@ Un ViewModel **charge, appelle une règle d'`Application`, formate et réagit au
 
 | Fichier | Rôle |
 | --- | --- |
-| `LockViewModel.cs`, `DashboardViewModel.cs`, `ExpensesViewModel.cs`, `AddExpenseViewModel.cs`, `IncomeViewModel.cs`, `SubscriptionsViewModel.cs`, `SettingsViewModel.cs` | Un ViewModel par fichier, un par page (voir ci-dessous). |
-| `Rows.cs` | Modèles d'affichage : `ExpenseRow`, `ChartBar`, `SubscriptionRow`, `ActiveFilterChip`, `IncomeRow`, `RecurringIncomeRow`, `SavingsGoalRow`, `OperationRow`, `CategoryItem`, `CategoryFilterOption`, `ExpenseCategoryOption`. |
+| `LockViewModel.cs`, `DashboardViewModel.cs`, `ExpensesViewModel.cs`, `AddExpenseViewModel.cs`, `IncomeViewModel.cs`, `SubscriptionsViewModel.cs`, `SettingsViewModel.cs`, `NotificationsViewModel.cs` | Un ViewModel par fichier, un par page (voir ci-dessous). |
+| `Rows.cs` | Modèles d'affichage : `ExpenseRow`, `ChartBar`, `SubscriptionRow`, `ActiveFilterChip`, `IncomeRow`, `RecurringIncomeRow`, `SavingsGoalRow`, `OperationRow`, `CategoryItem`, `CategoryFilterOption`, `ExpenseCategoryOption`, `DonutSlice` (part de l'anneau des catégories), `CashflowBar` (barres revenus / dépenses d'un mois), `NotificationRow`. |
 | `Formatting/MoneyFormatter.cs` | Format français des montants (`1 234,50 €`), pourcentages et dates (`02 oct. 2026`), `Hidden` (`••••`). Toujours `fr-FR`, quelle que soit la langue de l'appareil. |
-| `Formatting/Palette.cs` | Couleurs d'état (budget, comparaison, revenu/dépense, sélection) en `string` hexadécimale bindable. |
+| `Formatting/Palette.cs` | Couleurs **indépendantes du thème** en `string` hexadécimale bindable (état de budget, sélection, couleur de catégorie suggérée). Les couleurs de texte et de fond qui changent avec le thème ne passent pas ici : le ViewModel expose un booléen (`ComparisonIsGood`, `ForecastIsHealthy`…) et la page choisit la teinte avec `AppThemeBinding`. |
 | `BillingFrequency.cs` | Mensuel / Trimestriel / Annuel ↔ 1 / 3 / 12 mois : une seule table pour abonnements et revenus récurrents. |
 | `PresentationServiceCollectionExtensions.cs` | `AddPresentation()` : enregistre les ViewModels en **transient**. |
 
@@ -22,10 +22,11 @@ Tous sont des `partial class … : ObservableObject` construits par injection de
 | ViewModel | Page | Responsabilité |
 | --- | --- | --- |
 | `LockViewModel` | `LockPage` | Création du PIN au premier lancement, vérification, biométrie facultative. Après déverrouillage, `StartupService.PrepareAsync` (base, échéances, rappels) puis événement `Unlocked` que `App` écoute. |
-| `DashboardViewModel` | `DashboardPage` | Affiche le `DashboardReport` de `DashboardService` : période semaine/mois/année, total et comparaison, solde, revenus, net, prévision, taux d'épargne, catégories avec budget, budget mensuel, dépenses récentes, prochain abonnement. |
+| `DashboardViewModel` | `DashboardPage` | Affiche le `DashboardReport` de `DashboardService` : période semaine/mois/année (`Periods`), total et comparaison, solde, revenus, net, prévision (`ForecastBadge`), taux d'épargne, anneau et légende des catégories (`CategorySlices`, `CategoryBars`), flux de trésorerie sur six mois (`CashflowBars`), budget mensuel, dépenses récentes, prochain abonnement. `PrivacyIcon` est un nom d'icône (`eye` / `eye-off`). |
+| `NotificationsViewModel` | `NotificationsPage` et cloche de `PageHeader` | Alertes du `NotificationService` en `NotificationRow` (titre, message, icône, gravité `info` / `warning` / `critical`, `IsNew`) ; `HasUnread` allume le point de la cloche ; `MarkAllReadCommand` les marque vues. Montants masqués si `HideAmounts`. |
 | `ExpensesViewModel` | `ExpensesPage` | Charge les dépenses puis applique `ExpenseSearch` (recherche retardée par un `CancellationTokenSource`, catégories, période, montants, six tris), puces de filtres actifs, suppression avec annulation. Lève `EditRequested` avec l'identifiant de la dépense. |
 | `AddExpenseViewModel` | `AddExpensePage` | Saisie/modification d'une dépense : `AmountParser`, catégories triées par `CategoryChoice`, raccourcis de date, préremplissage depuis un ticket (`IOcrService` puis `ReceiptParser`), comportement après enregistrement. `BeginEditAsync(Guid)`. Lève `Saved`. |
-| `IncomeViewModel` | `IncomePage` | Solde initial, revenus, revenus récurrents, objectifs d'épargne, indicateurs (`FinancialSummaryCalculator`) et opérations récentes (`OperationsFeed`). |
+| `IncomeViewModel` | `IncomePage` | Revenus (ponctuels et récurrents, un seul formulaire avec l'option « Se répète »), objectifs d'épargne et indicateurs du mois (`FinancialSummaryCalculator`, plus les revenus récurrents encore attendus). Le solde initial se règle dans `SettingsViewModel` (Réglages > Mes données). |
 | `SubscriptionsViewModel` | `SubscriptionsPage` | Abonnements, totaux mensuel et annuel (`SubscriptionCosts`), rappels. |
 | `SettingsViewModel` | `SettingsPage` | Thème, devise, confidentialité, budget mensuel, catégories (couleur, budget), verrouillage, biométrie, changement de PIN, export CSV, sauvegarde/restauration chiffrée, remise à zéro après confirmation du PIN. |
 
@@ -39,5 +40,5 @@ Les lignes d'affichage portent un **identifiant** (`Guid`) et du texte déjà fo
 - Les valeurs de réglages persistées (thème, comportement après enregistrement) viennent de `ThemeOptions` / `AfterSaveOptions`, pas de littéraux.
 - `LoadAsync` est appelée par les pages dans `OnAppearing` : garder la méthode publique et idempotente.
 - Une nouvelle page = un nouveau ViewModel ici (et son enregistrement dans `AddPresentation`), une page XAML dans `Maui` avec `x:DataType` pointant sur le ViewModel, et son enregistrement dans `MauiProgram`.
-- Les icônes référencées par nom (`icon_visibility.png`, …) correspondent aux images générées depuis `Finance.Android17.Maui/Resources/Images/*.svg`.
+- Les icônes référencées par nom (`eye`, `eye-off`, `calendar`, `wallet`…) sont des clés de `Finance.Android17.Maui/Controls/AppIcons.cs`, dessinées par `IconView` : une clé inconnue n'affiche rien.
 - Texte d'interface en français. Les `internal` (`ExpenseRow.From`, `CategoryItem.From`) ne sont pas visibles des tests : on les teste à travers les ViewModels.

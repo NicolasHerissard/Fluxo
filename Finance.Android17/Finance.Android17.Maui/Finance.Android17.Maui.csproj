@@ -66,12 +66,19 @@
 	  <AndroidKeyStore>True</AndroidKeyStore>
 	</PropertyGroup>
 
+	<!-- Dossier d'extraction des bibliothèques Android raccourci : certains .aar (ML Kit) contiennent des fichiers
+	     dont le chemin dépasse 260 caractères avec le dossier obj par défaut, ce que le MSBuild .NET Framework de
+	     Visual Studio ne gère pas (erreur « Error extracting resources from ... text-recognition.aar »). -->
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+		<_AndroidLibrayProjectIntermediatePath>$(BaseIntermediateOutputPath)lp\$(RuntimeIdentifier)\</_AndroidLibrayProjectIntermediatePath>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#6750A4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#4338CA" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#6750A4" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#4338CA" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />

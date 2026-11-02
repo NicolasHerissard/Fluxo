@@ -9,23 +9,27 @@
              NavigationPage.HasNavigationBar="False"
              Style="{StaticResource AppPage}">
     <ScrollView>
-        <VerticalStackLayout Padding="20,16,20,100" Spacing="18" MaximumWidthRequest="760" HorizontalOptions="Center">
-            <Grid ColumnDefinitions="48,*" ColumnSpacing="8">
-                <ImageButton Source="icon_close.png" Clicked="OnBackClicked" BackgroundColor="Transparent" Padding="13" WidthRequest="48" HeightRequest="48" SemanticProperties.Description="Retour aux réglages" />
-                <Label Grid.Column="1" Text="Catégories" Style="{StaticResource PageTitle}" VerticalOptions="Center" SemanticProperties.HeadingLevel="Level1" />
+        <VerticalStackLayout Padding="20,18,20,28" Spacing="18" MaximumWidthRequest="760" HorizontalOptions="Fill">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                    <Label Text="Réglages" Style="{StaticResource Eyebrow}" />
+                    <Label Text="Catégories" Style="{StaticResource PageTitle}" SemanticProperties.HeadingLevel="Level1" />
+                </VerticalStackLayout>
+                <maui:IconButton Grid.Column="1" Icon="x" ButtonStyle="Tile" VerticalOptions="Start" Description="Retour aux réglages" Clicked="OnBackClicked" />
             </Grid>
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
-                    <Label Text="Créer ou modifier une catégorie" Style="{StaticResource FieldLabel}" />
+                    <Label Text="Créer ou modifier une catégorie" Style="{StaticResource StrongLabel}" />
                     <Border Style="{StaticResource InputField}"><Entry Placeholder="Nom de la catégorie" Text="{Binding NewCategoryName}" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de la catégorie" /></Border>
                     <Border Style="{StaticResource InputField}"><Entry Placeholder="Budget mensuel facultatif" Text="{Binding CategoryBudget}" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Budget mensuel de la catégorie" /></Border>
 
                     <Grid ColumnDefinitions="64,*" ColumnSpacing="12">
-                        <Border WidthRequest="60" HeightRequest="60" BackgroundColor="{Binding SelectedColor}" Stroke="{AppThemeBinding Light={StaticResource OutlineDark}, Dark={StaticResource TextSecondaryDark}}" StrokeThickness="2" StrokeShape="RoundRectangle 18">
-                            <Label Text="Aa" TextColor="{Binding SelectedColor, Converter={StaticResource ColorContrastConverter}}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Border WidthRequest="60" HeightRequest="60" BackgroundColor="{Binding SelectedColor}" StrokeThickness="2" StrokeShape="RoundRectangle 16"
+                                Stroke="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" VerticalOptions="End">
+                            <Label Text="Aa" TextColor="{Binding SelectedColor, Converter={StaticResource ColorContrastConverter}}" FontFamily="OpenSansSemibold" HorizontalOptions="Center" VerticalOptions="Center" />
                         </Border>
-                        <VerticalStackLayout Grid.Column="1" Spacing="3">
+                        <VerticalStackLayout Grid.Column="1" Spacing="4">
                             <Label Text="Couleur hexadécimale" Style="{StaticResource FieldLabel}" />
                             <Border Style="{StaticResource InputField}"><Entry Text="{Binding ColorHexInput}" Placeholder="#6750A4" MaxLength="7" Style="{StaticResource InputEntry}" SemanticProperties.Description="Couleur hexadécimale" /></Border>
                         </VerticalStackLayout>
@@ -42,39 +46,51 @@
                     </ScrollView>
 
                     <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="24,*" RowSpacing="5">
-                        <Label Text="R" TextColor="{StaticResource SliderRedColor}" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Label Text="R" TextColor="{StaticResource SliderRedColor}" FontFamily="OpenSansSemibold" VerticalOptions="Center" />
                         <Slider Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Red}" MinimumTrackColor="{StaticResource SliderRedColor}" SemanticProperties.Description="Rouge" />
-                        <Label Grid.Row="1" Text="V" TextColor="{StaticResource SliderGreenColor}" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Label Grid.Row="1" Text="V" TextColor="{StaticResource SliderGreenColor}" FontFamily="OpenSansSemibold" VerticalOptions="Center" />
                         <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Green}" MinimumTrackColor="{StaticResource SliderGreenColor}" SemanticProperties.Description="Vert" />
-                        <Label Grid.Row="2" Text="B" TextColor="{StaticResource SliderBlueColor}" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Label Grid.Row="2" Text="B" TextColor="{StaticResource SliderBlueColor}" FontFamily="OpenSansSemibold" VerticalOptions="Center" />
                         <Slider Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="255" Value="{Binding Blue}" MinimumTrackColor="{StaticResource SliderBlueColor}" SemanticProperties.Description="Bleu" />
                     </Grid>
 
                     <Button Text="{Binding CategorySaveText}" Command="{Binding SaveCategoryCommand}" Style="{StaticResource PrimaryButton}" />
                     <Button IsVisible="{Binding IsEditingCategory}" Text="Annuler la modification" Command="{Binding CancelCategoryEditCommand}" Style="{StaticResource TextButton}" />
-
-                    <Label Text="Touchez le crayon pour modifier le nom, la couleur ou le budget." Style="{StaticResource MutedLabel}" />
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="vm:CategoryItem">
-                                <Grid ColumnDefinitions="20,*,48,60" ColumnSpacing="8" MinimumHeightRequest="52">
-                                    <Grid.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCategoryCommand}" CommandParameter="{Binding .}" /></Grid.GestureRecognizers>
-                                    <Border HeightRequest="18" WidthRequest="18" BackgroundColor="{Binding Color}" StrokeThickness="0" StrokeShape="RoundRectangle 9" VerticalOptions="Center" />
-                                    <Label Grid.Column="1" Text="{Binding Name}" Style="{StaticResource BodyLabel}" VerticalOptions="Center" />
-                                    <ImageButton Grid.Column="2" Source="icon_edit.png" Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCategoryCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Modifier cette catégorie" />
-                                    <ImageButton Grid.Column="3" Source="icon_delete.png" Margin="12,0,0,0" Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteCategoryCommand}" CommandParameter="{Binding .}" BackgroundColor="Transparent" Padding="12" SemanticProperties.Description="Supprimer cette catégorie" />
-                                </Grid>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
                 </VerticalStackLayout>
             </Border>
 
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource PrimaryColor}" />
-            <Label Text="{Binding StatusMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark={StaticResource SuccessDarkColor}}" HorizontalTextAlignment="Center">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Vos catégories" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
+                <Label Text="Touchez une catégorie pour modifier son nom, sa couleur ou son budget." Style="{StaticResource MutedLabel}" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="9">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CategoryItem">
+                            <Border Style="{StaticResource Card}" Padding="14,6,8,6">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCategoryCommand}" CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12" MinimumHeightRequest="52" SemanticProperties.Hint="Touchez pour modifier cette catégorie">
+                                    <Border HeightRequest="20" WidthRequest="20" BackgroundColor="{Binding Color}" StrokeThickness="0" StrokeShape="RoundRectangle 10" VerticalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{Binding Name}" Style="{StaticResource StrongLabel}" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                    <maui:IconButton Grid.Column="2" Icon="pencil" ButtonStyle="Small" VerticalOptions="Center"
+                                                     Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditCategoryCommand}" CommandParameter="{Binding .}"
+                                                     Description="Modifier cette catégorie" />
+                                    <maui:IconButton Grid.Column="3" Icon="trash" ButtonStyle="Small" VerticalOptions="Center"
+                                                     Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteCategoryCommand}" CommandParameter="{Binding .}"
+                                                     IconColor="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}"
+                                                     Description="Supprimer cette catégorie" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
                 <Label.Triggers>
                     <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
-                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DangerColor}, Dark={StaticResource DangerDarkColor}}" />
+                        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
                     </DataTrigger>
                 </Label.Triggers>
             </Label>

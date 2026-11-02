@@ -15,6 +15,7 @@ public partial class SettingsViewModel(
     IBiometricService biometrics,
     IAppLockService appLock,
     ISubscriptionRepository subscriptionRepository,
+    IFinancialProfileRepository profileRepository,
     SubscriptionReminderScheduler reminders) : ObservableObject
 {
     private bool _loading;
@@ -22,6 +23,9 @@ public partial class SettingsViewModel(
     private Guid? _editingCategoryId;
     public ObservableCollection<CategoryItem> Categories { get; } = [];
     public IReadOnlyList<string> Themes { get; } = ThemeOptions.All;
+
+    /// <summary>Les thèmes dans l'ordre du sélecteur à segments : clair, sombre, puis celui de l'appareil.</summary>
+    public IReadOnlyList<string> ThemeChoices { get; } = [ThemeOptions.Light, ThemeOptions.Dark, ThemeOptions.FollowSystem];
     public IReadOnlyList<int> AutoLockChoices { get; } = [1, 2, 5, 10, 30];
     public IReadOnlyList<int> ReminderDayChoices { get; } = [1, 3, 7];
     public IReadOnlyList<string> Currencies { get; } = ["EUR", "USD", "CHF", "GBP", "CAD", "JPY"];
@@ -67,6 +71,17 @@ public partial class SettingsViewModel(
     }
     [ObservableProperty] private bool isBusy;
 
+    [ObservableProperty] private string initialBalance = string.Empty;
+
+    [RelayCommand]
+    private async Task SaveInitialBalanceAsync()
+    {
+        if (!AmountParser.TryParse(InitialBalance, out var amount)) { ShowError("Indiquez un solde initial valide."); return; }
+        await profileRepository.SetInitialBalanceAsync(amount);
+        InitialBalance = MoneyFormatter.PlainAmount(amount);
+        StatusMessage = "Solde initial enregistré.";
+    }
+
     [RelayCommand]
     public async Task LoadAsync()
     {
@@ -86,6 +101,7 @@ public partial class SettingsViewModel(
             SelectedCurrency = settings.CurrencyCode;
             RememberLastCategory = settings.RememberLastCategory;
             SelectedAfterSaveBehavior = settings.AfterSaveBehavior;
+            InitialBalance = MoneyFormatter.PlainAmount(await profileRepository.GetInitialBalanceAsync());
             await ReloadCategoriesAsync();
             DefaultCategory = Guid.TryParse(settings.DefaultCategoryId, out var id) ? Categories.FirstOrDefault(x => x.Id == id) : null;
         }
@@ -96,6 +112,13 @@ public partial class SettingsViewModel(
     partial void OnBiometricsEnabledChanged(bool value) { if (!_loading && BiometricsAvailable) settings.BiometricsEnabled = value; }
     partial void OnAutoLockMinutesChanged(int value) { if (!_loading && value > 0) settings.AutoLockMinutes = value; }
     partial void OnSelectedThemeChanged(string value) { if (!_loading && !string.IsNullOrWhiteSpace(value)) settings.Theme = value; }
+
+    /// <summary>Choix direct d'un thème (sélecteur à trois segments) ; <paramref name="theme"/> est une valeur de <see cref="ThemeOptions"/>.</summary>
+    [RelayCommand]
+    private void SelectTheme(string theme)
+    {
+        if (ThemeOptions.All.Contains(theme)) SelectedTheme = theme;
+    }
     partial void OnAutoCreateSubscriptionExpensesChanged(bool value) { if (!_loading) settings.AutoCreateSubscriptionExpenses = value; }
     partial void OnAutoCreateRecurringIncomesChanged(bool value) { if (!_loading) settings.AutoCreateRecurringIncomes = value; }
     partial void OnSubscriptionRemindersEnabledChanged(bool value)

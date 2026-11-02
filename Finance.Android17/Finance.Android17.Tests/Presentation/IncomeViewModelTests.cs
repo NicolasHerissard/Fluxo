@@ -26,7 +26,6 @@ public sealed class IncomeViewModelTests : IDisposable
         Assert.Equal("2 000,00 €", vm.MonthIncome.Fr());
         Assert.Equal("1 797,50 €", vm.MonthNet.Fr());
         Assert.Equal("1 751,51 €", vm.ForecastBalance.Fr());
-        Assert.Equal("0", vm.InitialBalance);
     }
 
     [Fact]
@@ -56,23 +55,6 @@ public sealed class IncomeViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task RecentOperations_MergeIncomesAndExpenses_NewestFirst_WithSigns()
-    {
-        var vm = await LoadedAsync();
-
-        Assert.Equal(["Train", "Courses", "Pain", "Salaire", "Marché"], vm.RecentOperations.Select(x => x.Description));
-        var train = vm.RecentOperations[0];
-        Assert.Equal("Dépense", train.Type);
-        Assert.Equal("Train", train.Description);
-        Assert.Equal("-40,00 €", train.Amount.Fr());
-        Assert.Equal("#B3261E", train.Color);
-        var salary = vm.RecentOperations.Single(x => x.Type == "Revenu");
-        Assert.Equal("2 000,00 €", salary.Amount.Fr());
-        Assert.Equal("#2E7D32", salary.Color);
-        Assert.Equal("Marché", vm.RecentOperations[^1].Description);
-    }
-
-    [Fact]
     public async Task Amounts_AreHidden_WhenPrivacyIsOn()
     {
         _app.Settings.HideAmounts = true;
@@ -80,41 +62,12 @@ public sealed class IncomeViewModelTests : IDisposable
         var vm = await LoadedAsync();
 
         Assert.Equal("••••", vm.CurrentBalance);
-        Assert.All(vm.RecentOperations, x => Assert.Equal("••••", x.Amount));
         Assert.NotEmpty(vm.Incomes);
         Assert.All(vm.Incomes, x => Assert.Equal("••••", x.Amount));
         Assert.NotEmpty(vm.RecurringIncomes);
         Assert.All(vm.RecurringIncomes, x => Assert.Equal("••••", x.Amount));
         var goal = Assert.Single(vm.SavingsGoals);
         Assert.Equal(("••••", "••••"), (goal.Saved, goal.Target));
-    }
-
-    [Theory]
-    [InlineData("1000,50", 100_050, "1000,5")]
-    [InlineData("-50", -5_000, "-50")]
-    [InlineData("0", 0, "0")]
-    public async Task SaveInitialBalance_AcceptsSignedAmounts(string input, long expectedMinor, string expectedText)
-    {
-        var vm = _app.CreateIncome();
-
-        vm.InitialBalance = input;
-        await vm.SaveInitialBalanceCommand.ExecuteAsync(null);
-
-        Assert.Equal(expectedMinor, await _app.Profile.GetInitialBalanceAsync());
-        Assert.Equal("Solde initial enregistré.", vm.StatusMessage);
-        Assert.Equal(expectedText, vm.InitialBalance);
-    }
-
-    [Fact]
-    public async Task SaveInitialBalance_RejectsText()
-    {
-        var vm = _app.CreateIncome();
-
-        vm.InitialBalance = "beaucoup";
-        await vm.SaveInitialBalanceCommand.ExecuteAsync(null);
-
-        Assert.Equal("Indiquez un solde initial valide.", vm.StatusMessage);
-        Assert.Equal(0, await _app.Profile.GetInitialBalanceAsync());
     }
 
     [Fact]
@@ -163,22 +116,84 @@ public sealed class IncomeViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveRecurringIncome_MapsTheFrequencyToAnInterval()
+    public async Task SaveIncome_WhenRepeating_StoresARecurringIncomeWithTheChosenFrequency()
     {
         var vm = _app.CreateIncome();
 
-        vm.RecurringName = "Pension";
-        vm.RecurringAmount = "300";
+        vm.ShowIncomeFormCommand.Execute(null);
+        vm.IncomeDescription = "Pension";
+        vm.IncomeAmount = "300";
+        vm.IncomeRepeats = true;
         vm.SelectedFrequency = "Trimestriel";
-        vm.NextOccurrenceDate = new DateTime(2026, 11, 5);
-        await vm.SaveRecurringIncomeCommand.ExecuteAsync(null);
+        vm.IncomeDate = new DateTime(2026, 11, 5);
+        await vm.SaveIncomeCommand.ExecuteAsync(null);
 
         var stored = Assert.Single(await _app.RecurringIncomes.GetAllAsync());
+        Assert.Equal("Pension", stored.Name);
         Assert.Equal(3, stored.IntervalMonths);
         Assert.Equal(new DateTime(2026, 11, 5), stored.NextOccurrenceDate);
+        Assert.Empty(await _app.Incomes.GetAllAsync());
         Assert.Equal("Revenu récurrent enregistré.", vm.StatusMessage);
+        Assert.False(vm.IncomeRepeats);
+        Assert.False(vm.IsIncomeFormVisible);
         Assert.Equal("Mensuel", vm.SelectedFrequency);
-        Assert.Equal(new DateTime(2026, 11, 20), vm.NextOccurrenceDate);
+    }
+
+    [Fact]
+    public async Task EditRecurringIncome_ReusesTheIncomeForm_AndKeepsItRecurring()
+    {
+        await _app.RecurringIncomes.AddAsync("Prime", 90_000, 12, new DateTime(2026, 12, 15));
+        var vm = _app.CreateIncome();
+        await vm.LoadAsync();
+
+        vm.EditRecurringIncomeCommand.Execute(vm.RecurringIncomes.Single());
+
+        Assert.True(vm.IsIncomeFormVisible);
+        Assert.True(vm.IncomeRepeats);
+        Assert.False(vm.CanChooseRepeat);
+        Assert.Equal("Modifier le revenu récurrent", vm.IncomeFormTitle);
+        Assert.Equal("Annuel", vm.SelectedFrequency);
+        Assert.Equal(new DateTime(2026, 12, 15), vm.IncomeDate);
+
+        vm.IncomeAmount = "1000";
+        await vm.SaveIncomeCommand.ExecuteAsync(null);
+
+        var stored = Assert.Single(await _app.RecurringIncomes.GetAllAsync());
+        Assert.Equal(100_000, stored.AmountMinor);
+        Assert.Empty(await _app.Incomes.GetAllAsync());
+    }
+
+    [Fact]
+    public async Task IncomeForm_IsClosedUntilAsked_AndClosesOnCancel()
+    {
+        var vm = _app.CreateIncome();
+        Assert.False(vm.IsIncomeFormVisible);
+        Assert.True(vm.IsIncomeFormClosed);
+        Assert.False(vm.IsGoalFormVisible);
+
+        vm.ShowIncomeFormCommand.Execute(null);
+        vm.ShowGoalFormCommand.Execute(null);
+        Assert.True(vm.IsIncomeFormVisible);
+        Assert.False(vm.IsIncomeFormClosed);
+        Assert.True(vm.IsGoalFormVisible);
+        Assert.True(vm.CanChooseRepeat);
+
+        vm.CancelIncomeEditCommand.Execute(null);
+        vm.CancelGoalEditCommand.Execute(null);
+        Assert.False(vm.IsIncomeFormVisible);
+        Assert.False(vm.IsGoalFormVisible);
+        await Task.CompletedTask;
+    }
+
+    [Fact]
+    public async Task Load_ShowsTheRecurringIncomeStillExpectedThisMonth()
+    {
+        await _app.RecurringIncomes.AddAsync("Loyer", 50_000, 1, new DateTime(2026, 10, 28));
+        await _app.RecurringIncomes.AddAsync("Prime", 90_000, 12, new DateTime(2026, 12, 15));
+        var vm = _app.CreateIncome();
+        await vm.LoadAsync();
+
+        Assert.Equal("500,00 €", vm.ExpectedIncome.Fr());
     }
 
     [Fact]

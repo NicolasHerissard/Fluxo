@@ -17,4 +17,7 @@ public interface ISettingsService
     string LastCategoryId { get; set; }
     bool RememberLastCategory { get; set; }
     string AfterSaveBehavior { get; set; }
+
+    /// <summary>Clés (séparées par un saut de ligne) des alertes déjà consultées dans le centre de notifications.</summary>
+    string SeenNotifications { get; set; }
 }

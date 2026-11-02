@@ -36,6 +36,7 @@ public sealed class FakeSettings : ISettingsService
     public string LastCategoryId { get; set; } = string.Empty;
     public bool RememberLastCategory { get; set; } = true;
     public string AfterSaveBehavior { get; set; } = AfterSaveOptions.Close;
+    public string SeenNotifications { get; set; } = string.Empty;
 }
 
 public sealed class FakeReminderService : IReminderService
