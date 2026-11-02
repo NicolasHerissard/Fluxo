@@ -31,7 +31,7 @@ internal sealed class CategoryRepository(FinanceDatabase database) : Repository<
         await using (var db = await Database.OpenAsync(cancellationToken).ConfigureAwait(false))
         {
             if (await db.Expenses.AnyAsync(x => x.CategoryId == id && x.DeletedAtUtc == null, cancellationToken).ConfigureAwait(false))
-                throw new InvalidOperationException("Cette catégorie est utilisée par une dépense.");
+                throw new InvalidOperationException("Cette catégorie est utilisée par une transaction.");
         }
         await MarkDeletedAsync(id, cancellationToken).ConfigureAwait(false);
     }

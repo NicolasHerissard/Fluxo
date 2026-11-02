@@ -12,7 +12,7 @@ public sealed record ExpenseRow(Guid Id, string Description, string Category, st
     internal static ExpenseRow From(Expense expense, bool hideAmounts)
     {
         var category = expense.Category?.Name ?? Uncategorized.Name;
-        return new(expense.Id, string.IsNullOrWhiteSpace(expense.Description) ? "Dépense" : expense.Description, category,
+        return new(expense.Id, string.IsNullOrWhiteSpace(expense.Description) ? "Transaction" : expense.Description, category,
             MoneyFormatter.Date(expense.OccurredOn), hideAmounts ? MoneyFormatter.Hidden : MoneyFormatter.Money(expense.AmountMinor, expense.CurrencyCode),
             expense.Category?.Color ?? Uncategorized.Color, Initial(category));
     }

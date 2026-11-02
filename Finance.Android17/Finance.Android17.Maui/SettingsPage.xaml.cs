@@ -22,7 +22,7 @@ public partial class SettingsPage : ContentPage
 
     private async void OnDeleteAllClicked(object? sender, EventArgs e)
     {
-        if (!await DisplayAlertAsync("Supprimer toutes les données ?", "Toutes les dépenses, catégories personnalisées et abonnements seront supprimés. Cette action est irréversible.", "Continuer", "Annuler")) return;
+        if (!await DisplayAlertAsync("Supprimer toutes les données ?", "Toutes les transactions, catégories personnalisées et abonnements seront supprimés. Cette action est irréversible.", "Continuer", "Annuler")) return;
         if (!await DisplayAlertAsync("Confirmation définitive", "Voulez-vous vraiment remettre les données financières à zéro ?", "Tout supprimer", "Annuler")) return;
         var pin = await DisplayPromptAsync("Authentification requise", "Saisissez votre code PIN pour confirmer la suppression.", "Confirmer", "Annuler", keyboard: Keyboard.Numeric, maxLength: 8);
         if (!string.IsNullOrEmpty(pin)) await _viewModel.DeleteAllDataAsync(pin);

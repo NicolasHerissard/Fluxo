@@ -7,7 +7,7 @@ namespace Finance.Android17.Presentation;
 
 public partial class AddExpenseViewModel(IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, ISettingsService settings, IOcrService ocr, TimeProvider clock) : ObservableObject
 {
-    private const string NewExpenseTitle = "Nouvelle dépense";
+    private const string NewExpenseTitle = "Nouvelle transaction";
     private const string SaveEditsText = "Enregistrer les modifications";
 
     public ObservableCollection<ExpenseCategoryOption> CategoryOptions { get; } = [];
@@ -23,7 +23,7 @@ public partial class AddExpenseViewModel(IExpenseRepository expenseRepository, I
     [ObservableProperty] private string errorMessage = string.Empty;
     [ObservableProperty] private string statusMessage = string.Empty;
     [ObservableProperty] private string pageTitle = NewExpenseTitle;
-    [ObservableProperty] private string saveButtonText = "Ajouter la dépense";
+    [ObservableProperty] private string saveButtonText = "Ajouter la transaction";
     [ObservableProperty] private bool isTodaySelected = true;
     [ObservableProperty] private bool isYesterdaySelected;
     [ObservableProperty] private bool isOtherDateSelected;
@@ -109,7 +109,7 @@ public partial class AddExpenseViewModel(IExpenseRepository expenseRepository, I
             _editingId = null;
             if (keepOpen)
             {
-                StatusMessage = "Dépense ajoutée. Vous pouvez saisir la suivante.";
+                StatusMessage = "Transaction ajoutée. Vous pouvez saisir la suivante.";
                 UpdateDateButtons();
             }
             else Saved?.Invoke(this, EventArgs.Empty);
@@ -124,7 +124,7 @@ public partial class AddExpenseViewModel(IExpenseRepository expenseRepository, I
         if (expense is null) return;
         await LoadAsync();
         _editingId = expense.Id;
-        PageTitle = "Modifier la dépense";
+        PageTitle = "Modifier la transaction";
         SaveButtonText = SaveEditsText;
         Amount = MoneyFormatter.FixedAmount(expense.AmountMinor);
         Description = expense.Description;
@@ -137,7 +137,7 @@ public partial class AddExpenseViewModel(IExpenseRepository expenseRepository, I
     private void UpdateSaveButtonText()
     {
         if (_editingId is not null) { SaveButtonText = SaveEditsText; return; }
-        SaveButtonText = AmountParser.TryParse(Amount, out var minor) && minor > 0 ? $"Ajouter {MoneyFormatter.Money(minor, settings.CurrencyCode)}" : "Ajouter la dépense";
+        SaveButtonText = AmountParser.TryParse(Amount, out var minor) && minor > 0 ? $"Ajouter {MoneyFormatter.Money(minor, settings.CurrencyCode)}" : "Ajouter la transaction";
     }
 
     private void UpdateDateButtons()

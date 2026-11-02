@@ -25,7 +25,7 @@ public sealed class ExpensesViewModelTests : IDisposable
         var vm = await LoadedAsync();
 
         Assert.Equal(["Train", "Courses", "Pain", "Marché"], Descriptions(vm));
-        Assert.Equal("4 dépenses · plus récentes", vm.ResultSummary);
+        Assert.Equal("4 transactions · plus récentes", vm.ResultSummary);
         Assert.False(vm.IsEmpty);
         Assert.False(vm.HasActiveFilters);
         Assert.Equal("Filtres", vm.FilterButtonText);
@@ -40,8 +40,8 @@ public sealed class ExpensesViewModelTests : IDisposable
         await vm.LoadAsync();
 
         Assert.True(vm.IsEmpty);
-        Assert.Equal("Aucune dépense enregistrée", vm.EmptyTitle);
-        Assert.Equal("0 dépenses · plus récentes", vm.ResultSummary);
+        Assert.Equal("Aucune transaction enregistrée", vm.EmptyTitle);
+        Assert.Equal("0 transactions · plus récentes", vm.ResultSummary);
     }
 
     [Theory]
@@ -172,7 +172,7 @@ public sealed class ExpensesViewModelTests : IDisposable
         await vm.ApplyFiltersCommand.ExecuteAsync(null);
 
         Assert.Equal(expected, Descriptions(vm));
-        Assert.Equal($"4 dépenses · {sort.ToLowerInvariant()}", vm.ResultSummary);
+        Assert.Equal($"4 transactions · {sort.ToLowerInvariant()}", vm.ResultSummary);
         Assert.Equal("sort", Assert.Single(vm.ActiveFilters).Key);
     }
 
@@ -191,7 +191,7 @@ public sealed class ExpensesViewModelTests : IDisposable
 
         Assert.Equal(["Train", "Courses", "Pain", "Marché"], Descriptions(vm));
         Assert.Empty(vm.ActiveFilters);
-        Assert.Equal("Aucune dépense enregistrée", vm.EmptyTitle);
+        Assert.Equal("Aucune transaction enregistrée", vm.EmptyTitle);
     }
 
     [Fact]
@@ -219,13 +219,13 @@ public sealed class ExpensesViewModelTests : IDisposable
 
         Assert.Equal(["Train", "Courses", "Marché"], Descriptions(vm));
         Assert.True(vm.IsUndoVisible);
-        Assert.Equal("Dépense supprimée", vm.StatusMessage);
+        Assert.Equal("Transaction supprimée", vm.StatusMessage);
 
         await vm.UndoDeleteCommand.ExecuteAsync(null);
 
         Assert.Equal(["Train", "Courses", "Pain", "Marché"], Descriptions(vm));
         Assert.False(vm.IsUndoVisible);
-        Assert.Equal("Dépense restaurée", vm.StatusMessage);
+        Assert.Equal("Transaction restaurée", vm.StatusMessage);
     }
 
     [Fact]

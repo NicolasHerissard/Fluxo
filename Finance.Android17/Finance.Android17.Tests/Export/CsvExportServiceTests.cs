@@ -22,8 +22,8 @@ public sealed class CsvExportServiceTests : IDisposable
         await _host.Get<IExportService>().ExportExpensesCsvAsync();
 
         var file = Assert.Single(_host.Files.Shared);
-        Assert.Equal("depenses-20261020-0930.csv", file.FileName);
-        Assert.Equal("Exporter les dépenses", file.Title);
+        Assert.Equal("transactions-20261020-0930.csv", file.FileName);
+        Assert.Equal("Exporter les transactions", file.Title);
         Assert.Equal("Date;Description;Catégorie;Montant;Devise\r\n", Decode(file.Content));
     }
 

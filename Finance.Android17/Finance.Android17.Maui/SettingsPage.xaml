@@ -101,10 +101,10 @@
                     <VerticalStackLayout Spacing="14">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                             <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                                <Label Text="Dépenses d’abonnement automatiques" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Transactions d’abonnement automatiques" Style="{StaticResource StrongLabel}" />
                                 <Label Text="Ajoute chaque prélèvement à son échéance, sans doublon" Style="{StaticResource MutedLabel}" />
                             </VerticalStackLayout>
-                            <Switch Grid.Column="1" IsToggled="{Binding AutoCreateSubscriptionExpenses}" VerticalOptions="Center" SemanticProperties.Description="Créer les dépenses des abonnements automatiquement" />
+                            <Switch Grid.Column="1" IsToggled="{Binding AutoCreateSubscriptionExpenses}" VerticalOptions="Center" SemanticProperties.Description="Créer les transactions des abonnements automatiquement" />
                         </Grid>
                         <BoxView HeightRequest="1" />
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
@@ -128,6 +128,14 @@
                                 <Picker ItemsSource="{Binding ReminderDayChoices}" SelectedItem="{Binding SubscriptionReminderDays}" IsEnabled="{Binding SubscriptionRemindersEnabled}" MinimumWidthRequest="64" SemanticProperties.Description="Prévenir avant l’échéance, en jours" />
                             </Border>
                         </Grid>
+                        <BoxView HeightRequest="1" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Label Text="Alertes budget et découvert" Style="{StaticResource StrongLabel}" />
+                                <Label Text="Notification à 8 h quand une nouvelle alerte apparaît, même application fermée" Style="{StaticResource MutedLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1" IsToggled="{Binding BackgroundAlertsEnabled}" VerticalOptions="Center" SemanticProperties.Description="Alertes budget et découvert en notification" />
+                        </Grid>
                     </VerticalStackLayout>
                 </Border>
 
@@ -148,7 +156,7 @@
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                             <VerticalStackLayout Spacing="2" VerticalOptions="Center">
                                 <Label Text="Mémoriser la dernière catégorie" Style="{StaticResource StrongLabel}" />
-                                <Label Text="Accélère les dépenses habituelles" Style="{StaticResource MutedLabel}" />
+                                <Label Text="Accélère les transactions habituelles" Style="{StaticResource MutedLabel}" />
                             </VerticalStackLayout>
                             <Switch Grid.Column="1" IsToggled="{Binding RememberLastCategory}" VerticalOptions="Center" SemanticProperties.Description="Mémoriser la dernière catégorie" />
                         </Grid>

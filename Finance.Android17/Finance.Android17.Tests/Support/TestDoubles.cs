@@ -37,6 +37,8 @@ public sealed class FakeSettings : ISettingsService
     public bool RememberLastCategory { get; set; } = true;
     public string AfterSaveBehavior { get; set; } = AfterSaveOptions.Close;
     public string SeenNotifications { get; set; } = string.Empty;
+    public bool BackgroundAlertsEnabled { get; set; } = true;
+    public string PushedNotifications { get; set; } = string.Empty;
 }
 
 public sealed class FakeReminderService : IReminderService
@@ -46,6 +48,30 @@ public sealed class FakeReminderService : IReminderService
     public Task ApplyAsync(ReminderPlan plan, CancellationToken cancellationToken = default)
     {
         Plans.Add(plan);
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>Garde les lots d'alertes « envoyés » ; <see cref="Accepts"/> à faux simule une plateforme qui refuse de notifier.</summary>
+public sealed class FakeAlertPublisher : IAlertPublisher
+{
+    public List<IReadOnlyList<AppNotification>> Batches { get; } = [];
+    public bool Accepts { get; set; } = true;
+
+    public Task<bool> PublishAsync(IReadOnlyList<AppNotification> alerts, CancellationToken cancellationToken = default)
+    {
+        if (Accepts) Batches.Add(alerts);
+        return Task.FromResult(Accepts);
+    }
+}
+
+public sealed class FakeDailyCheckScheduler : IDailyCheckScheduler
+{
+    public int Calls { get; private set; }
+
+    public Task EnsureScheduledAsync(CancellationToken cancellationToken = default)
+    {
+        Calls++;
         return Task.CompletedTask;
     }
 }

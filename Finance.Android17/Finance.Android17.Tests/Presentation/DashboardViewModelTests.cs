@@ -20,7 +20,7 @@ public sealed class DashboardViewModelTests : IDisposable
         Assert.Equal("Mardi 20 Octobre", vm.CurrentDate);
         Assert.Equal("Ce mois", vm.PeriodTitle);
         Assert.Equal("202,50 €", vm.Total.Fr());
-        Assert.Equal("3 dépenses", vm.ExpenseCount);
+        Assert.Equal("3 transactions", vm.ExpenseCount);
         Assert.Equal("Alimentation", vm.TopCategory);
         Assert.Equal("↑ 153 % par rapport à la période précédente", vm.Comparison);
         Assert.True(vm.ComparisonIsBad);
@@ -158,7 +158,7 @@ public sealed class DashboardViewModelTests : IDisposable
 
         Assert.Equal("Cette semaine", vm.PeriodTitle);
         Assert.True(vm.IsEmpty);
-        Assert.Equal("0 dépense", vm.ExpenseCount);
+        Assert.Equal("0 transaction", vm.ExpenseCount);
         Assert.Equal("↓ 100 % par rapport à la période précédente", vm.Comparison);
         Assert.True(vm.ComparisonIsGood);
         Assert.False(vm.ComparisonIsBad);
@@ -175,7 +175,7 @@ public sealed class DashboardViewModelTests : IDisposable
 
         Assert.Equal("Cette année", vm.PeriodTitle);
         Assert.Equal("282,50 €", vm.Total.Fr());
-        Assert.Equal("4 dépenses", vm.ExpenseCount);
+        Assert.Equal("4 transactions", vm.ExpenseCount);
         Assert.Equal("Aucune donnée sur la période précédente", vm.Comparison);
     }
 

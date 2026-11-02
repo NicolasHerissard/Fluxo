@@ -25,6 +25,20 @@ public sealed class SubscriptionReminderSchedulerTests
     }
 
     [Fact]
+    public async Task Refresh_WithoutNotice_KeepsTheAlarms_ButDropsTheNoticeOfTheDay()
+    {
+        var spotify = new Subscription { Name = "Spotify", NextBillingDate = new DateTime(2026, 10, 21) };
+
+        await Scheduler.RefreshAsync([Netflix, spotify], showNotice: true);
+        await Scheduler.RefreshAsync([Netflix, spotify], showNotice: false);
+
+        Assert.NotNull(_reminders.Plans[0].Notice);
+        Assert.Null(_reminders.Plans[1].Notice);
+        Assert.Single(_reminders.Plans[0].Alarms);
+        Assert.Single(_reminders.Plans[1].Alarms);
+    }
+
+    [Fact]
     public async Task Refresh_AppliesAnEmptyPlan_ToCancelPendingAlarms_WhenRemindersAreDisabled()
     {
         _settings.SubscriptionRemindersEnabled = false;

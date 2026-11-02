@@ -27,6 +27,8 @@ public sealed class AppFixture : FinancePorts, IDisposable
         services.AddSingleton<IFileExchange>(new FakeFileExchange());
         services.AddSingleton<ISettingsService>(Settings);
         services.AddSingleton<IReminderService>(Reminders);
+        services.AddSingleton<IAlertPublisher>(Alerts);
+        services.AddSingleton<IDailyCheckScheduler>(DailyChecks);
         services.AddSingleton<IBiometricService>(new FakeBiometrics());
         services.AddSingleton<IOcrService>(new FakeOcrService());
         services.AddInfrastructure(_db.Options);
@@ -37,6 +39,8 @@ public sealed class AppFixture : FinancePorts, IDisposable
     public FixedTimeProvider Clock { get; }
     public FakeSettings Settings { get; } = new();
     public FakeReminderService Reminders { get; } = new();
+    public FakeAlertPublisher Alerts { get; } = new();
+    public FakeDailyCheckScheduler DailyChecks { get; } = new();
 
     public override T Get<T>() => _provider.GetRequiredService<T>();
 

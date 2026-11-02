@@ -61,7 +61,7 @@ public sealed class AddExpenseViewModelTests : IDisposable
     {
         var vm = _app.CreateAddExpense();
         await vm.LoadAsync();
-        Assert.Equal("Ajouter la dépense", vm.SaveButtonText);
+        Assert.Equal("Ajouter la transaction", vm.SaveButtonText);
 
         vm.Amount = "12,5";
 
@@ -121,7 +121,7 @@ public sealed class AddExpenseViewModelTests : IDisposable
         await vm.SaveCommand.ExecuteAsync(null);
 
         Assert.False(saved);
-        Assert.Equal("Dépense ajoutée. Vous pouvez saisir la suivante.", vm.StatusMessage);
+        Assert.Equal("Transaction ajoutée. Vous pouvez saisir la suivante.", vm.StatusMessage);
         Assert.Single(await _app.Expenses.GetAllAsync());
     }
 
@@ -158,7 +158,7 @@ public sealed class AddExpenseViewModelTests : IDisposable
 
         await vm.BeginEditAsync(original.Id);
 
-        Assert.Equal("Modifier la dépense", vm.PageTitle);
+        Assert.Equal("Modifier la transaction", vm.PageTitle);
         Assert.Equal("Enregistrer les modifications", vm.SaveButtonText);
         Assert.Equal("40,00", vm.Amount);
         Assert.Equal("Train", vm.Description);

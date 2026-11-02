@@ -21,12 +21,10 @@ public partial class NotificationsViewModel(NotificationService notifications, I
     {
         var feed = await notifications.LoadAsync();
         _current = feed.Items;
-        var hide = settings.HideAmounts;
-        var currency = settings.CurrencyCode;
-        string Amount(long minor) => hide ? MoneyFormatter.Hidden : MoneyFormatter.Money(minor, currency);
+        var amount = NotificationTexts.Amounts(settings.HideAmounts, settings.CurrencyCode);
 
         Items.Clear();
-        foreach (var item in feed.Items) Items.Add(ToRow(item, feed.UnreadKeys.Contains(item.Key), Amount));
+        foreach (var item in feed.Items) Items.Add(ToRow(item, feed.UnreadKeys.Contains(item.Key), amount));
 
         HasUnread = feed.HasUnread;
         IsEmpty = Items.Count == 0;
@@ -51,32 +49,7 @@ public partial class NotificationsViewModel(NotificationService notifications, I
     private static NotificationRow ToRow(AppNotification item, bool isNew, Func<long, string> amount)
     {
         var severity = item.Severity switch { NotificationSeverity.Critical => "critical", NotificationSeverity.Warning => "warning", _ => "info" };
-        var percent = item.LimitMinor > 0 ? MoneyFormatter.Percent((double)item.AmountMinor / item.LimitMinor) : string.Empty;
-        var exceeded = item.Severity == NotificationSeverity.Critical;
-
-        var (title, message, icon) = item.Topic switch
-        {
-            NotificationTopic.SubscriptionDue => (DueTitle(item.DaysAway), $"{item.Subject} · {amount(item.AmountMinor)}", "calendar"),
-            NotificationTopic.MonthlyBudget => (
-                exceeded ? "Budget mensuel dépassé" : "Budget mensuel bientôt atteint",
-                $"{amount(item.AmountMinor)} dépensés sur {amount(item.LimitMinor)} ({percent}).",
-                "wallet"),
-            NotificationTopic.CategoryBudget => (
-                exceeded ? $"Budget « {item.Subject} » dépassé" : $"Budget « {item.Subject} » bientôt atteint",
-                $"{amount(item.AmountMinor)} dépensés sur {amount(item.LimitMinor)} ({percent}).",
-                "wallet"),
-            _ => (
-                "Découvert probable en fin de mois",
-                $"Solde estimé au dernier jour du mois : {amount(item.AmountMinor)}.",
-                "trending-down")
-        };
-        return new NotificationRow(item.Key, title, message, icon, severity, isNew);
+        var text = NotificationTexts.Compose(item, amount);
+        return new NotificationRow(item.Key, text.Title, text.Text, text.Icon, severity, isNew);
     }
-
-    private static string DueTitle(int days) => days switch
-    {
-        0 => "Prélèvement aujourd’hui",
-        1 => "Prélèvement demain",
-        _ => $"Prélèvement dans {days} jours"
-    };
 }

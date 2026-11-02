@@ -20,4 +20,10 @@ public interface ISettingsService
 
     /// <summary>Clés (séparées par un saut de ligne) des alertes déjà consultées dans le centre de notifications.</summary>
     string SeenNotifications { get; set; }
+
+    /// <summary>Envoyer les nouvelles alertes du centre de notifications en notification du système, chaque matin, application fermée.</summary>
+    bool BackgroundAlertsEnabled { get; set; }
+
+    /// <summary>Clés (séparées par un saut de ligne) des alertes déjà envoyées en notification du système.</summary>
+    string PushedNotifications { get; set; }
 }

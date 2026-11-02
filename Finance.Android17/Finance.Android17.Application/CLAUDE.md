@@ -16,15 +16,15 @@ Un seul espace de noms, `Finance.Android17.Application`, pour tout le projet : l
 | `Subscriptions/` | `ISubscriptionRepository` ; `SubscriptionCosts` (coût mensuel et annuel). |
 | `Savings/` | `ISavingsGoalRepository`. |
 | `Overview/` | `IFinancialProfileRepository` (solde initial) ; `FinanceData` + `FinanceDataLoader` (lecture groupée) ; `FinancialSummaryCalculator` → `FinancialSummary` (mois en cours, solde actuel, prévision de fin de mois, taux d'épargne). |
-| `Notifications/` | `NotificationBuilder` (règle pure : découvert probable, budget mensuel et budgets de catégorie à 80 % / 100 %, prélèvements des 7 prochains jours → `AppNotification`, triées par gravité) ; `NotificationService` (charge, puis mémorise dans `ISettingsService.SeenNotifications` les clés d'alertes déjà vues → `NotificationFeed`, pour le point de la cloche). |
+| `Notifications/` | `NotificationBuilder` (règle pure : découvert probable, budget mensuel et budgets de catégorie à 80 % / 100 %, prélèvements des 7 prochains jours → `AppNotification`, triées par gravité) ; `NotificationService` (charge, puis mémorise dans `ISettingsService.SeenNotifications` les clés d'alertes déjà vues → `NotificationFeed`, pour le point de la cloche) ; port `IAlertPublisher` (montrer des alertes comme notifications du système). |
 | `Dashboard/` | `DashboardService` (charge puis calcule) ; `DashboardCalculator` → `DashboardReport` (dont le flux de trésorerie `Cashflow`) ; `CashflowCalculator` (revenus et dépenses des 6 derniers mois → `MonthlyFlow`) ; `PeriodRange` (semaine du lundi, mois, année + période précédente entière), `PeriodComparison`, `BudgetStatus` (alerte à 80 % puis 100 %). |
 | `Operations/` | `OperationsFeed` : revenus et dépenses mêlés, du plus récent au plus ancien. |
 | `Money/` | `AmountParser` : lecture d'un montant saisi (virgule ou point, arrondi `AwayFromZero`, refuse ce qui dépasserait un `long` en centimes). |
 | `Recurring/` | `Recurrence` (échéances manquées), `DueOperationsPlanner` (plan des dépenses/revenus à créer), `DueOperationsService` (selon les réglages), `IDueOperationsStore`. |
-| `Reminders/` | `ReminderPlanner` (quand sonner, quoi afficher) → `ReminderPlan` ; `SubscriptionReminderScheduler` ; port `IReminderService`. |
+| `Reminders/` | `ReminderPlanner` (quand sonner, quoi afficher) → `ReminderPlan` ; `SubscriptionReminderScheduler` (`showNotice: false` supprime la notification immédiate du jour, utilisé en arrière-plan) ; port `IReminderService`. |
 | `Security/` | `PinPolicy` (4 à 8 chiffres) ; ports `IAppLockService`, `IBiometricService`, `ISecretStore` (clé de la base). |
 | `Settings/` | Port `ISettingsService` (dont `SeenNotifications`, les clés d'alertes déjà consultées, séparées par des retours à la ligne) ; `ThemeOptions` et `AfterSaveOptions` (valeurs **enregistrées telles quelles** dans les préférences). |
-| `Startup/` | `StartupService` : après le déverrouillage, ouvre la base, rattrape les échéances, reprogramme les rappels. |
+| `Startup/` | `StartupService` : après le déverrouillage (ou, via `PrepareInBackgroundAsync`, pendant le contrôle quotidien), ouvre la base, rattrape les échéances, reprogramme les rappels et le prochain contrôle ; les préparations s'exécutent une à la fois (verrou), pour qu'un déverrouillage et le contrôle ne rattrapent pas deux fois les mêmes échéances. `DailyCheckService` : le contrôle quotidien de 8 h (`CheckHour`, `NextRun`) lancé par une alarme de la plateforme, application fermée ; il fait la même préparation, puis envoie via `IAlertPublisher` les alertes du centre (budgets, découvert) ni consultées dans l'application ni déjà envoyées (`ISettingsService.PushedNotifications`), sans les prélèvements à venir que couvrent les rappels, et seulement si `BackgroundAlertsEnabled`. Port `IDailyCheckScheduler`. |
 | `Backup/` | `FinanceBackupSnapshot` et ses enregistrements (le contenu d'une sauvegarde) ; port `IDataBackupService`. |
 | `Export/` | Port `IExportService`. |
 | `Receipts/` | `ReceiptParser` (texte OCR d'un ticket → montant, date, commerçant) ; port `IOcrService`. |
@@ -36,7 +36,7 @@ Un seul espace de noms, `Finance.Android17.Application`, pour tout le projet : l
 
 - **Persistance** (un port par agrégat, implémentés dans `Infrastructure/Persistence`) : `IExpenseRepository`, `ICategoryRepository`, `IIncomeRepository`, `IRecurringIncomeRepository`, `ISubscriptionRepository`, `ISavingsGoalRepository`, `IFinancialProfileRepository`, `IDueOperationsStore`, `IFinanceDataStore`, `IDatabaseInitializer`. Les suppressions sont logiques ; les lectures ne renvoient jamais une entité supprimée.
 - **Sécurité, sauvegarde, export** (implémentés dans `Infrastructure`, indépendamment de la plateforme) : `ISecretStore`, `IAppLockService`, `IDataBackupService`, `IExportService`.
-- **Plateforme** (implémentés dans `Maui`) : `ISecureValueStore`, `IFileExchange`, `ISettingsService`, `IBiometricService`, `IOcrService`, `IReminderService`.
+- **Plateforme** (implémentés dans `Maui`) : `ISecureValueStore`, `IFileExchange`, `ISettingsService`, `IBiometricService`, `IOcrService`, `IReminderService`, `IAlertPublisher`, `IDailyCheckScheduler`.
 
 ### `ReceiptParser`
 
