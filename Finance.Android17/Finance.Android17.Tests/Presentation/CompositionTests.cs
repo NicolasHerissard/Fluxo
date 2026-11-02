@@ -19,6 +19,8 @@ public sealed class CompositionTests : IDisposable
         services.AddSingleton<IFileExchange>(new FakeFileExchange());
         services.AddSingleton<ISettingsService>(new FakeSettings());
         services.AddSingleton<IReminderService>(new FakeReminderService());
+        services.AddSingleton<IAlertPublisher>(new FakeAlertPublisher());
+        services.AddSingleton<IDailyCheckScheduler>(new FakeDailyCheckScheduler());
         services.AddSingleton<IBiometricService>(new FakeBiometrics());
         services.AddSingleton<IOcrService>(new FakeOcrService());
         services.AddInfrastructure(_db.Options).AddApplication().AddPresentation();

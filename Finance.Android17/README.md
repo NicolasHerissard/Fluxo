@@ -26,15 +26,16 @@ API 36 est la cible Android prise en charge par le SDK .NET 10 installé. Androi
 
 ## Interface 2.0.0
 
-- navigation inférieure : Accueil, Dépenses, Finances, Abonnements et Réglages ;
+- navigation inférieure : Accueil, Transactions, Finances, Abonnements et Réglages ;
 - dashboard semaine/mois/année avec solde actuel, revenus, résultat net et prévision de fin de mois ;
-- ajout et modification guidés des dépenses ;
+- ajout et modification guidés des transactions ;
 - historique avec recherche instantanée, filtres, suppression et annulation ;
 - revenus ponctuels et revenus récurrents mensuels, trimestriels ou annuels ;
 - solde initial configurable et calcul automatique du solde global mono-compte ;
 - objectifs d’épargne avec montant atteint, cible et progression ;
 - abonnements mensuels, trimestriels ou annuels avec prochaines échéances ;
 - catégories personnalisables ;
+- rappels d’échéance et alertes de budget ou de découvert en notification, chaque matin, même application fermée ;
 - masquage des montants, thème clair/sombre/système et verrouillage automatique ;
 - déverrouillage biométrique facultatif ;
 - export CSV via la feuille de partage native.

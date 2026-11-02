@@ -16,7 +16,8 @@ public partial class SettingsViewModel(
     IAppLockService appLock,
     ISubscriptionRepository subscriptionRepository,
     IFinancialProfileRepository profileRepository,
-    SubscriptionReminderScheduler reminders) : ObservableObject
+    SubscriptionReminderScheduler reminders,
+    IDailyCheckScheduler dailyCheck) : ObservableObject
 {
     private bool _loading;
     private bool _updatingColor;
@@ -50,6 +51,7 @@ public partial class SettingsViewModel(
     [ObservableProperty] private bool autoCreateRecurringIncomes;
     [ObservableProperty] private bool subscriptionRemindersEnabled;
     [ObservableProperty] private int subscriptionReminderDays = 3;
+    [ObservableProperty] private bool backgroundAlertsEnabled;
     [ObservableProperty] private string monthlyBudget = string.Empty;
     [ObservableProperty] private string selectedCurrency = "EUR";
     [ObservableProperty] private CategoryItem? defaultCategory;
@@ -97,6 +99,7 @@ public partial class SettingsViewModel(
             AutoCreateRecurringIncomes = settings.AutoCreateRecurringIncomes;
             SubscriptionRemindersEnabled = settings.SubscriptionRemindersEnabled;
             SubscriptionReminderDays = settings.SubscriptionReminderDays;
+            BackgroundAlertsEnabled = settings.BackgroundAlertsEnabled;
             MonthlyBudget = settings.MonthlyBudgetMinor > 0 ? MoneyFormatter.PlainAmount(settings.MonthlyBudgetMinor) : string.Empty;
             SelectedCurrency = settings.CurrencyCode;
             RememberLastCategory = settings.RememberLastCategory;
@@ -134,6 +137,15 @@ public partial class SettingsViewModel(
         settings.SubscriptionReminderDays = value;
         _ = RefreshRemindersAsync();
     }
+
+    partial void OnBackgroundAlertsEnabledChanged(bool value)
+    {
+        if (_loading) return;
+        settings.BackgroundAlertsEnabled = value;
+        // L'autorisation de notifier se demande ici, au premier plan, plutôt que pendant le contrôle de 8 h.
+        if (value) _ = dailyCheck.EnsureScheduledAsync();
+    }
+
     partial void OnSelectedCurrencyChanged(string value) { if (!_loading && !string.IsNullOrWhiteSpace(value)) settings.CurrencyCode = value; }
     partial void OnDefaultCategoryChanged(CategoryItem? value) { if (!_loading) settings.DefaultCategoryId = value?.Id.ToString() ?? string.Empty; }
     partial void OnRememberLastCategoryChanged(bool value) { if (!_loading) settings.RememberLastCategory = value; }

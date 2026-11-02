@@ -16,14 +16,14 @@ Un dossier par sujet, qui reprend le nom du dossier testé dans `Application`, `
 | `Security/` | `PinLockService` et `DatabaseKeyProvider`, dont des vecteurs de référence calculés indépendamment (Python) pour que le format du PIN ne change pas sans qu'on le voie. |
 | `Backup/` | `EncryptedBackupService` et le format `.mfbackup` : aller-retour, mauvais mot de passe, fichier altéré, **fichier de référence existant** ; compatibilité du format 1. |
 | `Export/` | `CsvExportService`. |
-| `Recurring/`, `Reminders/`, `Startup/` | Les services d'orchestration (`DueOperationsService`, `SubscriptionReminderScheduler`, `StartupService`) sur le conteneur complet. |
+| `Recurring/`, `Reminders/`, `Startup/` | Les services d'orchestration (`DueOperationsService`, `SubscriptionReminderScheduler`, `StartupService`, `DailyCheckService`) sur le conteneur complet. |
 | `Presentation/` | Les ViewModels (`AppFixture`), `MoneyFormatter`, `BillingFrequency` et la composition (`CompositionTests` : tout se résout avec `AddInfrastructure` + `AddApplication` + `AddPresentation`). |
 | `Settings/` | Les valeurs de réglages persistées (`ThemeOptions`, `AfterSaveOptions`). |
 | `Support/` | Outils de test (voir ci-dessous). |
 
 ### `Support/`
 
-- `TestDoubles.cs` : `FixedTimeProvider` (horloge figée, modifiable par `Now`), faux `ISettingsService`, `ISecureValueStore`, `IFileExchange`, `IAppLockService`, `IBiometricService`, `IOcrService`, `IReminderService`, et `TempDatabase` (dossier temporaire supprimé avec le test).
+- `TestDoubles.cs` : `FixedTimeProvider` (horloge figée, modifiable par `Now`), faux `ISettingsService`, `ISecureValueStore`, `IFileExchange`, `IAppLockService`, `IBiometricService`, `IOcrService`, `IReminderService`, `IAlertPublisher` (`Batches`, `Accepts`), `IDailyCheckScheduler` (`Calls`), et `TempDatabase` (dossier temporaire supprimé avec le test).
 - `InfrastructureHost` : `AddInfrastructure` sur une base temporaire, avec coffre et échange de fichiers factices et horloge figée. `databaseOf:` rouvre la base d'un autre hôte (simule un redémarrage) ; `ExecuteSqlAsync` / `ScalarAsync` inspectent ou fabriquent une base en SQL.
 - `AppFixture` : l'application composée comme en production (`AddInfrastructure` + `AddApplication`) avec réglages et services natifs factices ; fabrique les ViewModels (`CreateDashboard`, `CreateExpenses`…) et un jeu de données commun (`SeedScenarioAsync`).
 - `FinancePorts` : accès direct aux ports de persistance (`Expenses`, `Categories`, `Subscriptions`…) pour `AppFixture` et `InfrastructureHost`.

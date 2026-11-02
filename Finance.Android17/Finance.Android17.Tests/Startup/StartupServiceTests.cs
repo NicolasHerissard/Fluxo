@@ -59,4 +59,26 @@ public sealed class StartupServiceTests : IDisposable
 
         Assert.Single(await _app.Expenses.GetAllAsync());
     }
+
+    [Fact]
+    public async Task Prepare_RunsOneAtATime_SoTheDailyCheckAndAnUnlockNeverDuplicateDueOperations()
+    {
+        _app.Settings.AutoCreateSubscriptionExpenses = true;
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 1));
+
+        await Task.WhenAll(Startup.PrepareAsync(), Startup.PrepareInBackgroundAsync(), Startup.PrepareAsync());
+
+        Assert.Single(await _app.Expenses.GetAllAsync());
+    }
+
+    [Fact]
+    public async Task Prepare_ShowsTheNoticeOfTheDay_AndSchedulesTheDailyCheck()
+    {
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 22));
+
+        await Startup.PrepareAsync();
+
+        Assert.NotNull(Assert.Single(_app.Reminders.Plans).Notice);
+        Assert.Equal(1, _app.DailyChecks.Calls);
+    }
 }

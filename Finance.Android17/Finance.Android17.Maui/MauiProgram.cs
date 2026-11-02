@@ -52,6 +52,8 @@ public static class MauiProgram
 		services.AddSingleton<IBiometricService, BiometricService>();
 		services.AddSingleton<IOcrService, OcrService>();
 		services.AddSingleton<IReminderService, ReminderService>();
+		services.AddSingleton<IAlertPublisher, AlertPublisher>();
+		services.AddSingleton<IDailyCheckScheduler, DailyCheckScheduler>();
 		return services;
 	}
 
