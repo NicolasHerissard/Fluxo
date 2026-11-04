@@ -26,6 +26,7 @@ internal sealed class FinanceDataStore(FinanceDatabase database) : IFinanceDataS
     public async Task RestoreSnapshotAsync(FinanceBackupSnapshot snapshot, CancellationToken cancellationToken = default)
     {
         if (snapshot.FormatVersion is not (1 or 2)) throw new InvalidOperationException("Format de sauvegarde non pris en charge.");
+        BackupSnapshotValidator.Validate(snapshot);
         await using var db = await database.OpenAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
         await RemoveAllAsync(db, cancellationToken).ConfigureAwait(false);

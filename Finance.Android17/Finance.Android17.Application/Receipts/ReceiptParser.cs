@@ -1,3 +1,4 @@
+using Finance.Android17.Domain;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -47,7 +48,7 @@ public static partial class ReceiptParser
             var number = match.Groups[1].Value.Replace(" ", string.Empty).Replace(',', '.');
             if (!decimal.TryParse(number, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount)) continue;
             if (amount <= 0 || amount > 100_000) continue;
-            amountMinor = checked((long)Math.Round(amount * 100m, MidpointRounding.AwayFromZero));
+            amountMinor = checked((long)Math.Round(amount * MinorUnits.PerMajor, MidpointRounding.AwayFromZero));
             return true;
         }
         amountMinor = 0;

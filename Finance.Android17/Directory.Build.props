@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <!-- Audit des vulnérabilités connues des paquets NuGet (directs et transitifs) à chaque restauration. -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <!-- Versions exactes des dépendances transitives figées dans packages.lock.json, à valider en relecture. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+</Project>

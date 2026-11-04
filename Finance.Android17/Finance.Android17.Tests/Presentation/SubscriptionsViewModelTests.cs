@@ -156,4 +156,22 @@ public sealed class SubscriptionsViewModelTests : IDisposable
         Assert.False(vm.IsEditing);
         Assert.True(vm.IsEmpty);
     }
+
+    [Fact]
+    public async Task TwoDeletionsInARow_CanBothBeUndone()
+    {
+        await _app.Subscriptions.AddAsync("Netflix", 1_599, 1, new DateTime(2026, 10, 25));
+        await _app.Subscriptions.AddAsync("Spotify", 999, 1, new DateTime(2026, 10, 26));
+        var vm = _app.CreateSubscriptions();
+        await vm.LoadAsync();
+
+        foreach (var row in vm.Subscriptions.ToList()) await vm.DeleteCommand.ExecuteAsync(row);
+        Assert.Empty(vm.Subscriptions);
+
+        await vm.UndoDeleteCommand.ExecuteAsync(null);
+        await vm.UndoDeleteCommand.ExecuteAsync(null);
+
+        Assert.Equal(2, vm.Subscriptions.Count);
+        Assert.False(vm.IsUndoVisible);
+    }
 }

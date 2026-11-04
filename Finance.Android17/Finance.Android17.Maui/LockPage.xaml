@@ -25,6 +25,7 @@
             <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
             <Button Text="Continuer" Command="{Binding SubmitPinCommand}" Style="{StaticResource PrimaryButton}" />
             <Button Text="Utiliser la biométrie" Command="{Binding UseBiometricsCommand}" IsVisible="{Binding CanUseBiometrics}" Style="{StaticResource SecondaryButton}" />
+            <Button Text="Repartir d’une base neuve" Clicked="OnStartOverClicked" IsVisible="{Binding CanStartOver}" Style="{StaticResource DangerButton}" SemanticProperties.Hint="Met de côté la base illisible puis démarre avec une base vide" />
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
             <Label Text="Chiffrement local • Fonctionne hors connexion" Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" Margin="0,18,0,0" />
         </VerticalStackLayout>

@@ -16,7 +16,7 @@ internal sealed class IncomeRepository(FinanceDatabase database) : Repository<In
             .ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task AddAsync(long amountMinor, string description, DateTime occurredOn, string currencyCode = "EUR", CancellationToken cancellationToken = default) =>
+    public Task AddAsync(long amountMinor, string description, DateTime occurredOn, string currencyCode = CurrencyCodes.Default, CancellationToken cancellationToken = default) =>
         InsertAsync(now => new Income
         {
             AmountMinor = amountMinor,
@@ -27,7 +27,7 @@ internal sealed class IncomeRepository(FinanceDatabase database) : Repository<In
             UpdatedAtUtc = now
         }, cancellationToken);
 
-    public Task UpdateAsync(Guid id, long amountMinor, string description, DateTime occurredOn, string currencyCode = "EUR", CancellationToken cancellationToken = default) =>
+    public Task UpdateAsync(Guid id, long amountMinor, string description, DateTime occurredOn, string currencyCode = CurrencyCodes.Default, CancellationToken cancellationToken = default) =>
         ChangeAsync(id, income =>
         {
             income.AmountMinor = amountMinor;

@@ -58,7 +58,7 @@ Chemin type d'une opération : page MAUI → ViewModel (`Presentation`) → port
 - **Sécurité** : ne pas changer la clé SQLCipher, le nom de la base (`finance-v2.db3`), les clés du coffre sécurisé ni le format de sauvegarde sans stratégie de migration explicite. Toute évolution du schéma passe par une **migration** de `FinanceSchema` (`PRAGMA user_version`).
 - **Valeurs persistées** : les libellés français de `ThemeOptions` et `AfterSaveOptions` sont enregistrés dans les préférences existantes ; ne pas les modifier.
 - **Langue** : interface, messages et commentaires du projet sont en français.
-- `Directory.Packages.props` centralise les versions NuGet (`ManagePackageVersionsCentrally`) : ajouter les versions là, pas dans les `.csproj`.
+- `Directory.Build.props` active l'audit NuGet (`NuGetAudit`, niveau `low`, dépendances transitives comprises) et les fichiers `packages.lock.json` (versions transitives figées, à relire quand ils changent). `Directory.Packages.props` centralise les versions NuGet (`ManagePackageVersionsCentrally`) : ajouter les versions là, pas dans les `.csproj`.
 - Un seul espace de noms par projet (`Finance.Android17.<Projet>`) : les dossiers servent à ranger, pas à nommer.
 - `bin/` et `obj/` sont générés et ignorés par Git.
 
@@ -98,8 +98,9 @@ Avertissements connus à la compilation Android (non bloquants) : `CS0618`/`CS06
 Pistes validées pour une version ultérieure, documentées pour mémoire : **ne pas les implémenter sans demande explicite.** Par ordre de priorité recommandé :
 
 1. Accélérer la saisie : duplication d'une dépense, modèles favoris, suggestions locales de catégorie selon la description ou le commerçant (les catégories sont déjà triées par usage récent dans `AddExpenseViewModel`).
-2. Exposer une corbeille pour consulter et restaurer les entités supprimées logiquement avant une éventuelle suppression définitive (aujourd'hui seule l'annulation immédiate d'une suppression de dépense existe).
-3. Règles automatiques locales de catégorisation, puis import CSV avec aperçu, correspondance des colonnes et détection des doublons.
-4. Widget Android pour l'ajout rapide et l'affichage du budget restant.
+2. Lier l'accès à la base à une authentification du Keystore (clé SQLCipher enveloppée par une clé Android exigeant la biométrie/le PIN de l'appareil, avec `CryptoObject`). Aujourd'hui la biométrie ne fait que déverrouiller l'écran. Demande une stratégie de migration de la clé (voir Sécurité) et un test sur appareil.
+3. Exposer une corbeille pour consulter et restaurer les entités supprimées logiquement avant une éventuelle suppression définitive (aujourd'hui seule l'annulation immédiate d'une suppression de dépense existe).
+4. Règles automatiques locales de catégorisation, puis import CSV avec aperçu, correspondance des colonnes et détection des doublons.
+5. Widget Android pour l'ajout rapide et l'affichage du budget restant.
 
 Déjà réalisé, à ne pas replanifier : budgets mensuels par catégorie (limite, progression et seuils 80 % / 100 % sur l'accueil, en plus du budget mensuel global), prévision de fin de mois avec alerte de découvert probable, objectifs d'épargne.

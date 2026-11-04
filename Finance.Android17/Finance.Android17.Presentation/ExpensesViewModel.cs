@@ -6,7 +6,7 @@ using Finance.Android17.Domain;
 
 namespace Finance.Android17.Presentation;
 
-public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, ISettingsService settings, TimeProvider clock) : ObservableObject
+public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICategoryRepository categoryRepository, ISettingsService settings, TimeProvider clock) : UndoableViewModelBase
 {
     private const string AllDates = "Toutes les dates";
     private const string CustomPeriodLabel = "Période personnalisée";
@@ -52,14 +52,11 @@ public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICa
     [ObservableProperty] private bool hasActiveFilters;
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private bool isEmpty;
-    [ObservableProperty] private bool isUndoVisible;
-    [ObservableProperty] private string statusMessage = string.Empty;
     [ObservableProperty] private string resultSummary = "0 transaction";
     [ObservableProperty] private string filterButtonText = "Filtres";
     [ObservableProperty] private string applyButtonText = "Afficher les résultats";
     [ObservableProperty] private string emptyTitle = EmptyListTitle;
     [ObservableProperty] private string emptySubtitle = "Ajoutez votre première transaction pour commencer.";
-    private Guid? _pendingDeletedId;
     private CancellationTokenSource? _searchDelay;
     private IReadOnlyList<Expense> _allExpenses = [];
 
@@ -143,22 +140,11 @@ public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICa
     private async Task DeleteAsync(ExpenseRow row)
     {
         await expenseRepository.DeleteAsync(row.Id);
-        _pendingDeletedId = row.Id;
-        StatusMessage = "Transaction supprimée";
-        IsUndoVisible = true;
+        OfferUndo("Transaction supprimée", () => expenseRepository.RestoreAsync(row.Id));
         await LoadAsync();
     }
 
-    [RelayCommand]
-    private async Task UndoDeleteAsync()
-    {
-        if (_pendingDeletedId is not Guid id) return;
-        await expenseRepository.RestoreAsync(id);
-        _pendingDeletedId = null;
-        IsUndoVisible = false;
-        StatusMessage = "Transaction restaurée";
-        await LoadAsync();
-    }
+    protected override Task ReloadAfterUndoAsync() => LoadAsync();
 
     private async Task DebouncedRefreshAsync(CancellationToken token)
     {

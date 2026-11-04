@@ -132,4 +132,28 @@ public sealed class DailyCheckServiceTests : IDisposable
         Assert.Null(plan.Notice);
         Assert.Equal(1, _app.DailyChecks.Calls);
     }
+
+    [Theory]
+    [InlineData("2026-10-19", 9, 30, true)]    // contrôle d'hier seulement, 8 h passée : celui d'aujourd'hui est rattrapé
+    [InlineData("2026-10-19", 7, 59, true)]    // application ouverte à une minute de l'heure : le contrôle du jour ne doit pas être perdu
+    [InlineData("2026-10-20", 9, 30, false)]   // déjà fait aujourd'hui : demain
+    [InlineData("2026-10-19", 7, 0, false)]    // pas encore l'heure : le jour même, comme d'habitude
+    [InlineData("", 9, 30, false)]             // première utilisation : rien à rattraper
+    [InlineData("n'importe quoi", 9, 30, false)]
+    public void NextRun_CatchesUpATodayCheckThatDidNotHappen(string lastCheckDay, int hour, int minute, bool catchesUp)
+    {
+        var clock = new FixedTimeProvider(new DateTime(2026, 10, 20, hour, minute, 0));
+
+        var next = DailyCheckService.NextRun(clock, lastCheckDay);
+
+        Assert.Equal(catchesUp ? clock.GetLocalNow().AddMinutes(1) : DailyCheckService.NextRun(clock), next);
+    }
+
+    [Fact]
+    public async Task Run_RecordsTheDayOfTheCheck_BeforePreparing()
+    {
+        await Check.RunAsync();
+
+        Assert.Equal("2026-10-20", _app.Settings.LastDailyCheckDay);
+    }
 }

@@ -24,7 +24,7 @@ public sealed class DailyCheckScheduler(ISettingsService settings, TimeProvider 
 #if ANDROID
         try
         {
-            Schedule(Android.App.Application.Context, DailyCheckService.NextRun(clock));
+            Schedule(Android.App.Application.Context, DailyCheckService.NextRun(clock, settings.LastDailyCheckDay));
             if (settings.BackgroundAlertsEnabled) await NotificationPermission.EnsureAsync();
         }
         catch (Exception ex)

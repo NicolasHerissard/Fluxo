@@ -201,19 +201,7 @@
                     </Grid>
                 </Border>
 
-                <!-- Zone sensible -->
-                <Label Text="Zone sensible" Style="{StaticResource Eyebrow}" Margin="2,10,0,0" SemanticProperties.HeadingLevel="Level2"
-                       TextColor="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
-                <Border Style="{StaticResource Card}" Stroke="{StaticResource ExpenseAccentColor}">
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="Supprimer toutes les données financières" Style="{StaticResource StrongLabel}" />
-                        <Label Text="Efface définitivement dépenses, revenus, objectifs, abonnements et catégories personnalisées." Style="{StaticResource MutedLabel}" />
-                        <Button Text="Tout supprimer" Clicked="OnDeleteAllClicked" Style="{StaticResource DangerButton}" />
-                    </VerticalStackLayout>
-                </Border>
-
                 <Button Text="Verrouiller maintenant" Clicked="OnLockClicked" Style="{StaticResource PrimaryButton}" Margin="0,10,0,0" />
-                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
                 <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
                     <Label.Triggers>
                         <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">

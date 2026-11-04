@@ -26,7 +26,7 @@ internal sealed class CsvExportService(IExpenseRepository expenseRepository, IFi
         {
             csv.Append(item.OccurredOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(';')
                 .Append(Escape(item.Description)).Append(';').Append(Escape(item.Category?.Name ?? string.Empty)).Append(';')
-                .Append((item.AmountMinor / 100m).ToString("0.00", CultureInfo.InvariantCulture)).Append(';')
+                .Append(MinorUnits.ToMajor(item.AmountMinor).ToString("0.00", CultureInfo.InvariantCulture)).Append(';')
                 .Append(Escape(item.CurrencyCode)).Append("\r\n");
         }
         return csv.ToString();

@@ -4,7 +4,7 @@ using Finance.Android17.Application;
 
 namespace Finance.Android17.Presentation;
 
-public partial class LockViewModel(StartupService startup, IAppLockService appLock, IBiometricService biometrics, ISettingsService settings) : ObservableObject
+public partial class LockViewModel(StartupService startup, IAppLockService appLock, IBiometricService biometrics, ISettingsService settings, IDatabaseRecovery recovery) : ObservableObject
 {
     private bool _initialized;
     public event EventHandler? Unlocked;
@@ -20,6 +20,8 @@ public partial class LockViewModel(StartupService startup, IAppLockService appLo
     [ObservableProperty] private string pinVisibilityIcon = "eye";
     [ObservableProperty] private string currencySymbol = "€";
     [ObservableProperty] private string errorMessage = string.Empty;
+    /// <summary>Vrai quand la clé de la base est introuvable : la page propose alors, après confirmation, de repartir d'une base neuve.</summary>
+    [ObservableProperty] private bool canStartOver;
 
     partial void OnPinChanged(string value)
     {
@@ -66,6 +68,7 @@ public partial class LockViewModel(StartupService startup, IAppLockService appLo
             Pin = string.Empty;
             Unlocked?.Invoke(this, EventArgs.Empty);
         }
+        catch (DatabaseKeyUnavailableException ex) { ShowKeyLost(ex); }
         catch (Exception ex) { ErrorMessage = $"Ouverture impossible : {ex.Message}"; }
         finally { IsBusy = false; }
     }
@@ -83,7 +86,32 @@ public partial class LockViewModel(StartupService startup, IAppLockService appLo
                 Unlocked?.Invoke(this, EventArgs.Empty);
             }
         }
+        catch (DatabaseKeyUnavailableException ex) { ShowKeyLost(ex); }
         catch (Exception ex) { ErrorMessage = $"Biométrie indisponible : {ex.Message}"; }
+        finally { IsBusy = false; }
+    }
+
+    private void ShowKeyLost(DatabaseKeyUnavailableException ex)
+    {
+        ErrorMessage = ex.Message;
+        CanStartOver = true;
+    }
+
+    /// <summary>À appeler après une confirmation explicite : écarte la base illisible puis ouvre une base neuve.</summary>
+    public async Task StartOverAsync()
+    {
+        if (!CanStartOver || IsBusy) return;
+        IsBusy = true;
+        try
+        {
+            await recovery.StartOverAsync();
+            await startup.PrepareAsync();
+            CanStartOver = false;
+            ErrorMessage = string.Empty;
+            Pin = string.Empty;
+            Unlocked?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex) { ErrorMessage = $"Réinitialisation impossible : {ex.Message}"; }
         finally { IsBusy = false; }
     }
 

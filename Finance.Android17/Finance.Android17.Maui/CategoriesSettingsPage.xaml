@@ -5,7 +5,7 @@
              xmlns:maui="clr-namespace:Finance.Android17.Maui"
              x:Class="Finance.Android17.Maui.CategoriesSettingsPage"
              x:Name="Page"
-             x:DataType="vm:SettingsViewModel"
+             x:DataType="vm:CategoriesSettingsViewModel"
              NavigationPage.HasNavigationBar="False"
              Style="{StaticResource AppPage}">
     <ScrollView>
@@ -86,7 +86,6 @@
                 </VerticalStackLayout>
             </VerticalStackLayout>
 
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
             <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
                 <Label.Triggers>
                     <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">

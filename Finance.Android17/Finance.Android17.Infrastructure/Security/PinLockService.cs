@@ -30,12 +30,28 @@ internal sealed class PinLockService(ISecureValueStore secrets, TimeProvider clo
         if (!PinPolicy.IsValid(pin)) throw new ArgumentException($"Le PIN doit contenir {PinPolicy.RequirementText}.", nameof(pin));
         var salt = RandomNumberGenerator.GetBytes(SaltSize);
         var hash = await DeriveAsync(pin, salt, cancellationToken).ConfigureAwait(false);
-        await secrets.SetAsync(SaltKey, Convert.ToBase64String(salt), cancellationToken).ConfigureAwait(false);
-        await secrets.SetAsync(HashKey, Convert.ToBase64String(hash), cancellationToken).ConfigureAwait(false);
-        await ClearAttemptsAsync(cancellationToken).ConfigureAwait(false);
+        await _verifyGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await secrets.SetAsync(SaltKey, Convert.ToBase64String(salt), cancellationToken).ConfigureAwait(false);
+            await secrets.SetAsync(HashKey, Convert.ToBase64String(hash), cancellationToken).ConfigureAwait(false);
+            await ClearAttemptsAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally { _verifyGate.Release(); }
     }
 
+    // Lecture du compteur, calcul puis écriture du nouvel échec forment une seule opération : deux vérifications
+    // simultanées ne peuvent plus compter un seul échec, ni profiter d'une attente non encore enregistrée.
+    private readonly SemaphoreSlim _verifyGate = new(1, 1);
+
     public async Task<bool> VerifyPinAsync(string pin, CancellationToken cancellationToken = default)
+    {
+        await _verifyGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try { return await VerifyCoreAsync(pin, cancellationToken).ConfigureAwait(false); }
+        finally { _verifyGate.Release(); }
+    }
+
+    private async Task<bool> VerifyCoreAsync(string pin, CancellationToken cancellationToken)
     {
         var saltText = await secrets.GetAsync(SaltKey, cancellationToken).ConfigureAwait(false);
         var expectedText = await secrets.GetAsync(HashKey, cancellationToken).ConfigureAwait(false);

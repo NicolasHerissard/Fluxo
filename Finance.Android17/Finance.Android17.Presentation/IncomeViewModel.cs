@@ -12,18 +12,19 @@ public partial class IncomeViewModel(
     ISavingsGoalRepository goalRepository,
     FinanceDataLoader dataLoader,
     ISettingsService settings,
-    TimeProvider clock) : ObservableObject
+    TimeProvider clock) : UndoableViewModelBase
 {
+    private SavingsGoalsViewModel? _goals;
     private IReadOnlyList<Income> _incomes = [];
     private IReadOnlyList<RecurringIncome> _recurringIncomes = [];
-    private IReadOnlyList<SavingsGoal> _goals = [];
     private Guid? _editingIncomeId;
     private Guid? _editingRecurringIncomeId;
-    private Guid? _editingGoalId;
 
     public ObservableCollection<IncomeRow> Incomes { get; } = [];
     public ObservableCollection<RecurringIncomeRow> RecurringIncomes { get; } = [];
-    public ObservableCollection<SavingsGoalRow> SavingsGoals { get; } = [];
+
+    /// <summary>Objectifs d'épargne de la page : liste et formulaire propres, annulation de suppression partagée avec cette page.</summary>
+    public SavingsGoalsViewModel Goals => _goals ??= new(goalRepository, settings, clock, OfferUndo, LoadAsync);
     public IReadOnlyList<string> Frequencies { get; } = BillingFrequency.Options;
 
     [ObservableProperty] private string currentBalance = "0,00 €";
@@ -40,30 +41,12 @@ public partial class IncomeViewModel(
     [ObservableProperty] private bool incomeRepeats;
     [NotifyPropertyChangedFor(nameof(IsIncomeFormClosed))]
     [ObservableProperty] private bool isIncomeFormVisible;
-    [NotifyPropertyChangedFor(nameof(IsGoalFormClosed))]
-    [ObservableProperty] private bool isGoalFormVisible;
-    [ObservableProperty] private string goalName = string.Empty;
-    [ObservableProperty] private string goalTargetAmount = string.Empty;
-    [ObservableProperty] private string goalSavedAmount = string.Empty;
-    [ObservableProperty] private DateTime goalTargetDate = clock.GetLocalNow().Date.AddYears(1);
-    [ObservableProperty] private bool goalHasTargetDate;
-    [ObservableProperty] private string goalFormTitle = "Ajouter un objectif";
-    [ObservableProperty] private string statusMessage = string.Empty;
-    [ObservableProperty] private bool statusIsError;
 
     public string IncomeDateLabel => IncomeRepeats ? "Date de la prochaine échéance" : "Date du revenu";
     public bool IsIncomeFormClosed => !IsIncomeFormVisible;
-    public bool IsGoalFormClosed => !IsGoalFormVisible;
     /// <summary>On ne transforme pas un revenu en revenu récurrent (ni l'inverse) à la modification : l'option « Se répète » n'est offerte qu'à la création.</summary>
     public bool CanChooseRepeat => _editingIncomeId is null && _editingRecurringIncomeId is null;
 
-    partial void OnStatusMessageChanged(string value) => StatusIsError = false;
-
-    private void ShowError(string message)
-    {
-        StatusMessage = message;
-        StatusIsError = true;
-    }
     [ObservableProperty] private bool isBusy;
 
     [RelayCommand]
@@ -76,7 +59,7 @@ public partial class IncomeViewModel(
             var data = await dataLoader.LoadAsync();
             _incomes = data.Incomes;
             _recurringIncomes = data.RecurringIncomes;
-            _goals = await goalRepository.GetAllAsync();
+            await Goals.LoadAsync();
 
             Incomes.Clear();
             foreach (var item in _incomes)
@@ -85,10 +68,6 @@ public partial class IncomeViewModel(
             RecurringIncomes.Clear();
             foreach (var item in _recurringIncomes)
                 RecurringIncomes.Add(new(item.Id, item.Name, HiddenMoney(item.AmountMinor), BillingFrequency.ToDisplay(item.IntervalMonths), MoneyFormatter.Date(item.NextOccurrenceDate)));
-
-            SavingsGoals.Clear();
-            foreach (var item in _goals)
-                SavingsGoals.Add(new(item.Id, item.Name, HiddenMoney(item.SavedAmountMinor), HiddenMoney(item.TargetAmountMinor), MoneyFormatter.Percent(item.Progress), item.Progress));
 
             var summary = FinancialSummaryCalculator.Build(data, clock.GetLocalNow().Date);
             CurrentBalance = HiddenMoney(summary.CurrentBalanceMinor);
@@ -148,37 +127,7 @@ public partial class IncomeViewModel(
         OnPropertyChanged(nameof(CanChooseRepeat));
     }
 
-    [ObservableProperty] private bool isUndoVisible;
-    [ObservableProperty] private string undoMessage = string.Empty;
-    private Func<Task>? _undoAction;
-    private int _undoVersion;
-
-    private void OfferUndo(string message, Func<Task> restore)
-    {
-        _undoAction = restore;
-        UndoMessage = message;
-        IsUndoVisible = true;
-        _ = HideUndoLaterAsync(++_undoVersion);
-    }
-
-    private async Task HideUndoLaterAsync(int version)
-    {
-        await Task.Delay(TimeSpan.FromSeconds(8));
-        if (version != _undoVersion) return;
-        IsUndoVisible = false;
-        _undoAction = null;
-    }
-
-    [RelayCommand]
-    private async Task UndoDeleteAsync()
-    {
-        if (_undoAction is not { } restore) return;
-        _undoAction = null;
-        _undoVersion++;
-        IsUndoVisible = false;
-        await restore();
-        await LoadAsync();
-    }
+    protected override Task ReloadAfterUndoAsync() => LoadAsync();
 
     [RelayCommand]
     private async Task DeleteIncomeAsync(IncomeRow row)
@@ -227,64 +176,6 @@ public partial class IncomeViewModel(
         if (_editingRecurringIncomeId == row.Id) CancelIncomeEdit();
         OfferUndo("Revenu récurrent supprimé", () => recurringIncomeRepository.RestoreAsync(row.Id));
         await LoadAsync();
-    }
-
-    [RelayCommand]
-    private void ShowGoalForm()
-    {
-        CancelGoalEdit();
-        IsGoalFormVisible = true;
-    }
-
-    [RelayCommand]
-    private async Task SaveGoalAsync()
-    {
-        if (string.IsNullOrWhiteSpace(GoalName)) { ShowError("Indiquez le nom de l’objectif."); return; }
-        if (!AmountParser.TryParse(GoalTargetAmount, out var target) || target <= 0) { ShowError("Indiquez un objectif valide."); return; }
-        var saved = 0L;
-        if (!string.IsNullOrWhiteSpace(GoalSavedAmount) && (!AmountParser.TryParse(GoalSavedAmount, out saved) || saved < 0)) { ShowError("Indiquez un montant épargné valide."); return; }
-        DateTime? targetDate = GoalHasTargetDate ? GoalTargetDate.Date : null;
-        if (_editingGoalId is not Guid id) await goalRepository.AddAsync(GoalName, target, saved, targetDate);
-        else await goalRepository.UpdateAsync(id, GoalName, target, saved, targetDate);
-        CancelGoalEdit();
-        StatusMessage = "Objectif enregistré.";
-        await LoadAsync();
-    }
-
-    [RelayCommand]
-    private void EditGoal(SavingsGoalRow row)
-    {
-        var goal = _goals.FirstOrDefault(x => x.Id == row.Id);
-        if (goal is null) return;
-        CancelGoalEdit();
-        _editingGoalId = goal.Id;
-        GoalName = goal.Name;
-        GoalTargetAmount = MoneyFormatter.PlainAmount(goal.TargetAmountMinor);
-        GoalSavedAmount = MoneyFormatter.PlainAmount(goal.SavedAmountMinor);
-        GoalHasTargetDate = goal.TargetDate is not null;
-        GoalTargetDate = goal.TargetDate ?? clock.GetLocalNow().Date.AddYears(1);
-        GoalFormTitle = "Modifier l’objectif";
-        IsGoalFormVisible = true;
-    }
-
-    [RelayCommand]
-    private async Task DeleteGoalAsync(SavingsGoalRow row)
-    {
-        await goalRepository.DeleteAsync(row.Id);
-        if (_editingGoalId == row.Id) CancelGoalEdit();
-        OfferUndo("Objectif supprimé", () => goalRepository.RestoreAsync(row.Id));
-        await LoadAsync();
-    }
-
-    [RelayCommand]
-    private void CancelGoalEdit()
-    {
-        _editingGoalId = null;
-        GoalName = GoalTargetAmount = GoalSavedAmount = string.Empty;
-        GoalHasTargetDate = false;
-        GoalTargetDate = clock.GetLocalNow().Date.AddYears(1);
-        GoalFormTitle = "Ajouter un objectif";
-        IsGoalFormVisible = false;
     }
 
     private string Money(long amount) => MoneyFormatter.Money(amount, settings.CurrencyCode);

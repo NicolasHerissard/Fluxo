@@ -122,53 +122,62 @@
                 </VerticalStackLayout>
 
                 <!-- Objectifs d'épargne -->
-                <Label Text="Objectifs d’épargne" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
-                <Button Text="+  Ajouter un objectif" Command="{Binding ShowGoalFormCommand}" IsVisible="{Binding IsGoalFormClosed}" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Ajouter un objectif d’épargne" />
-                <Border IsVisible="{Binding IsGoalFormVisible}" Style="{StaticResource Card}">
-                    <VerticalStackLayout Spacing="12">
-                        <Label Text="{Binding GoalFormTitle}" Style="{StaticResource StrongLabel}" />
-                        <Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalName}" Placeholder="Nom de l’objectif" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de l’objectif" /></Border>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                            <Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalTargetAmount}" Placeholder="Montant cible" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant cible" /></Border>
-                            <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Text="{Binding GoalSavedAmount}" Placeholder="Déjà épargné" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant déjà épargné" /></Border>
-                        </Grid>
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="Ajouter une date cible" Style="{StaticResource BodyLabel}" VerticalOptions="Center" />
-                            <Switch Grid.Column="1" IsToggled="{Binding GoalHasTargetDate}" SemanticProperties.Description="Ajouter une date cible" />
-                        </Grid>
-                        <Border IsVisible="{Binding GoalHasTargetDate}" Style="{StaticResource InputField}"><DatePicker Date="{Binding GoalTargetDate}" SemanticProperties.Description="Date cible de l’objectif" /></Border>
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                            <Button Text="Enregistrer" Command="{Binding SaveGoalCommand}" Style="{StaticResource PrimaryButton}" SemanticProperties.Description="Enregistrer l’objectif" />
-                            <Button Grid.Column="1" Text="Annuler" Command="{Binding CancelGoalEditCommand}" Style="{StaticResource TextButton}" SemanticProperties.Description="Annuler la modification de l’objectif" />
-                        </Grid>
-                    </VerticalStackLayout>
-                </Border>
-                <VerticalStackLayout BindableLayout.ItemsSource="{Binding SavingsGoals}" Spacing="9">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="vm:SavingsGoalRow">
-                            <Border Style="{StaticResource Card}" Padding="14,12,8,14">
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.EditGoalCommand}" CommandParameter="{Binding .}" />
-                                </Border.GestureRecognizers>
-                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10" SemanticProperties.Hint="Touchez pour modifier cet objectif">
-                                    <local:IconTile Icon="target" Tone="violet" Size="42" />
-                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                        <Label Text="{Binding Name}" Style="{StaticResource StrongLabel}" LineBreakMode="TailTruncation" />
-                                        <Label Text="{Binding Saved, StringFormat='{0} épargnés'}" Style="{StaticResource MutedLabel}" />
-                                    </VerticalStackLayout>
-                                    <local:IconButton Grid.Column="2" Icon="trash" ButtonStyle="Small" VerticalOptions="Center"
-                                                      Command="{Binding Source={x:Reference Page}, Path=BindingContext.DeleteGoalCommand}" CommandParameter="{Binding .}"
-                                                      IconColor="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}"
-                                                      Description="Supprimer cet objectif" />
-                                    <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,0,6,0">
-                                        <ProgressBar Progress="{Binding Progress}" ProgressColor="{AppThemeBinding Light={StaticResource VioletInkLight}, Dark={StaticResource VioletInkDark}}"
-                                                     BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}" VerticalOptions="Center" HeightRequest="8" />
-                                        <Label Grid.Column="1" Text="{Binding ProgressText}" Style="{StaticResource StrongLabel}" FontSize="13" />
+                <VerticalStackLayout BindingContext="{Binding Goals}" x:DataType="vm:SavingsGoalsViewModel" Spacing="16">
+                    <Label Text="Objectifs d’épargne" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
+                    <Button Text="+  Ajouter un objectif" Command="{Binding ShowGoalFormCommand}" IsVisible="{Binding IsGoalFormClosed}" Style="{StaticResource SecondaryButton}" SemanticProperties.Description="Ajouter un objectif d’épargne" />
+                    <Border IsVisible="{Binding IsGoalFormVisible}" Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="{Binding GoalFormTitle}" Style="{StaticResource StrongLabel}" />
+                            <Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalName}" Placeholder="Nom de l’objectif" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de l’objectif" /></Border>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalTargetAmount}" Placeholder="Montant cible" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant cible" /></Border>
+                                <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Text="{Binding GoalSavedAmount}" Placeholder="Déjà épargné" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant déjà épargné" /></Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="Ajouter une date cible" Style="{StaticResource BodyLabel}" VerticalOptions="Center" />
+                                <Switch Grid.Column="1" IsToggled="{Binding GoalHasTargetDate}" SemanticProperties.Description="Ajouter une date cible" />
+                            </Grid>
+                            <Border IsVisible="{Binding GoalHasTargetDate}" Style="{StaticResource InputField}"><DatePicker Date="{Binding GoalTargetDate}" SemanticProperties.Description="Date cible de l’objectif" /></Border>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <Button Text="Enregistrer" Command="{Binding SaveGoalCommand}" Style="{StaticResource PrimaryButton}" SemanticProperties.Description="Enregistrer l’objectif" />
+                                <Button Grid.Column="1" Text="Annuler" Command="{Binding CancelGoalEditCommand}" Style="{StaticResource TextButton}" SemanticProperties.Description="Annuler la modification de l’objectif" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding SavingsGoals}" Spacing="9">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SavingsGoalRow">
+                                <Border Style="{StaticResource Card}" Padding="14,12,8,14">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.Goals.EditGoalCommand}" CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10" SemanticProperties.Hint="Touchez pour modifier cet objectif">
+                                        <local:IconTile Icon="target" Tone="violet" Size="42" />
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" Style="{StaticResource StrongLabel}" LineBreakMode="TailTruncation" />
+                                            <Label Text="{Binding Saved, StringFormat='{0} épargnés'}" Style="{StaticResource MutedLabel}" />
+                                        </VerticalStackLayout>
+                                        <local:IconButton Grid.Column="2" Icon="trash" ButtonStyle="Small" VerticalOptions="Center"
+                                                          Command="{Binding Source={x:Reference Page}, Path=BindingContext.Goals.DeleteGoalCommand}" CommandParameter="{Binding .}"
+                                                          IconColor="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}"
+                                                          Description="Supprimer cet objectif" />
+                                        <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,0,6,0">
+                                            <ProgressBar Progress="{Binding Progress}" ProgressColor="{AppThemeBinding Light={StaticResource VioletInkLight}, Dark={StaticResource VioletInkDark}}"
+                                                         BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}" VerticalOptions="Center" HeightRequest="8" />
+                                            <Label Grid.Column="1" Text="{Binding ProgressText}" Style="{StaticResource StrongLabel}" FontSize="13" />
+                                        </Grid>
                                     </Grid>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                    <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
+                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
                 </VerticalStackLayout>
 
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />

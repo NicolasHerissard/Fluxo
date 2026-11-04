@@ -4,8 +4,8 @@ namespace Finance.Android17.Maui;
 
 public partial class CategoriesSettingsPage : ContentPage
 {
-    private readonly SettingsViewModel _viewModel;
-    public CategoriesSettingsPage(SettingsViewModel viewModel)
+    private readonly CategoriesSettingsViewModel _viewModel;
+    public CategoriesSettingsPage(CategoriesSettingsViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;

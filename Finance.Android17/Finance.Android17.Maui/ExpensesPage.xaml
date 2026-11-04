@@ -84,7 +84,7 @@
 
         <Border Grid.Row="3" IsVisible="{Binding IsUndoVisible}" Style="{StaticResource Toast}" Margin="20,0,20,12">
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="{Binding StatusMessage}" Style="{StaticResource ToastText}" />
+                <Label Text="{Binding UndoMessage}" Style="{StaticResource ToastText}" />
                 <Button Grid.Column="1" Text="Annuler" Command="{Binding UndoDeleteCommand}" Style="{StaticResource ToastAction}" />
             </Grid>
         </Border>

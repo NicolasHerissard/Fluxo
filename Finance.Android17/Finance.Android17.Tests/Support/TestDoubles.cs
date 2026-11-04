@@ -39,6 +39,7 @@ public sealed class FakeSettings : ISettingsService
     public string SeenNotifications { get; set; } = string.Empty;
     public bool BackgroundAlertsEnabled { get; set; } = true;
     public string PushedNotifications { get; set; } = string.Empty;
+    public string LastDailyCheckDay { get; set; } = string.Empty;
 }
 
 public sealed class FakeReminderService : IReminderService
@@ -151,6 +152,8 @@ public sealed class TempDatabase : IDisposable
     public void Dispose()
     {
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-        try { Directory.Delete(_directory, true); } catch (IOException) { }
+        try { Directory.Delete(_directory, true); }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
     }
 }

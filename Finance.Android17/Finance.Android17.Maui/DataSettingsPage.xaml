@@ -5,7 +5,7 @@
              xmlns:maui="clr-namespace:Finance.Android17.Maui"
              x:Class="Finance.Android17.Maui.DataSettingsPage"
              x:Name="Page"
-             x:DataType="vm:SettingsViewModel"
+             x:DataType="vm:DataSettingsViewModel"
              NavigationPage.HasNavigationBar="False"
              Style="{StaticResource AppPage}">
     <ScrollView>
@@ -50,11 +50,22 @@
                         <Label Grid.Column="1" Text="Sauvegarde complète chiffrée" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
                     </Grid>
                     <Label Text="Le même mot de passe sera nécessaire pour restaurer le fichier." Style="{StaticResource MutedLabel}" />
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (8 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe de sauvegarde" /></Border>
+                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (12 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe de sauvegarde" /></Border>
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Button Text="Sauvegarder" Command="{Binding CreateBackupCommand}" Style="{StaticResource PrimaryButton}" />
                         <Button Grid.Column="1" Text="Restaurer" Clicked="OnRestoreClicked" Style="{StaticResource SecondaryButton}" />
                     </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Zone sensible -->
+            <Label Text="Zone sensible" Style="{StaticResource Eyebrow}" Margin="2,10,0,0" SemanticProperties.HeadingLevel="Level2"
+                   TextColor="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
+            <Border Style="{StaticResource Card}" Stroke="{StaticResource ExpenseAccentColor}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Supprimer toutes les données financières" Style="{StaticResource StrongLabel}" />
+                    <Label Text="Efface définitivement dépenses, revenus, objectifs, abonnements et catégories personnalisées." Style="{StaticResource MutedLabel}" />
+                    <Button Text="Tout supprimer" Clicked="OnDeleteAllClicked" Style="{StaticResource DangerButton}" />
                 </VerticalStackLayout>
             </Border>
 
