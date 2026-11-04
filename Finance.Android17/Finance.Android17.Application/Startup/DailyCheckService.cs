@@ -8,7 +8,8 @@ public sealed class DailyCheckService(
     StartupService startup,
     NotificationService notifications,
     IAlertPublisher publisher,
-    ISettingsService settings)
+    ISettingsService settings,
+    TimeProvider clock)
 {
     /// <summary>Heure locale du contrôle : avant celle des rappels d'échéance (<see cref="ReminderPlanner.ReminderHour"/>). À reporter dans le libellé du réglage.</summary>
     public const int CheckHour = 8;
@@ -29,8 +30,26 @@ public sealed class DailyCheckService(
         }
     }
 
+    /// <summary>
+    /// Prochain contrôle à programmer au premier plan. Comme <see cref="NextRun(TimeProvider)"/>, sauf quand le contrôle d'aujourd'hui
+    /// n'a pas eu lieu (alarme retardée par le mode économie d'énergie, ou remplacée par une ouverture de l'application juste avant
+    /// l'heure) alors que <see cref="NextRun(TimeProvider)"/> repousse à demain : il est alors lancé dans la minute, au lieu d'être perdu.
+    /// Sans contrôle déjà lancé (première utilisation), rien n'est rattrapé.
+    /// </summary>
+    public static DateTimeOffset NextRun(TimeProvider clock, string lastCheckDay)
+    {
+        var now = clock.GetLocalNow();
+        var next = NextRun(clock);
+        var checkedBeforeToday = DateTime.TryParseExact(lastCheckDay, DayFormat, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var last) && last.Date < now.Date;
+        return checkedBeforeToday && next.Date > now.Date ? now.AddMinutes(1) : next;
+    }
+
+    private const string DayFormat = "yyyy-MM-dd";
+
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
+        // Noté avant la préparation : celle-ci reprogramme le prochain contrôle, qui doit déjà voir celui d'aujourd'hui comme lancé.
+        settings.LastDailyCheckDay = clock.GetLocalNow().ToString(DayFormat, System.Globalization.CultureInfo.InvariantCulture);
         // Le même travail qu'au déverrouillage : base ouverte, échéances rattrapées, rappels et prochain contrôle programmés.
         await startup.PrepareInBackgroundAsync(cancellationToken).ConfigureAwait(false);
         if (!settings.BackgroundAlertsEnabled) return;

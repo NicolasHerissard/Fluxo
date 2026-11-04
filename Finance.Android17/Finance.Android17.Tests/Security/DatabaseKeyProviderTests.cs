@@ -46,7 +46,7 @@ public sealed class DatabaseKeyProviderTests
         var emptySecrets = new FakeSecureValueStore();
         using var restarted = new InfrastructureHost(secrets: emptySecrets, databaseOf: host);
 
-        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => restarted.Get<ISecretStore>().GetOrCreateDatabaseKeyAsync());
+        var error = await Assert.ThrowsAsync<DatabaseKeyUnavailableException>(() => restarted.Get<ISecretStore>().GetOrCreateDatabaseKeyAsync());
 
         Assert.Contains("clé de chiffrement", error.Message);
         Assert.Empty(emptySecrets.Values);
@@ -67,5 +67,36 @@ public sealed class DatabaseKeyProviderTests
 
         var expense = Assert.Single(await restarted.Expenses.GetAllAsync());
         Assert.Equal("Pain", expense.Description);
+    }
+
+    [Fact]
+    public async Task StartOver_SetsTheUnreadableDatabaseAside_ThenStartsAFreshOne()
+    {
+        using var host = new InfrastructureHost();
+        var food = (await host.Categories.GetAllAsync()).Single(x => x.Name == "Alimentation");
+        await host.Expenses.AddAsync(1_250, "Pain", new DateTime(2026, 10, 2), food.Id);
+        var databasePath = host.DatabaseFile.Options.DatabasePath;
+        var emptySecrets = new FakeSecureValueStore();
+        using var restarted = new InfrastructureHost(secrets: emptySecrets, databaseOf: host);
+        await Assert.ThrowsAsync<DatabaseKeyUnavailableException>(() => restarted.Categories.GetAllAsync());
+
+        await restarted.Get<IDatabaseRecovery>().StartOverAsync();
+
+        // L'ancien fichier est conservé sous un autre nom : rien n'est supprimé.
+        Assert.Single(Directory.GetFiles(Path.GetDirectoryName(databasePath)!, "*.illisible-*"));
+        Assert.Empty(await restarted.Expenses.GetAllAsync());
+        Assert.NotEmpty(await restarted.Categories.GetAllAsync());
+        Assert.True(emptySecrets.Values.ContainsKey("database_key_v2"));
+    }
+
+    [Fact]
+    public async Task StartOver_IsRefused_WhenTheKeyIsActuallyAvailable()
+    {
+        using var host = new InfrastructureHost();
+        await host.Categories.GetAllAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => host.Get<IDatabaseRecovery>().StartOverAsync());
+
+        Assert.NotEmpty(await host.Categories.GetAllAsync());
     }
 }

@@ -26,4 +26,7 @@ public interface ISettingsService
 
     /// <summary>Clés (séparées par un saut de ligne) des alertes déjà envoyées en notification du système.</summary>
     string PushedNotifications { get; set; }
+
+    /// <summary>Jour (<c>yyyy-MM-dd</c>, heure locale) du dernier contrôle quotidien lancé ; vide tant qu'aucun n'a eu lieu.</summary>
+    string LastDailyCheckDay { get; set; }
 }

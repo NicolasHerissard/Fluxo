@@ -15,7 +15,7 @@ internal sealed class RecurringIncomeRepository(FinanceDatabase database) : Repo
             .ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task AddAsync(string name, long amountMinor, int intervalMonths, DateTime nextOccurrenceDate, string currencyCode = "EUR", CancellationToken cancellationToken = default) =>
+    public Task AddAsync(string name, long amountMinor, int intervalMonths, DateTime nextOccurrenceDate, string currencyCode = CurrencyCodes.Default, CancellationToken cancellationToken = default) =>
         InsertAsync(now => new RecurringIncome
         {
             Name = name.Trim(),
@@ -28,7 +28,7 @@ internal sealed class RecurringIncomeRepository(FinanceDatabase database) : Repo
             UpdatedAtUtc = now
         }, cancellationToken);
 
-    public Task UpdateAsync(Guid id, string name, long amountMinor, int intervalMonths, DateTime nextOccurrenceDate, string currencyCode = "EUR", CancellationToken cancellationToken = default) =>
+    public Task UpdateAsync(Guid id, string name, long amountMinor, int intervalMonths, DateTime nextOccurrenceDate, string currencyCode = CurrencyCodes.Default, CancellationToken cancellationToken = default) =>
         ChangeAsync(id, recurring =>
         {
             recurring.Name = name.Trim();

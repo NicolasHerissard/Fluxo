@@ -10,8 +10,8 @@ public interface IExpenseRepository
 {
     /// <summary>Dépenses non supprimées, avec leur catégorie, de la plus récente à la plus ancienne.</summary>
     Task<IReadOnlyList<Expense>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task AddAsync(long amountMinor, string description, DateTime occurredOn, Guid categoryId, string currencyCode = "EUR", CancellationToken cancellationToken = default);
-    Task UpdateAsync(Guid id, long amountMinor, string description, DateTime occurredOn, Guid categoryId, string currencyCode = "EUR", CancellationToken cancellationToken = default);
+    Task AddAsync(long amountMinor, string description, DateTime occurredOn, Guid categoryId, string currencyCode = CurrencyCodes.Default, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Guid id, long amountMinor, string description, DateTime occurredOn, Guid categoryId, string currencyCode = CurrencyCodes.Default, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task RestoreAsync(Guid id, CancellationToken cancellationToken = default);
 }

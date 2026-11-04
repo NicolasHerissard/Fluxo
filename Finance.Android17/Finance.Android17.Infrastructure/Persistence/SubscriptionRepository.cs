@@ -15,7 +15,7 @@ internal sealed class SubscriptionRepository(FinanceDatabase database) : Reposit
             .ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task AddAsync(string name, long amountMinor, int billingIntervalMonths, DateTime nextBillingDate, string currencyCode = "EUR", CancellationToken cancellationToken = default) =>
+    public Task AddAsync(string name, long amountMinor, int billingIntervalMonths, DateTime nextBillingDate, string currencyCode = CurrencyCodes.Default, CancellationToken cancellationToken = default) =>
         InsertAsync(now => new Subscription
         {
             Name = name.Trim(),
@@ -28,7 +28,7 @@ internal sealed class SubscriptionRepository(FinanceDatabase database) : Reposit
             UpdatedAtUtc = now
         }, cancellationToken);
 
-    public Task UpdateAsync(Guid id, string name, long amountMinor, int billingIntervalMonths, DateTime nextBillingDate, string currencyCode = "EUR", CancellationToken cancellationToken = default) =>
+    public Task UpdateAsync(Guid id, string name, long amountMinor, int billingIntervalMonths, DateTime nextBillingDate, string currencyCode = CurrencyCodes.Default, CancellationToken cancellationToken = default) =>
         ChangeAsync(id, subscription =>
         {
             subscription.Name = name.Trim();

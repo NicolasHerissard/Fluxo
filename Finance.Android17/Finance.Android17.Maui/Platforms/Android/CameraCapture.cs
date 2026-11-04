@@ -25,6 +25,7 @@ internal static class CameraCapture
 internal sealed class CameraCaptureFragment : AndroidX.Fragment.App.Fragment
 {
     internal const string FragmentTag = "finance.camera.capture";
+    internal const string CaptureDirectory = "camera";
     private const int RequestCode = 1741;
     private readonly TaskCompletionSource<string?> _completion;
     private string? _path;
@@ -35,7 +36,10 @@ internal sealed class CameraCaptureFragment : AndroidX.Fragment.App.Fragment
     {
         base.OnCreate(savedInstanceState);
         var activity = Activity ?? throw new InvalidOperationException("Activité Android indisponible.");
-        var file = new JavaFile(activity.CacheDir, $"receipt-{Guid.NewGuid():N}.jpg");
+        // Un sous-dossier dédié : le FileProvider n'expose que lui (voir file_paths.xml), pas tout le cache de l'application.
+        var directory = new JavaFile(activity.CacheDir, CaptureDirectory);
+        directory.Mkdirs();
+        var file = new JavaFile(directory, $"receipt-{Guid.NewGuid():N}.jpg");
         _path = file.AbsolutePath;
         var uri = AndroidXFileProvider.GetUriForFile(activity, $"{activity.PackageName}.fileprovider", file);
         var intent = new Intent(MediaStore.ActionImageCapture);

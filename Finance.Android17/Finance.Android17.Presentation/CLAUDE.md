@@ -8,7 +8,9 @@ Un ViewModel **charge, appelle une règle d'`Application`, formate et réagit au
 
 | Fichier | Rôle |
 | --- | --- |
-| `LockViewModel.cs`, `DashboardViewModel.cs`, `ExpensesViewModel.cs`, `AddExpenseViewModel.cs`, `IncomeViewModel.cs`, `SubscriptionsViewModel.cs`, `SettingsViewModel.cs`, `NotificationsViewModel.cs` | Un ViewModel par fichier, un par page (voir ci-dessous). |
+| `LockViewModel.cs`, `DashboardViewModel.cs`, `ExpensesViewModel.cs`, `AddExpenseViewModel.cs`, `IncomeViewModel.cs`, `SubscriptionsViewModel.cs`, `SettingsViewModel.cs`, `CategoriesSettingsViewModel.cs`, `DataSettingsViewModel.cs`, `NotificationsViewModel.cs` | Un ViewModel par fichier, un par page (voir ci-dessous). |
+| `SavingsGoalsViewModel.cs` | Sous-ViewModel des objectifs d'épargne, exposé par `IncomeViewModel.Goals` (pas de page propre, pas enregistré dans l'injection). |
+| `StatusViewModelBase.cs`, `UndoableViewModelBase.cs` | Bases communes : message d'état et erreur (`StatusMessage`, `StatusIsError`, `ShowError`, `Describe`) ; annulation des suppressions **empilée** (`OfferUndo`, `IsUndoVisible`, `UndoMessage`, `UndoDeleteCommand`, 8 s) pour `ExpensesViewModel`, `SubscriptionsViewModel` et `IncomeViewModel`. |
 | `Rows.cs` | Modèles d'affichage : `ExpenseRow`, `ChartBar`, `SubscriptionRow`, `ActiveFilterChip`, `IncomeRow`, `RecurringIncomeRow`, `SavingsGoalRow`, `OperationRow`, `CategoryItem`, `CategoryFilterOption`, `ExpenseCategoryOption`, `DonutSlice` (part de l'anneau des catégories), `CashflowBar` (barres revenus / dépenses d'un mois), `NotificationRow`. |
 | `NotificationTexts.cs` | Titre, message et icône d'une alerte (`AppNotification`), avec montants masqués si besoin. Partagé par `NotificationsViewModel` et par les notifications du système envoyées en arrière-plan (projet `Maui`). |
 | `Formatting/MoneyFormatter.cs` | Format français des montants (`1 234,50 €`), pourcentages et dates (`02 oct. 2026`), `Hidden` (`••••`). Toujours `fr-FR`, quelle que soit la langue de l'appareil. |
@@ -22,14 +24,16 @@ Tous sont des `partial class … : ObservableObject` construits par injection de
 
 | ViewModel | Page | Responsabilité |
 | --- | --- | --- |
-| `LockViewModel` | `LockPage` | Création du PIN au premier lancement, vérification, biométrie facultative. Après déverrouillage, `StartupService.PrepareAsync` (base, échéances, rappels) puis événement `Unlocked` que `App` écoute. |
+| `LockViewModel` | `LockPage` | Création du PIN au premier lancement, vérification, biométrie facultative. Si la clé de la base est introuvable (`DatabaseKeyUnavailableException`), `CanStartOver` affiche « Repartir d'une base neuve » : la page confirme puis appelle `StartOverAsync` (`IDatabaseRecovery`). Après déverrouillage, `StartupService.PrepareAsync` (base, échéances, rappels) puis événement `Unlocked` que `App` écoute. |
 | `DashboardViewModel` | `DashboardPage` | Affiche le `DashboardReport` de `DashboardService` : période semaine/mois/année (`Periods`), total et comparaison, solde, revenus, net, prévision (`ForecastBadge`), taux d'épargne, anneau et légende des catégories (`CategorySlices`, `CategoryBars`), flux de trésorerie sur six mois (`CashflowBars`), budget mensuel, dépenses récentes, prochain abonnement. `PrivacyIcon` est un nom d'icône (`eye` / `eye-off`). |
 | `NotificationsViewModel` | `NotificationsPage` et cloche de `PageHeader` | Alertes du `NotificationService` en `NotificationRow` (titre, message, icône, gravité `info` / `warning` / `critical`, `IsNew`) ; `HasUnread` allume le point de la cloche ; `MarkAllReadCommand` les marque vues. Montants masqués si `HideAmounts`. |
 | `ExpensesViewModel` | `ExpensesPage` | Charge les dépenses puis applique `ExpenseSearch` (recherche retardée par un `CancellationTokenSource`, catégories, période, montants, six tris), puces de filtres actifs, suppression avec annulation. Lève `EditRequested` avec l'identifiant de la dépense. |
 | `AddExpenseViewModel` | `AddExpensePage` | Saisie/modification d'une dépense : `AmountParser`, catégories triées par `CategoryChoice`, raccourcis de date, préremplissage depuis un ticket (`IOcrService` puis `ReceiptParser`), comportement après enregistrement. `BeginEditAsync(Guid)`. Lève `Saved`. |
-| `IncomeViewModel` | `IncomePage` | Revenus (ponctuels et récurrents, un seul formulaire avec l'option « Se répète »), objectifs d'épargne et indicateurs du mois (`FinancialSummaryCalculator`, plus les revenus récurrents encore attendus). Le solde initial se règle dans `SettingsViewModel` (Réglages > Mes données). |
+| `IncomeViewModel` | `IncomePage` | Revenus (ponctuels et récurrents, un seul formulaire avec l'option « Se répète »), indicateurs du mois (`FinancialSummaryCalculator`, plus les revenus récurrents encore attendus). Les objectifs d'épargne sont dans `Goals` (`SavingsGoalsViewModel`, lié à la page par `BindingContext="{Binding Goals}"`) ; il lui prête annulation et rechargement. Le solde initial se règle dans `DataSettingsViewModel`. |
 | `SubscriptionsViewModel` | `SubscriptionsPage` | Abonnements, totaux mensuel et annuel (`SubscriptionCosts`), rappels. |
-| `SettingsViewModel` | `SettingsPage` | Thème, devise, confidentialité, budget mensuel, catégories (couleur, budget), verrouillage, biométrie, changement de PIN, export CSV, sauvegarde/restauration chiffrée, remise à zéro après confirmation du PIN. |
+| `SettingsViewModel` | `SettingsPage` | Thème, devise, confidentialité, budget mensuel, verrouillage, biométrie, changement de PIN, rappels, alertes, comportement après enregistrement. |
+| `CategoriesSettingsViewModel` | `CategoriesSettingsPage` | Catégories : création, modification (nom, couleur RGB/hex, budget) et suppression. |
+| `DataSettingsViewModel` | `DataSettingsPage` | Solde de départ, export CSV, sauvegarde et restauration chiffrées, remise à zéro après confirmation du PIN. |
 
 Les lignes d'affichage portent un **identifiant** (`Guid`) et du texte déjà formaté, jamais l'entité du domaine : le ViewModel retrouve l'entité par son identifiant dans les données qu'il vient de charger.
 

@@ -19,7 +19,7 @@ internal sealed class DatabaseKeyProvider(ISecureValueStore secrets, FinanceData
         if (!string.IsNullOrEmpty(existing)) return existing;
         cancellationToken.ThrowIfCancellationRequested();
         if (DatabaseExists())
-            throw new InvalidOperationException("La clé de chiffrement de la base est introuvable alors que la base existe : elle ne peut pas être lue. Vos données n'ont pas été modifiées. Réessayez après avoir déverrouillé le téléphone, ou restaurez une sauvegarde.");
+            throw new DatabaseKeyUnavailableException("La clé de chiffrement de la base est introuvable alors que la base existe : elle ne peut pas être lue. Vos données n'ont pas été modifiées. Réessayez après avoir déverrouillé le téléphone ; si la clé reste introuvable, vous pourrez repartir d'une base neuve puis restaurer une sauvegarde.");
         var created = Convert.ToBase64String(RandomNumberGenerator.GetBytes(KeySize));
         await secrets.SetAsync(StorageKey, created, cancellationToken).ConfigureAwait(false);
         return created;

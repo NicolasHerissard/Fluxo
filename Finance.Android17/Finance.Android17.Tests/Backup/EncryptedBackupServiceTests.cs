@@ -36,6 +36,18 @@ public sealed class EncryptedBackupServiceTests : IDisposable
         return plain;
     }
 
+    /// <summary>Écriture du format d'après sa spécification, pour fabriquer une sauvegarde « d'une autre époque » (autre mot de passe).</summary>
+    private static byte[] Seal(byte[] plain, string password)
+    {
+        var salt = RandomNumberGenerator.GetBytes(16);
+        var nonce = RandomNumberGenerator.GetBytes(12);
+        var tag = new byte[16];
+        var cipher = new byte[plain.Length];
+        using var aes = new AesGcm(Rfc2898DeriveBytes.Pbkdf2(password, salt, 200_000, HashAlgorithmName.SHA256, 32), 16);
+        aes.Encrypt(nonce, plain, cipher, tag, "MFBAK01"u8);
+        return [.. "MFBAK01"u8, .. salt, .. nonce, .. tag, .. cipher];
+    }
+
     private async Task SeedAsync()
     {
         var food = (await _host.Categories.GetAllAsync()).Single(x => x.Name == "Alimentation");
@@ -188,14 +200,34 @@ public sealed class EncryptedBackupServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Passwords_ShorterThanEightCharacters_AreRefused_ForBothDirections()
+    public async Task Export_RefusesPasswordsShorterThanTwelveCharacters()
     {
-        var export = await Assert.ThrowsAsync<InvalidOperationException>(() => Backup.ExportEncryptedAsync("1234567"));
-        var import = await Assert.ThrowsAsync<InvalidOperationException>(() => Backup.ImportEncryptedAsync("1234567"));
+        var export = await Assert.ThrowsAsync<InvalidOperationException>(() => Backup.ExportEncryptedAsync("12345678901"));
 
-        Assert.Equal("Le mot de passe de sauvegarde doit contenir au moins 8 caractères.", export.Message);
-        Assert.Equal(export.Message, import.Message);
+        Assert.Equal("Le mot de passe de sauvegarde doit contenir au moins 12 caractères.", export.Message);
         Assert.Empty(_host.Files.Shared);
+    }
+
+    [Fact]
+    public async Task Import_StillAccepts_BackupsMadeWithTheFormerEightCharacterMinimum()
+    {
+        await SeedAsync();
+        var snapshot = await _host.Get<IFinanceDataStore>().CreateSnapshotAsync();
+        _host.Files.ToPick = Seal(JsonSerializer.SerializeToUtf8Bytes(snapshot), "12345678");
+        using var other = new InfrastructureHost();
+        other.Files.ToPick = _host.Files.ToPick;
+
+        Assert.True(await other.Get<IDataBackupService>().ImportEncryptedAsync("12345678"));
+
+        Assert.Equal("Pain", Assert.Single(await other.Expenses.GetAllAsync()).Description);
+    }
+
+    [Fact]
+    public async Task Import_RefusesAnEmptyPassword()
+    {
+        var import = await Assert.ThrowsAsync<InvalidOperationException>(() => Backup.ImportEncryptedAsync(string.Empty));
+
+        Assert.Equal("Saisissez le mot de passe de la sauvegarde.", import.Message);
     }
 }
 

@@ -46,7 +46,7 @@ public sealed class IncomeViewModelTests : IDisposable
         Assert.Equal("Tous les 3 mois", vm.RecurringIncomes.Single(x => x.Name == "Dividendes").Frequency);
         Assert.Equal("Mensuel", vm.RecurringIncomes.Single(x => x.Name == "Loyer perçu").Frequency);
 
-        var goal = Assert.Single(vm.SavingsGoals);
+        var goal = Assert.Single(vm.Goals.SavingsGoals);
         Assert.Equal("Vacances", goal.Name);
         Assert.Equal("250,00 €", goal.Saved.Fr());
         Assert.Equal("1 000,00 €", goal.Target.Fr());
@@ -66,7 +66,7 @@ public sealed class IncomeViewModelTests : IDisposable
         Assert.All(vm.Incomes, x => Assert.Equal("••••", x.Amount));
         Assert.NotEmpty(vm.RecurringIncomes);
         Assert.All(vm.RecurringIncomes, x => Assert.Equal("••••", x.Amount));
-        var goal = Assert.Single(vm.SavingsGoals);
+        var goal = Assert.Single(vm.Goals.SavingsGoals);
         Assert.Equal(("••••", "••••"), (goal.Saved, goal.Target));
     }
 
@@ -169,19 +169,19 @@ public sealed class IncomeViewModelTests : IDisposable
         var vm = _app.CreateIncome();
         Assert.False(vm.IsIncomeFormVisible);
         Assert.True(vm.IsIncomeFormClosed);
-        Assert.False(vm.IsGoalFormVisible);
+        Assert.False(vm.Goals.IsGoalFormVisible);
 
         vm.ShowIncomeFormCommand.Execute(null);
-        vm.ShowGoalFormCommand.Execute(null);
+        vm.Goals.ShowGoalFormCommand.Execute(null);
         Assert.True(vm.IsIncomeFormVisible);
         Assert.False(vm.IsIncomeFormClosed);
-        Assert.True(vm.IsGoalFormVisible);
+        Assert.True(vm.Goals.IsGoalFormVisible);
         Assert.True(vm.CanChooseRepeat);
 
         vm.CancelIncomeEditCommand.Execute(null);
-        vm.CancelGoalEditCommand.Execute(null);
+        vm.Goals.CancelGoalEditCommand.Execute(null);
         Assert.False(vm.IsIncomeFormVisible);
-        Assert.False(vm.IsGoalFormVisible);
+        Assert.False(vm.Goals.IsGoalFormVisible);
         await Task.CompletedTask;
     }
 
@@ -201,28 +201,28 @@ public sealed class IncomeViewModelTests : IDisposable
     {
         var vm = _app.CreateIncome();
 
-        vm.GoalName = "Voiture";
-        vm.GoalTargetAmount = "8000";
-        vm.GoalSavedAmount = "-1";
-        await vm.SaveGoalCommand.ExecuteAsync(null);
-        Assert.Equal("Indiquez un montant épargné valide.", vm.StatusMessage);
+        vm.Goals.GoalName = "Voiture";
+        vm.Goals.GoalTargetAmount = "8000";
+        vm.Goals.GoalSavedAmount = "-1";
+        await vm.Goals.SaveGoalCommand.ExecuteAsync(null);
+        Assert.Equal("Indiquez un montant épargné valide.", vm.Goals.StatusMessage);
 
-        vm.GoalSavedAmount = "500";
-        vm.GoalHasTargetDate = true;
-        vm.GoalTargetDate = new DateTime(2027, 3, 1);
-        await vm.SaveGoalCommand.ExecuteAsync(null);
+        vm.Goals.GoalSavedAmount = "500";
+        vm.Goals.GoalHasTargetDate = true;
+        vm.Goals.GoalTargetDate = new DateTime(2027, 3, 1);
+        await vm.Goals.SaveGoalCommand.ExecuteAsync(null);
 
         var goal = Assert.Single(await _app.SavingsGoals.GetAllAsync());
         Assert.Equal(800_000, goal.TargetAmountMinor);
         Assert.Equal(50_000, goal.SavedAmountMinor);
         Assert.Equal(new DateTime(2027, 3, 1), goal.TargetDate);
-        Assert.Equal("Objectif enregistré.", vm.StatusMessage);
-        Assert.False(vm.GoalHasTargetDate);
-        Assert.Equal(new DateTime(2027, 10, 20), vm.GoalTargetDate);
+        Assert.Equal("Objectif enregistré.", vm.Goals.StatusMessage);
+        Assert.False(vm.Goals.GoalHasTargetDate);
+        Assert.Equal(new DateTime(2027, 10, 20), vm.Goals.GoalTargetDate);
 
-        vm.EditGoalCommand.Execute(vm.SavingsGoals.Single());
-        Assert.Equal("Modifier l’objectif", vm.GoalFormTitle);
-        Assert.True(vm.GoalHasTargetDate);
-        Assert.Equal("500", vm.GoalSavedAmount);
+        vm.Goals.EditGoalCommand.Execute(vm.Goals.SavingsGoals.Single());
+        Assert.Equal("Modifier l’objectif", vm.Goals.GoalFormTitle);
+        Assert.True(vm.Goals.GoalHasTargetDate);
+        Assert.Equal("500", vm.Goals.GoalSavedAmount);
     }
 }

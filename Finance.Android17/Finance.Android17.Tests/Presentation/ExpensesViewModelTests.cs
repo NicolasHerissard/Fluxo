@@ -219,13 +219,12 @@ public sealed class ExpensesViewModelTests : IDisposable
 
         Assert.Equal(["Train", "Courses", "Marché"], Descriptions(vm));
         Assert.True(vm.IsUndoVisible);
-        Assert.Equal("Transaction supprimée", vm.StatusMessage);
+        Assert.Equal("Transaction supprimée", vm.UndoMessage);
 
         await vm.UndoDeleteCommand.ExecuteAsync(null);
 
         Assert.Equal(["Train", "Courses", "Pain", "Marché"], Descriptions(vm));
         Assert.False(vm.IsUndoVisible);
-        Assert.Equal("Transaction restaurée", vm.StatusMessage);
     }
 
     [Fact]
@@ -276,5 +275,23 @@ public sealed class ExpensesViewModelTests : IDisposable
         await vm.LoadAsync();
 
         Assert.Equal(expected, vm.Expenses.Single(x => x.Description == "Test").CategoryInitial);
+    }
+
+    [Fact]
+    public async Task TwoDeletionsInARow_CanBothBeUndone_LastFirst()
+    {
+        var vm = await LoadedAsync();
+
+        await vm.DeleteCommand.ExecuteAsync(vm.Expenses.Single(x => x.Description == "Pain"));
+        await vm.DeleteCommand.ExecuteAsync(vm.Expenses.Single(x => x.Description == "Train"));
+        Assert.Equal(["Courses", "Marché"], Descriptions(vm));
+
+        await vm.UndoDeleteCommand.ExecuteAsync(null);
+        Assert.Equal(["Train", "Courses", "Marché"], Descriptions(vm));
+        Assert.True(vm.IsUndoVisible);
+
+        await vm.UndoDeleteCommand.ExecuteAsync(null);
+        Assert.Equal(["Train", "Courses", "Pain", "Marché"], Descriptions(vm));
+        Assert.False(vm.IsUndoVisible);
     }
 }

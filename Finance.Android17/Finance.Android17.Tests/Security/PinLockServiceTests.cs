@@ -166,4 +166,15 @@ public sealed class PinLockServiceTests : IDisposable
 
         Assert.Equal(expected, Convert.FromBase64String(_host.Secrets.Values["pin_hash_v2"]));
     }
+
+    [Fact]
+    public async Task ConcurrentWrongAttempts_AreAllCounted()
+    {
+        await Lock.SetPinAsync("4821");
+
+        var results = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => Task.Run(() => Lock.VerifyPinAsync("0000"))));
+
+        Assert.All(results, Assert.False);
+        Assert.Equal("4;" + _host.Clock.GetUtcNow().ToUnixTimeMilliseconds(), _host.Secrets.Values["pin_attempts_v1"]);
+    }
 }

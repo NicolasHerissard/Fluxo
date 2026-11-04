@@ -16,6 +16,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton(database ?? FinanceDatabaseOptions.Default());
         services.AddSingleton<ISecretStore, DatabaseKeyProvider>();
         services.AddSingleton<IAppLockService, PinLockService>();
+        services.AddSingleton<IDatabaseRecovery, DatabaseRecovery>();
         services.AddSingleton<FinanceDatabase>();
         services.AddSingleton<IDatabaseInitializer>(provider => provider.GetRequiredService<FinanceDatabase>());
         services.AddSingleton<IExpenseRepository, ExpenseRepository>();

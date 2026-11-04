@@ -54,7 +54,7 @@ public static class ExpenseSearch
 
     private static string SearchableText(Expense expense)
     {
-        var amount = (expense.AmountMinor / 100m).ToString("0.00", French);
+        var amount = MinorUnits.ToMajor(expense.AmountMinor).ToString("0.00", French);
         return Normalize($"{expense.Description} {expense.Category?.Name} {amount} {expense.AmountMinor} {expense.OccurredOn.ToString("dd/MM/yyyy", French)} {expense.OccurredOn.ToString("dd MMMM yyyy", French)}");
     }
 

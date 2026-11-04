@@ -12,7 +12,11 @@ public sealed class BiometricService : IBiometricService
         {
             if (!OperatingSystem.IsAndroidVersionAtLeast(29) || Platform.CurrentActivity is not { } activity) return false;
             var manager = activity.GetSystemService(Android.Content.Context.BiometricService) as Android.Hardware.Biometrics.BiometricManager;
-            return manager?.CanAuthenticate() == Android.Hardware.Biometrics.BiometricCode.Success;
+            if (manager is null) return false;
+            // Dès Android 11, seule une biométrie « forte » (classe 3) est acceptée : un déverrouillage facial ou digital de classe 2 se laisse tromper plus facilement.
+            return OperatingSystem.IsAndroidVersionAtLeast(30)
+                ? manager.CanAuthenticate((int)Android.Hardware.Biometrics.BiometricManagerAuthenticators.BiometricStrong) == Android.Hardware.Biometrics.BiometricCode.Success
+                : manager.CanAuthenticate() == Android.Hardware.Biometrics.BiometricCode.Success;
         }
     }
 
@@ -24,11 +28,13 @@ public sealed class BiometricService : IBiometricService
         {
             var signal = new Android.OS.CancellationSignal();
             cancellationToken.Register(signal.Cancel);
-            var prompt = new Android.Hardware.Biometrics.BiometricPrompt.Builder(activity)
+            var builder = new Android.Hardware.Biometrics.BiometricPrompt.Builder(activity)
                 .SetTitle(reason)
                 .SetSubtitle("Utilisez votre empreinte ou votre visage")
-                .SetNegativeButton("Utiliser le PIN", activity.MainExecutor!, new NegativeListener(completion))
-                .Build();
+                .SetNegativeButton("Utiliser le PIN", activity.MainExecutor!, new NegativeListener(completion));
+            if (OperatingSystem.IsAndroidVersionAtLeast(30))
+                builder.SetAllowedAuthenticators((int)Android.Hardware.Biometrics.BiometricManagerAuthenticators.BiometricStrong);
+            var prompt = builder.Build();
             prompt.Authenticate(signal, activity.MainExecutor!, new AuthenticationCallback(completion));
         });
         return await completion.Task.ConfigureAwait(false);

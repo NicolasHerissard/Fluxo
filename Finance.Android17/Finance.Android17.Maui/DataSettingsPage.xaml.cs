@@ -4,8 +4,8 @@ namespace Finance.Android17.Maui;
 
 public partial class DataSettingsPage : ContentPage
 {
-    private readonly SettingsViewModel _viewModel;
-    public DataSettingsPage(SettingsViewModel viewModel)
+    private readonly DataSettingsViewModel _viewModel;
+    public DataSettingsPage(DataSettingsViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
@@ -17,5 +17,13 @@ public partial class DataSettingsPage : ContentPage
     {
         if (await DisplayAlertAsync("Restaurer la sauvegarde ?", "Les données actuelles seront remplacées par celles du fichier sélectionné.", "Restaurer", "Annuler"))
             await _viewModel.RestoreBackupAsync();
+    }
+
+    private async void OnDeleteAllClicked(object? sender, EventArgs e)
+    {
+        if (!await DisplayAlertAsync("Supprimer toutes les données ?", "Toutes les transactions, catégories personnalisées et abonnements seront supprimés. Cette action est irréversible.", "Continuer", "Annuler")) return;
+        if (!await DisplayAlertAsync("Confirmation définitive", "Voulez-vous vraiment remettre les données financières à zéro ?", "Tout supprimer", "Annuler")) return;
+        var pin = await DisplayPromptAsync("Authentification requise", "Saisissez votre code PIN pour confirmer la suppression.", "Confirmer", "Annuler", keyboard: Keyboard.Numeric, maxLength: 8);
+        if (!string.IsNullOrEmpty(pin)) await _viewModel.DeleteAllDataAsync(pin);
     }
 }

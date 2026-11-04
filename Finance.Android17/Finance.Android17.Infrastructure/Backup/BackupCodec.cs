@@ -14,7 +14,8 @@ internal static class BackupCodec
     internal const int NonceSize = 12;
     internal const int TagSize = 16;
     internal const int Iterations = 200_000;
-    internal const int MinimumPasswordLength = 8;
+    /// <summary>Minimum exigé à la création. Il ne s'applique pas à la restauration : les sauvegardes déjà faites avec 8 caractères restent lisibles.</summary>
+    internal const int MinimumPasswordLength = 12;
     private const int KeySize = 32;
     private const int HeaderSize = 7 + SaltSize + NonceSize + TagSize;
 

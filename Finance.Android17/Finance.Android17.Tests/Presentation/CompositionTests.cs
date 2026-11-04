@@ -42,6 +42,8 @@ public sealed class CompositionTests : IDisposable
         Assert.NotNull(_provider.GetRequiredService<IncomeViewModel>());
         Assert.NotNull(_provider.GetRequiredService<SubscriptionsViewModel>());
         Assert.NotNull(_provider.GetRequiredService<SettingsViewModel>());
+        Assert.NotNull(_provider.GetRequiredService<CategoriesSettingsViewModel>());
+        Assert.NotNull(_provider.GetRequiredService<DataSettingsViewModel>());
         Assert.NotNull(_provider.GetRequiredService<AddExpenseViewModel>());
         Assert.NotNull(_provider.GetRequiredService<NotificationsViewModel>());
     }

@@ -61,8 +61,7 @@ public sealed class DatabaseInitializationTests : IDisposable
 
         await Assert.ThrowsAsync<SqliteException>(() => host.Database.InitializeAsync());
 
-        SqliteConnection.ClearAllPools();
-        File.Delete(wrongKeyFile);
+        await DeleteWhenReleasedAsync(wrongKeyFile);
         await host.Database.InitializeAsync();
         Assert.Equal(DefaultNames, (await host.Categories.GetAllAsync()).Select(x => x.Name));
     }
@@ -71,7 +70,9 @@ public sealed class DatabaseInitializationTests : IDisposable
     public async Task Database_IsEncrypted_AndUnreadableWithAnotherKey()
     {
         await _host.Database.InitializeAsync();
-        await using (var stream = File.OpenRead(_host.DatabaseFile.Options.DatabasePath))
+        // Sous Windows la base reste ouverte par le pool de connexions : on la lit en partageant l'accès, sans exiger sa fermeture.
+        SqliteConnection.ClearAllPools();
+        await using (var stream = new FileStream(_host.DatabaseFile.Options.DatabasePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
         {
             var header = new byte[15];
             await stream.ReadExactlyAsync(header);
@@ -114,5 +115,16 @@ public sealed class DatabaseInitializationTests : IDisposable
         Assert.Single(await _host.Subscriptions.GetAllAsync());
         Assert.Single(await _host.SavingsGoals.GetAllAsync());
         Assert.Equal(1, await _host.Profile.GetInitialBalanceAsync());
+    }
+
+    // Sous Windows, SQLite peut garder le fichier ouvert un instant après l'échec d'ouverture : on laisse le temps de le libérer.
+    private static async Task DeleteWhenReleasedAsync(string path)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            SqliteConnection.ClearAllPools();
+            try { File.Delete(path); return; }
+            catch (IOException) when (attempt < 20) { await Task.Delay(50); }
+        }
     }
 }

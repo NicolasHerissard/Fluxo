@@ -213,7 +213,7 @@ public sealed class ReminderBootReceiver : BroadcastReceiver
             ReminderService.Schedule(context, alarmManager, alarm);
 
         var clock = IPlatformApplication.Current?.Services.GetService<TimeProvider>() ?? TimeProvider.System;
-        DailyCheckScheduler.Schedule(context, DailyCheckService.NextRun(clock));
+        DailyCheckScheduler.Schedule(context, DailyCheckService.NextRun(clock, IPlatformApplication.Current?.Services.GetService<ISettingsService>()?.LastDailyCheckDay ?? string.Empty));
     }
 }
 #endif
