@@ -1,0 +1,79 @@
+name: APK Android
+
+# Compile l'APK Release (arm64) et le publie dans une release GitHub téléchargeable.
+# Lancement manuel : onglet Actions > « APK Android » > Run workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Installer le workload Android
+        run: dotnet workload install maui-android
+
+      - name: Préparer le keystore
+        id: ks
+        env:
+          KS_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -n "$KS_BASE64" ]; then
+            echo "$KS_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            echo "alias=$KS_ALIAS" >> "$GITHUB_OUTPUT"
+            echo "pass=$KS_PASS" >> "$GITHUB_OUTPUT"
+            echo "kind=production" >> "$GITHUB_OUTPUT"
+          else
+            # Pas de secrets : keystore jetable, APK installable pour test uniquement.
+            keytool -genkeypair -keystore "$RUNNER_TEMP/release.keystore" -storepass testpass1 -keypass testpass1 \
+              -alias test -keyalg RSA -keysize 2048 -validity 30 -dname "CN=Fluxo test"
+            echo "alias=test" >> "$GITHUB_OUTPUT"
+            echo "pass=testpass1" >> "$GITHUB_OUTPUT"
+            echo "kind=test" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compiler l'APK Release
+        working-directory: Finance.Android17
+        run: >
+          dotnet build Finance.Android17.Maui/Finance.Android17.Maui.csproj
+          -f net10.0-android -c Release
+          -p:EnableWindowsTargeting=true
+          -p:AndroidSigningKeyStore=${{ runner.temp }}/release.keystore
+          -p:AndroidSigningStorePass=${{ steps.ks.outputs.pass }}
+          -p:AndroidSigningKeyAlias=${{ steps.ks.outputs.alias }}
+          -p:AndroidSigningKeyPass=${{ steps.ks.outputs.pass }}
+
+      - name: Signer et aligner l'APK
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          SRC=$(ls Finance.Android17/Finance.Android17.Maui/bin/Release/net10.0-android/android-arm64/*-Signed.apk)
+          cp "$SRC" fluxo.apk
+          "$BT/apksigner" sign --ks "$RUNNER_TEMP/release.keystore" \
+            --ks-pass "pass:${{ steps.ks.outputs.pass }}" --key-pass "pass:${{ steps.ks.outputs.pass }}" \
+            --ks-key-alias "${{ steps.ks.outputs.alias }}" fluxo.apk
+          "$BT/apksigner" verify fluxo.apk
+
+      - name: Publier la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="apk-${{ steps.ks.outputs.kind }}-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" fluxo.apk \
+            --title "APK ${{ steps.ks.outputs.kind }} #${GITHUB_RUN_NUMBER}" \
+            --notes "APK Release arm64 (signature : ${{ steps.ks.outputs.kind }}). Commit ${GITHUB_SHA}." \
+            --prerelease --target "$GITHUB_SHA"
