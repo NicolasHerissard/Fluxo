@@ -85,15 +85,21 @@ public sealed class AppUpdateService : IAppUpdateService
             throw new InvalidOperationException("Téléchargement impossible. Vérifiez votre connexion Internet et réessayez.");
         }
 
-        var info = new FileInfo(path);
-        if (update.SizeBytes > 0 && info.Length != update.SizeBytes)
-            throw new InvalidOperationException("Le fichier téléchargé est incomplet. Réessayez.");
-        if (update.Sha256 is not null)
+        if (update.Sha256 is null || update.SizeBytes <= 0)
         {
-            await using var stream = File.OpenRead(path);
+            File.Delete(path);
+            throw new InvalidOperationException("La version proposée n’indique pas son empreinte ou sa taille : impossible de vérifier le fichier. Rien n’a été installé.");
+        }
+
+        var info = new FileInfo(path);
+        if (info.Length != update.SizeBytes)
+            throw new InvalidOperationException("Le fichier téléchargé est incomplet. Réessayez.");
+        await using (var stream = File.OpenRead(path))
+        {
             var hash = Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, cancellationToken));
             if (hash != update.Sha256)
             {
+                stream.Close();
                 File.Delete(path);
                 throw new InvalidOperationException("Le fichier téléchargé est corrompu (empreinte différente). Rien n’a été installé.");
             }
