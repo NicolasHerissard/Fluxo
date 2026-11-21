@@ -62,7 +62,7 @@
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Date" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
                     <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                        <Button Text="Aujourd’hui" Command="{Binding SelectDateCommand}" CommandParameter="Aujourd’hui" Style="{StaticResource ChipButton}" CornerRadius="10" FontSize="13">
+                        <Button Text="Aujourd’hui" Command="{Binding SelectDateCommand}" CommandParameter="Aujourd’hui" Style="{StaticResource ChipButton}" CornerRadius="10" FontSize="14">
                             <Button.Triggers>
                                 <DataTrigger TargetType="Button" Binding="{Binding IsTodaySelected}" Value="True">
                                     <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
@@ -73,7 +73,7 @@
                                 </DataTrigger>
                             </Button.Triggers>
                         </Button>
-                        <Button Grid.Column="1" Text="Hier" Command="{Binding SelectDateCommand}" CommandParameter="Hier" Style="{StaticResource ChipButton}" CornerRadius="10" FontSize="13">
+                        <Button Grid.Column="1" Text="Hier" Command="{Binding SelectDateCommand}" CommandParameter="Hier" Style="{StaticResource ChipButton}" CornerRadius="10" FontSize="14">
                             <Button.Triggers>
                                 <DataTrigger TargetType="Button" Binding="{Binding IsYesterdaySelected}" Value="True">
                                     <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
@@ -84,7 +84,7 @@
                                 </DataTrigger>
                             </Button.Triggers>
                         </Button>
-                        <Button Grid.Column="2" Text="{Binding OtherDateText}" Clicked="OnOtherDateClicked" Style="{StaticResource ChipButton}" CornerRadius="10" FontSize="13">
+                        <Button Grid.Column="2" Text="{Binding OtherDateText}" Clicked="OnOtherDateClicked" Style="{StaticResource ChipButton}" CornerRadius="10" FontSize="14">
                             <Button.Triggers>
                                 <DataTrigger TargetType="Button" Binding="{Binding IsOtherDateSelected}" Value="True">
                                     <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
@@ -112,7 +112,7 @@
         <Border Grid.Row="1" Padding="20,12,20,18" StrokeThickness="0"
                 BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource PageBackgroundDark}}">
             <VerticalStackLayout Spacing="8">
-                <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+                <Label Text="{Binding ErrorMessage, Converter={StaticResource ErrorPrefixConverter}}" Style="{StaticResource ErrorLabel}" />
                 <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}" />
                 <Button Text="{Binding SaveButtonText}" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsSaveEnabled}" />
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />

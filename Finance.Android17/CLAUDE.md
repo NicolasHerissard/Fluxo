@@ -1,6 +1,6 @@
 # Finance.Android17 — vue d'ensemble de la solution
 
-Application Android (et Windows) de gestion de finances personnelles, **locale, hors ligne et mono-solde** : dépenses, revenus ponctuels et récurrents, abonnements, objectifs d'épargne, solde initial. Nom affiché : « Mes Finances », identifiant Android `fr.nicol.finance.android17`, version `2.0.0` (code de version `8`). Stack : .NET 10, .NET MAUI, EF Core 10, SQLite chiffré avec SQLCipher, CommunityToolkit.Mvvm.
+Application Android (et Windows) de gestion de finances personnelles, **locale, hors ligne et mono-solde** : dépenses, revenus ponctuels et récurrents, abonnements, objectifs d'épargne, solde initial. Nom affiché : « Fluxo », identifiant Android `fr.nicol.finance.android17`, version `2.0.0` (code de version `8`). Stack : .NET 10, .NET MAUI, EF Core 10, SQLite chiffré avec SQLCipher, CommunityToolkit.Mvvm.
 
 La cible Android est l'API 36 (la plus récente prise en charge par le SDK .NET 10 installé) ; l'application est testée sur un Google Pixel 10 sous Android 17 / API 37, Android assurant la compatibilité ascendante. La cible Windows (`net10.0-windows10.0.19041.0`) existe aussi.
 

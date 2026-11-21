@@ -12,14 +12,14 @@ internal sealed class EncryptedBackupService(IFinanceDataStore data, IFileExchan
         var snapshot = await data.CreateSnapshotAsync(cancellationToken).ConfigureAwait(false);
         var payload = BackupCodec.Encrypt(JsonSerializer.SerializeToUtf8Bytes(snapshot), password);
         var fileName = $"mes-finances-{clock.GetLocalNow():yyyyMMdd-HHmm}.mfbackup";
-        await files.ShareAsync(fileName, payload, "Sauvegarde chiffrée Mes Finances", cancellationToken).ConfigureAwait(false);
+        await files.ShareAsync(fileName, payload, "Sauvegarde chiffrée Fluxo", cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<bool> ImportEncryptedAsync(string password, CancellationToken cancellationToken = default)
     {
         // À l'import, seul un mot de passe non vide est exigé : une sauvegarde faite avec l'ancien minimum de 8 caractères doit rester restaurable.
         if (string.IsNullOrEmpty(password)) throw new InvalidOperationException("Saisissez le mot de passe de la sauvegarde.");
-        var payload = await files.PickAsync("Choisir une sauvegarde Mes Finances", cancellationToken).ConfigureAwait(false);
+        var payload = await files.PickAsync("Choisir une sauvegarde Fluxo", cancellationToken).ConfigureAwait(false);
         if (payload is null) return false;
         var plain = BackupCodec.Decrypt(payload, password);
         var snapshot = Deserialize(plain);

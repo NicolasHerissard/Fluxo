@@ -10,6 +10,7 @@
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <local:ColorContrastConverter x:Key="ColorContrastConverter" />
+            <local:ErrorPrefixConverter x:Key="ErrorPrefixConverter" />
 
             <!-- Pages -->
             <Style x:Key="AppPage" TargetType="ContentPage">

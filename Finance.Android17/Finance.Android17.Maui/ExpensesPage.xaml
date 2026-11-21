@@ -28,7 +28,7 @@
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:ActiveFilterChip">
                             <Button Text="{Binding Label, StringFormat='{}{0}  ×'}" Command="{Binding Source={x:Reference Page}, Path=BindingContext.RemoveFilterCommand}" CommandParameter="{Binding .}"
-                                    Style="{StaticResource ChipButton}" FontSize="13"
+                                    Style="{StaticResource ChipButton}" FontSize="14"
                                     BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryContainerLight}, Dark={StaticResource PrimaryContainerDark}}"
                                     TextColor="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}"
                                     SemanticProperties.Description="{Binding Label, StringFormat='Retirer le filtre {0}'}" />
@@ -113,7 +113,7 @@
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="vm:CategoryFilterOption">
                                             <Button Text="{Binding DisplayName}" Command="{Binding Source={x:Reference Page}, Path=BindingContext.ToggleCategoryCommand}" CommandParameter="{Binding .}"
-                                                    Style="{StaticResource ChipButton}" Margin="0,0,8,8" FontSize="13" SemanticProperties.Description="{Binding AccessibilityDescription}">
+                                                    Style="{StaticResource ChipButton}" Margin="0,0,8,8" FontSize="14" SemanticProperties.Description="{Binding AccessibilityDescription}">
                                                 <Button.Triggers>
                                                     <DataTrigger TargetType="Button" Binding="{Binding IsSelected}" Value="True">
                                                         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />

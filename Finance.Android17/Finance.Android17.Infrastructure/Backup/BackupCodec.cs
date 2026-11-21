@@ -38,7 +38,7 @@ internal static class BackupCodec
     public static byte[] Decrypt(byte[] payload, string password)
     {
         if (payload.Length < HeaderSize || !payload.AsSpan(0, Magic.Length).SequenceEqual(Magic))
-            throw new InvalidOperationException("Ce fichier n’est pas une sauvegarde Mes Finances valide.");
+            throw new InvalidOperationException("Ce fichier n’est pas une sauvegarde Fluxo valide.");
         var salt = payload.AsSpan(Magic.Length, SaltSize).ToArray();
         var nonce = payload.AsSpan(Magic.Length + SaltSize, NonceSize).ToArray();
         var tag = payload.AsSpan(Magic.Length + SaltSize + NonceSize, TagSize).ToArray();

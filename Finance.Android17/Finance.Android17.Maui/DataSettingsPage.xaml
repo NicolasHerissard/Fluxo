@@ -50,7 +50,7 @@
                         <Label Grid.Column="1" Text="Sauvegarde complète chiffrée" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
                     </Grid>
                     <Label Text="Le même mot de passe sera nécessaire pour restaurer le fichier." Style="{StaticResource MutedLabel}" />
-                    <Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (12 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe de sauvegarde" /></Border>
+                    <VerticalStackLayout Spacing="4"><Label Text="Mot de passe de sauvegarde" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (12 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe de sauvegarde" /></Border></VerticalStackLayout>
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Button Text="Sauvegarder" Command="{Binding CreateBackupCommand}" Style="{StaticResource PrimaryButton}" />
                         <Button Grid.Column="1" Text="Restaurer" Clicked="OnRestoreClicked" Style="{StaticResource SecondaryButton}" />
@@ -70,7 +70,7 @@
             </Border>
 
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
-            <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
+            <Label Text="{Binding StatusText}" Style="{StaticResource StatusLabel}">
                 <Label.Triggers>
                     <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
                         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />

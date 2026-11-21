@@ -65,6 +65,7 @@ public sealed class CategoriesSettingsViewModelTests : IDisposable
 
         Assert.True(vm.StatusIsError);
         Assert.Equal("Cette catégorie est utilisée par une transaction.", vm.StatusMessage);
+        Assert.Equal("Erreur : Cette catégorie est utilisée par une transaction.", vm.StatusText);
     }
 
     [Fact]

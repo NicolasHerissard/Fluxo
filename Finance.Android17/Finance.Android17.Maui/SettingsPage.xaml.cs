@@ -12,7 +12,7 @@ public partial class SettingsPage : ContentPage
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
         _services = services;
-        VersionLabel.Text = $"Mes Finances {AppInfo.Current.VersionString} • Données chiffrées localement";
+        VersionLabel.Text = $"Fluxo {AppInfo.Current.VersionString} • Données chiffrées localement";
     }
     protected override void OnAppearing() { base.OnAppearing(); _ = _viewModel.LoadAsync(); }
     private void OnLockClicked(object? sender, EventArgs e) => (Microsoft.Maui.Controls.Application.Current as App)?.ShowLock();
