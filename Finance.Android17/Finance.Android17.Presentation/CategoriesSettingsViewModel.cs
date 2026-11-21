@@ -102,6 +102,7 @@ public partial class CategoriesSettingsViewModel(ICategoryRepository categoryRep
     [RelayCommand]
     private async Task DeleteCategoryAsync(CategoryItem category)
     {
+        if (!await ConfirmDeletionAsync("Supprimer cette catégorie ?", $"« {category.Name} » sera supprimée. Cette action est définitive.")) return;
         try
         {
             await categoryRepository.DeleteAsync(category.Id);

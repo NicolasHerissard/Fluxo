@@ -66,4 +66,18 @@ public sealed class CategoriesSettingsViewModelTests : IDisposable
         Assert.True(vm.StatusIsError);
         Assert.Equal("Cette catégorie est utilisée par une transaction.", vm.StatusMessage);
     }
+
+    [Fact]
+    public async Task Delete_OfACategory_IsCancelledWhenNotConfirmed()
+    {
+        var vm = _app.CreateCategories();
+        await vm.LoadAsync();
+        vm.ConfirmDeleteAsync = (_, _) => Task.FromResult(false);
+        var count = vm.Categories.Count;
+
+        await vm.DeleteCategoryCommand.ExecuteAsync(vm.Categories.First());
+
+        Assert.Equal(count, vm.Categories.Count);
+        Assert.Equal(string.Empty, vm.StatusMessage);
+    }
 }

@@ -139,6 +139,7 @@ public partial class ExpensesViewModel(IExpenseRepository expenseRepository, ICa
     [RelayCommand]
     private async Task DeleteAsync(ExpenseRow row)
     {
+        if (!await ConfirmDeletionAsync("Supprimer cette transaction ?", $"« {row.Description} » ({row.Amount}) sera supprimée. Vous pourrez annuler juste après.")) return;
         await expenseRepository.DeleteAsync(row.Id);
         OfferUndo("Transaction supprimée", () => expenseRepository.RestoreAsync(row.Id));
         await LoadAsync();

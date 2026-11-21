@@ -90,6 +90,7 @@ public partial class SubscriptionsViewModel(ISubscriptionRepository subscription
     [RelayCommand]
     private async Task DeleteAsync(SubscriptionRow item)
     {
+        if (!await ConfirmDeletionAsync("Supprimer cet abonnement ?", $"« {item.Name} » sera supprimé. Vous pourrez annuler juste après.")) return;
         if (_editingId == item.Id) CancelEdit();
         await subscriptionRepository.DeleteAsync(item.Id);
         OfferUndo("Abonnement supprimé", () => subscriptionRepository.RestoreAsync(item.Id));
