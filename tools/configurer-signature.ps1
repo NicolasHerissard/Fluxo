@@ -13,7 +13,19 @@ $bytes = New-Object byte[] 32
 [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
 $pass = ([Convert]::ToBase64String($bytes) -replace '[^A-Za-z0-9]', '').Substring(0, 24)
 
-keytool -genkeypair -keystore $ks -storepass $pass -keypass $pass -alias fluxo `
+# keytool n'est pas toujours dans le PATH : on le cherche dans les emplacements habituels de Java (JDK, Android Studio, Visual Studio).
+$keytool = (Get-Command keytool.exe -ErrorAction SilentlyContinue).Source
+if (-not $keytool) {
+    $racines = @($env:JAVA_HOME, "$env:ProgramFiles\Java", "$env:ProgramFiles\Microsoft", "$env:ProgramFiles\Eclipse Adoptium",
+                 "$env:ProgramFiles\Android", "${env:ProgramFiles(x86)}\Android", "$env:ProgramFiles\Android\Android Studio\jbr") |
+              Where-Object { $_ -and (Test-Path $_) }
+    $keytool = $racines | ForEach-Object { Get-ChildItem $_ -Filter keytool.exe -Recurse -ErrorAction SilentlyContinue } |
+               Select-Object -First 1 -ExpandProperty FullName
+}
+if (-not $keytool) { throw "keytool introuvable : installe un JDK (par ex. winget install Microsoft.OpenJDK.21), ouvre un nouveau PowerShell et relance." }
+Write-Host "keytool : $keytool"
+
+& $keytool -genkeypair -keystore $ks -storepass $pass -keypass $pass -alias fluxo `
   -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Fluxo' | Out-Null
 if (-not (Test-Path $ks)) { throw 'keytool a échoué (Java est-il installé et dans le PATH ?).' }
 
