@@ -54,6 +54,7 @@ public static class MauiProgram
 		services.AddSingleton<IReminderService, ReminderService>();
 		services.AddSingleton<IAlertPublisher, AlertPublisher>();
 		services.AddSingleton<IDailyCheckScheduler, DailyCheckScheduler>();
+		services.AddSingleton<IAppUpdateService, AppUpdateService>();
 		return services;
 	}
 
