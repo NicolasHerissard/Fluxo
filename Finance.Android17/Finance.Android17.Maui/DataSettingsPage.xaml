@@ -36,9 +36,9 @@
                 <VerticalStackLayout Spacing="12">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <maui:IconTile Icon="database" Tone="success" Size="40" />
-                        <Label Grid.Column="1" Text="Export CSV" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="Export CSV (tableur)" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
                     </Grid>
-                    <Label Text="Crée une copie lisible de l’historique des transactions." Style="{StaticResource MutedLabel}" />
+                    <Label Text="Copie lisible de l’historique des transactions uniquement, à ouvrir dans un tableur. Pour tout récupérer sur un autre appareil, utilisez l’export complet ci-dessous." Style="{StaticResource MutedLabel}" />
                     <Button Text="Exporter les transactions" Command="{Binding ExportCommand}" Style="{StaticResource SecondaryButton}" />
                 </VerticalStackLayout>
             </Border>
@@ -47,13 +47,13 @@
                 <VerticalStackLayout Spacing="12">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <maui:IconTile Icon="shield" Tone="violet" Size="40" />
-                        <Label Grid.Column="1" Text="Sauvegarde complète chiffrée" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="Exporter / importer toutes mes données" Style="{StaticResource StrongLabel}" VerticalOptions="Center" />
                     </Grid>
-                    <Label Text="Le même mot de passe sera nécessaire pour restaurer le fichier." Style="{StaticResource MutedLabel}" />
-                    <VerticalStackLayout Spacing="4"><Label Text="Mot de passe de sauvegarde" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe de sauvegarde (12 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe de sauvegarde" /></Border></VerticalStackLayout>
+                    <Label Text="Un seul fichier chiffré contient tout : transactions, catégories et budgets, abonnements, revenus et revenus récurrents, objectifs d’épargne, solde de départ et réglages (thème, devise, budget mensuel, rappels…). Le même mot de passe sera nécessaire pour l’importer. Le code PIN et la biométrie ne sont pas inclus." Style="{StaticResource MutedLabel}" />
+                    <VerticalStackLayout Spacing="4"><Label Text="Mot de passe du fichier" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Placeholder="Mot de passe du fichier (12 caractères minimum)" Text="{Binding BackupPassword}" IsPassword="True" Style="{StaticResource InputEntry}" SemanticProperties.Description="Mot de passe du fichier d’export" /></Border></VerticalStackLayout>
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                        <Button Text="Sauvegarder" Command="{Binding CreateBackupCommand}" Style="{StaticResource PrimaryButton}" />
-                        <Button Grid.Column="1" Text="Restaurer" Clicked="OnRestoreClicked" Style="{StaticResource SecondaryButton}" />
+                        <Button Text="Tout exporter" Command="{Binding CreateBackupCommand}" Style="{StaticResource PrimaryButton}" />
+                        <Button Grid.Column="1" Text="Tout importer" Clicked="OnRestoreClicked" Style="{StaticResource SecondaryButton}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>

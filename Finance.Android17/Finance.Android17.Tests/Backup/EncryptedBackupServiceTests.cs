@@ -133,6 +133,81 @@ public sealed class EncryptedBackupServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ExportThenImport_CarriesTheSettingsToo()
+    {
+        await SeedAsync();
+        var food = (await _host.Categories.GetAllAsync()).Single(x => x.Name == "Alimentation");
+        var s = _host.Settings;
+        s.HideAmounts = true; s.AutoLockMinutes = 10; s.Theme = ThemeOptions.Dark; s.AutoCreateSubscriptionExpenses = true;
+        s.AutoCreateRecurringIncomes = false; s.SubscriptionRemindersEnabled = false; s.SubscriptionReminderDays = 7;
+        s.MonthlyBudgetMinor = 150_000; s.CurrencyCode = "CHF"; s.DefaultCategoryId = food.Id.ToString();
+        s.RememberLastCategory = false; s.AfterSaveBehavior = AfterSaveOptions.AddAnother; s.BackgroundAlertsEnabled = false;
+        await Backup.ExportEncryptedAsync("motdepasse-solide");
+
+        using var other = new InfrastructureHost();
+        other.Settings.BiometricsEnabled = true;
+        other.Settings.SeenNotifications = "deja-vue";
+        other.Files.ToPick = _host.Shared().Content;
+        Assert.True(await other.Get<IDataBackupService>().ImportEncryptedAsync("motdepasse-solide"));
+
+        var r = other.Settings;
+        Assert.True(r.HideAmounts);
+        Assert.Equal(10, r.AutoLockMinutes);
+        Assert.Equal(ThemeOptions.Dark, r.Theme);
+        Assert.True(r.AutoCreateSubscriptionExpenses);
+        Assert.False(r.AutoCreateRecurringIncomes);
+        Assert.False(r.SubscriptionRemindersEnabled);
+        Assert.Equal(7, r.SubscriptionReminderDays);
+        Assert.Equal(150_000, r.MonthlyBudgetMinor);
+        Assert.Equal("CHF", r.CurrencyCode);
+        Assert.Equal(food.Id.ToString(), r.DefaultCategoryId);
+        Assert.False(r.RememberLastCategory);
+        Assert.Equal(AfterSaveOptions.AddAnother, r.AfterSaveBehavior);
+        Assert.False(r.BackgroundAlertsEnabled);
+        // Ce qui dépend de l'appareil n'est ni exporté ni écrasé.
+        Assert.True(r.BiometricsEnabled);
+        Assert.Equal("deja-vue", r.SeenNotifications);
+    }
+
+    [Fact]
+    public async Task Import_OfABackupWithoutSettings_LeavesTheSettingsAlone()
+    {
+        _host.Settings.Theme = ThemeOptions.Dark;
+        _host.Settings.MonthlyBudgetMinor = 99_000;
+        _host.Files.ToPick = Convert.FromBase64String(GoldenPayload);
+
+        Assert.True(await Backup.ImportEncryptedAsync(GoldenPassword));
+
+        Assert.Equal(ThemeOptions.Dark, _host.Settings.Theme);
+        Assert.Equal(99_000, _host.Settings.MonthlyBudgetMinor);
+    }
+
+    [Fact]
+    public async Task Import_IgnoresInvalidSettings_AndAnUnknownDefaultCategory()
+    {
+        await SeedAsync();
+        var snapshot = (await _host.Get<IFinanceDataStore>().CreateSnapshotAsync()) with
+        {
+            Settings = new SettingsBackup(false, -3, "Rose bonbon", true, true, true, 0, -5, "XXX", Guid.NewGuid().ToString(), true, "Explose", true)
+        };
+        _host.Settings.Theme = ThemeOptions.Light;
+        _host.Settings.LastCategoryId = Guid.NewGuid().ToString();
+        _host.Files.ToPick = Seal(JsonSerializer.SerializeToUtf8Bytes(snapshot), "motdepasse-solide");
+
+        Assert.True(await Backup.ImportEncryptedAsync("motdepasse-solide"));
+
+        var s = _host.Settings;
+        Assert.Equal(5, s.AutoLockMinutes);
+        Assert.Equal(ThemeOptions.Light, s.Theme);
+        Assert.Equal(3, s.SubscriptionReminderDays);
+        Assert.Equal(0, s.MonthlyBudgetMinor);
+        Assert.Equal("EUR", s.CurrencyCode);
+        Assert.Equal(AfterSaveOptions.Close, s.AfterSaveBehavior);
+        Assert.Equal(string.Empty, s.DefaultCategoryId);
+        Assert.Equal(string.Empty, s.LastCategoryId);
+    }
+
+    [Fact]
     public async Task Import_WithTheWrongPassword_IsRefused_AndLeavesDataAlone()
     {
         await SeedAsync();

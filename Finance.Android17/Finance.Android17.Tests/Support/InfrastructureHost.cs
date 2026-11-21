@@ -26,6 +26,7 @@ public sealed class InfrastructureHost : FinancePorts, IDisposable
         services.AddSingleton<TimeProvider>(Clock);
         services.AddSingleton<ISecureValueStore>(Secrets);
         services.AddSingleton<IFileExchange>(Files);
+        services.AddSingleton<ISettingsService>(Settings);
         services.AddInfrastructure(_db.Options);
         _provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
     }
@@ -33,6 +34,7 @@ public sealed class InfrastructureHost : FinancePorts, IDisposable
     public FixedTimeProvider Clock { get; }
     public FakeSecureValueStore Secrets { get; }
     public FakeFileExchange Files { get; } = new();
+    public FakeSettings Settings { get; } = new();
 
     /// <summary>Le fichier de base de cet hôte, pour l'inspecter ou le modifier en SQL.</summary>
     public TempDatabase DatabaseFile => _db;

@@ -15,7 +15,7 @@ public partial class DataSettingsPage : ContentPage
 
     private async void OnRestoreClicked(object? sender, EventArgs e)
     {
-        if (await DisplayAlertAsync("Restaurer la sauvegarde ?", "Les données actuelles seront remplacées par celles du fichier sélectionné.", "Restaurer", "Annuler"))
+        if (await DisplayAlertAsync("Importer toutes les données ?", "Toutes vos données actuelles (transactions, catégories, abonnements, revenus, objectifs, solde de départ) et vos réglages seront remplacés par ceux du fichier choisi. Cette action est irréversible : exportez d’abord vos données si vous voulez pouvoir revenir en arrière.", "Importer", "Annuler"))
             await _viewModel.RestoreBackupAsync();
     }
 

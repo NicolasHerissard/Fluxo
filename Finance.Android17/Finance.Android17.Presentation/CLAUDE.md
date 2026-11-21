@@ -33,7 +33,7 @@ Tous sont des `partial class … : ObservableObject` construits par injection de
 | `SubscriptionsViewModel` | `SubscriptionsPage` | Abonnements, totaux mensuel et annuel (`SubscriptionCosts`), rappels. |
 | `SettingsViewModel` | `SettingsPage` | Thème, devise, confidentialité, budget mensuel, verrouillage, biométrie, changement de PIN, rappels, alertes, comportement après enregistrement. |
 | `CategoriesSettingsViewModel` | `CategoriesSettingsPage` | Catégories : création, modification (nom, couleur RGB/hex, budget) et suppression. |
-| `DataSettingsViewModel` | `DataSettingsPage` | Solde de départ, export CSV, sauvegarde et restauration chiffrées, remise à zéro après confirmation du PIN. |
+| `DataSettingsViewModel` | `DataSettingsPage` | Solde de départ, export CSV, export et import complets chiffrés (données et réglages), remise à zéro après confirmation du PIN. |
 
 Les lignes d'affichage portent un **identifiant** (`Guid`) et du texte déjà formaté, jamais l'entité du domaine : le ViewModel retrouve l'entité par son identifiant dans les données qu'il vient de charger.
 

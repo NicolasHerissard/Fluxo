@@ -8,7 +8,7 @@ public static class InfrastructureServiceCollectionExtensions
 {
     /// <summary>
     /// Enregistre la base chiffrée et ses dépôts (un par agrégat), la sécurité (PIN, clé de base), l'export CSV et la sauvegarde chiffrée.
-    /// L'hôte doit fournir <see cref="ISecureValueStore"/> et <see cref="IFileExchange"/> (adaptateurs de plateforme).
+    /// L'hôte doit fournir <see cref="ISecureValueStore"/>, <see cref="IFileExchange"/> et <see cref="ISettingsService"/> (adaptateurs de plateforme).
     /// </summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, FinanceDatabaseOptions? database = null)
     {
