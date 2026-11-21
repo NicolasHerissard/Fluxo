@@ -21,11 +21,15 @@ permissions:
 jobs:
   apk:
     runs-on: ubuntu-latest
-    env:
-      # Numéro de build Android, strictement croissant à chaque exécution (l'installateur refuse de revenir en arrière).
-      VERSION_CODE: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Numéro de build Android = nombre de commits : strictement croissant, et identique à celui du script local
+      # tools/publier-apk.ps1 (l'installateur Android refuse de revenir à un numéro plus petit).
+      - name: Numéro de build
+        run: echo "VERSION_CODE=$(git rev-list --count HEAD)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -65,7 +69,7 @@ jobs:
         run: >
           dotnet build Finance.Android17.Maui/Finance.Android17.Maui.csproj
           -f net10.0-android -c Release
-          -p:ApplicationVersion=${{ github.run_number }}
+          -p:ApplicationVersion=${{ env.VERSION_CODE }}
           -p:EnableWindowsTargeting=true
           -p:AndroidSigningKeyStore=${{ runner.temp }}/release.keystore
           -p:AndroidSigningStorePass=${{ steps.ks.outputs.pass }}
