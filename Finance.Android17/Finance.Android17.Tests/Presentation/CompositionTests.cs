@@ -23,6 +23,7 @@ public sealed class CompositionTests : IDisposable
         services.AddSingleton<IDailyCheckScheduler>(new FakeDailyCheckScheduler());
         services.AddSingleton<IBiometricService>(new FakeBiometrics());
         services.AddSingleton<IOcrService>(new FakeOcrService());
+        services.AddSingleton<IAppUpdateService>(new FakeAppUpdateService());
         services.AddInfrastructure(_db.Options).AddApplication().AddPresentation();
         _provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
     }
@@ -46,6 +47,7 @@ public sealed class CompositionTests : IDisposable
         Assert.NotNull(_provider.GetRequiredService<DataSettingsViewModel>());
         Assert.NotNull(_provider.GetRequiredService<AddExpenseViewModel>());
         Assert.NotNull(_provider.GetRequiredService<NotificationsViewModel>());
+        Assert.NotNull(_provider.GetRequiredService<UpdateViewModel>());
     }
 
     [Fact]

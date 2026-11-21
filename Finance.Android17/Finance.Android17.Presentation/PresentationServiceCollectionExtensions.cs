@@ -20,6 +20,7 @@ public static class PresentationServiceCollectionExtensions
         services.AddTransient<DataSettingsViewModel>();
         services.AddTransient<AddExpenseViewModel>();
         services.AddTransient<NotificationsViewModel>();
+        services.AddTransient<UpdateViewModel>();
         return services;
     }
 }

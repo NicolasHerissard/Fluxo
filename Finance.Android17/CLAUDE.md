@@ -54,7 +54,7 @@ Chemin type d'une opération : page MAUI → ViewModel (`Presentation`) → port
 - **Dates** : dates sans heure (`.Date`) pour les dépenses, revenus et échéances.
 - **Suppressions logiques** (`DeletedAtUtc`) pour dépenses, catégories, abonnements, revenus, revenus récurrents et objectifs ; les lectures normales et les sauvegardes les ignorent.
 - **Asynchrone** : les opérations persistantes acceptent un `CancellationToken` ; la base s'ouvre à la première utilisation (`IDatabaseInitializer.InitializeAsync` la prépare dès le déverrouillage).
-- **Hors ligne** : pas de permission Internet, sauvegarde Android désactivée (`allowBackup=false`).
+- **Hors ligne** : l'application ne contacte Internet que sur action explicite de l'utilisateur (Réglages > « Vérifier les mises à jour », qui interroge les releases GitHub publiées par la CI, puis télécharge l'APK et ouvre l'installateur Android). Aucune vérification automatique ni en arrière-plan. Sauvegarde Android désactivée (`allowBackup=false`).
 - **Sécurité** : ne pas changer la clé SQLCipher, le nom de la base (`finance-v2.db3`), les clés du coffre sécurisé ni le format de sauvegarde sans stratégie de migration explicite. Toute évolution du schéma passe par une **migration** de `FinanceSchema` (`PRAGMA user_version`).
 - **Valeurs persistées** : les libellés français de `ThemeOptions` et `AfterSaveOptions` sont enregistrés dans les préférences existantes ; ne pas les modifier.
 - **Langue** : interface, messages et commentaires du projet sont en français.

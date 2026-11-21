@@ -21,7 +21,7 @@ API 36 est la cible Android prise en charge par le SDK .NET 10 installé. Androi
 - APK Debug autonome : les assemblies sont intégrées et ne dépendent pas du Fast Deployment.
 - un seul convertisseur XAML (`ColorContrastConverter`, texte noir ou blanc selon la couleur d'une catégorie) ; aucun `InvertedBoolConverter`.
 - APK Release ARM64 non débogable, validé pour l'alignement 16 ko.
-- aucune permission Internet dans le MVP hors connexion.
+- Internet uniquement pour « Réglages > Vérifier les mises à jour » (action manuelle) ; aucune donnée financière n'est envoyée. Mise à jour : la CI publie un APK signé à chaque fusion dans `main` (si les secrets `ANDROID_KEYSTORE_*` sont définis) et l'application le télécharge puis ouvre l'installateur Android, qui demande sa propre confirmation.
 - sauvegarde Android désactivée pour ne pas extraire la base chiffrée de son contexte de clé.
 
 ## Interface 2.0.0

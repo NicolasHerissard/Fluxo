@@ -157,3 +157,28 @@ public sealed class TempDatabase : IDisposable
         catch (UnauthorizedAccessException) { }
     }
 }
+
+/// <summary>Service de mise à jour factice : renvoie une mise à jour fixée à l'avance ou lève l'erreur demandée.</summary>
+public sealed class FakeAppUpdateService : IAppUpdateService
+{
+    public long CurrentVersionCode { get; set; } = 8;
+    public string CurrentVersionName { get; set; } = "2.0.0";
+    public AppUpdateInfo? Available { get; set; }
+    public Exception? Failure { get; set; }
+    public int CheckCount { get; private set; }
+    public List<AppUpdateInfo> Installed { get; } = [];
+
+    public Task<AppUpdateInfo?> CheckAsync(CancellationToken cancellationToken = default)
+    {
+        CheckCount++;
+        return Failure is null ? Task.FromResult(Available) : Task.FromException<AppUpdateInfo?>(Failure);
+    }
+
+    public Task InstallAsync(AppUpdateInfo update, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        if (Failure is not null) return Task.FromException(Failure);
+        progress?.Report(1);
+        Installed.Add(update);
+        return Task.CompletedTask;
+    }
+}

@@ -34,7 +34,7 @@ Règle importante : ne jamais réutiliser une page MAUI après un remplacement d
 
 ## Android
 
-Permissions déclarées : `USE_BIOMETRIC`, `CAMERA`, `POST_NOTIFICATIONS`. **Aucune permission Internet**, `usesCleartextTraffic=false`, `allowBackup=false` (pour ne pas extraire la base chiffrée hors de son contexte de clé). Un `FileProvider` expose uniquement le sous-dossier `cache/camera/` pour la capture photo (`file_paths.xml`). Ne pas ajouter de permissions ni de réseau sans nécessité : l'application est conçue hors ligne.
+Permissions déclarées : `USE_BIOMETRIC`, `CAMERA`, `POST_NOTIFICATIONS`, `INTERNET` (uniquement pour `AppUpdateService`, déclenché par le bouton « Vérifier les mises à jour » : jamais en arrière-plan) et `REQUEST_INSTALL_PACKAGES` (installation de l'APK téléchargé, confirmée par Android ; dossier `cache/updates/` exposé par le `FileProvider`), `usesCleartextTraffic=false`, `allowBackup=false` (pour ne pas extraire la base chiffrée hors de son contexte de clé). Un `FileProvider` expose uniquement le sous-dossier `cache/camera/` pour la capture photo (`file_paths.xml`). Ne pas ajouter de permissions ni de réseau sans nécessité : l'application est conçue hors ligne.
 
 ## Règles de modification
 
