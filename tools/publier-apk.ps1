@@ -44,7 +44,11 @@ $code = [int](git rev-list --count HEAD).Trim()
 Write-Host "Publication du commit $sha, numéro de build $code" -ForegroundColor Cyan
 
 $tag = "apk-production-$code"
-if (gh release view $tag --repo $repo 2>$null) { throw "La release $tag existe déjà : rien à publier (aucun nouveau commit depuis la dernière version)." }
+$ErrorActionPreference = 'Continue'   # PowerShell 5.1 : un stderr redirigé d'une commande native lèverait sinon une exception
+gh release view $tag --repo $repo *> $null
+$existe = ($LASTEXITCODE -eq 0)
+$ErrorActionPreference = 'Stop'
+if ($existe) { throw "La release $tag existe déjà : rien à publier (aucun nouveau commit depuis la dernière version)." }
 
 Set-Location (Join-Path $racine 'Finance.Android17')
 dotnet build 'Finance.Android17.Maui\Finance.Android17.Maui.csproj' -f net10.0-android -c Release `
