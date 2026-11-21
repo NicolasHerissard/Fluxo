@@ -48,10 +48,18 @@ public partial class SubscriptionsViewModel(ISubscriptionRepository subscription
         if (string.IsNullOrWhiteSpace(Name)) { ErrorMessage = "Indiquez le nom de l’abonnement."; return; }
         if (!AmountParser.TryParse(Amount, out var minor) || minor <= 0) { ErrorMessage = "Indiquez un montant valide."; return; }
         var interval = BillingFrequency.ToMonths(SelectedFrequency);
-        if (_editingId is not Guid editingId)
-            await subscriptionRepository.AddAsync(Name, minor, interval, NextBillingDate, settings.CurrencyCode);
-        else
-            await subscriptionRepository.UpdateAsync(editingId, Name, minor, interval, NextBillingDate, settings.CurrencyCode);
+        try
+        {
+            if (_editingId is not Guid editingId)
+                await subscriptionRepository.AddAsync(Name, minor, interval, NextBillingDate, settings.CurrencyCode);
+            else
+                await subscriptionRepository.UpdateAsync(editingId, Name, minor, interval, NextBillingDate, settings.CurrencyCode);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            ErrorMessage = Describe(ex, "Enregistrement impossible.");
+            return;
+        }
         CancelEdit();
         await LoadAsync();
     }

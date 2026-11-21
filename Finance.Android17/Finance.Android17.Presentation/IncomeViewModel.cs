@@ -99,14 +99,22 @@ public partial class IncomeViewModel(
         if (string.IsNullOrWhiteSpace(IncomeDescription)) { ShowError("Indiquez l’origine du revenu."); return; }
         if (!AmountParser.TryParse(IncomeAmount, out var amount) || amount <= 0) { ShowError("Indiquez un montant valide."); return; }
         var recurring = IncomeRepeats || _editingRecurringIncomeId is not null;
-        if (recurring)
+        try
         {
-            var interval = BillingFrequency.ToMonths(SelectedFrequency);
-            if (_editingRecurringIncomeId is not Guid recurringId) await recurringIncomeRepository.AddAsync(IncomeDescription, amount, interval, IncomeDate, settings.CurrencyCode);
-            else await recurringIncomeRepository.UpdateAsync(recurringId, IncomeDescription, amount, interval, IncomeDate, settings.CurrencyCode);
+            if (recurring)
+            {
+                var interval = BillingFrequency.ToMonths(SelectedFrequency);
+                if (_editingRecurringIncomeId is not Guid recurringId) await recurringIncomeRepository.AddAsync(IncomeDescription, amount, interval, IncomeDate, settings.CurrencyCode);
+                else await recurringIncomeRepository.UpdateAsync(recurringId, IncomeDescription, amount, interval, IncomeDate, settings.CurrencyCode);
+            }
+            else if (_editingIncomeId is not Guid id) await incomeRepository.AddAsync(amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
+            else await incomeRepository.UpdateAsync(id, amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
         }
-        else if (_editingIncomeId is not Guid id) await incomeRepository.AddAsync(amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
-        else await incomeRepository.UpdateAsync(id, amount, IncomeDescription, IncomeDate, settings.CurrencyCode);
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            ShowError(Describe(ex, "Enregistrement impossible."));
+            return;
+        }
         CancelIncomeEdit();
         StatusMessage = recurring ? "Revenu récurrent enregistré." : "Revenu enregistré.";
         await LoadAsync();
