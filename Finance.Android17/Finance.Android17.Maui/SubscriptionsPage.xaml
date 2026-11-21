@@ -37,7 +37,7 @@
                     <VerticalStackLayout Spacing="10">
                         <Label Text="{Binding FormTitle}" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
                         <Label Text="Nom" Style="{StaticResource FieldLabel}" />
-                        <Border Style="{StaticResource InputField}"><Entry Placeholder="Ex. Musique" Text="{Binding Name}" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de l’abonnement" /></Border>
+                        <Border Style="{StaticResource InputField}"><Entry MaxLength="120" Placeholder="Ex. Musique" Text="{Binding Name}" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de l’abonnement" /></Border>
                         <Label Text="Montant" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputField}">
                             <Grid ColumnDefinitions="*,Auto">

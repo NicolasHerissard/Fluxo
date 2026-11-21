@@ -10,8 +10,7 @@ namespace Finance.Android17.Infrastructure;
 /// </summary>
 internal static partial class BackupSnapshotValidator
 {
-    // Plafond d'un montant en centimes (10^13 = 100 milliards) : assez haut pour tout usage réel, assez bas pour que les totaux ne débordent jamais.
-    internal const long MaxAmountMinor = 10_000_000_000_000;
+    internal const long MaxAmountMinor = InputLimits.MaxAmountMinor;
     internal const int MaxIntervalMonths = 1_200;
     private static readonly DateTime EarliestDate = new(1900, 1, 1);
     private static readonly DateTime LatestDate = new(2200, 12, 31);
@@ -30,7 +29,7 @@ internal static partial class BackupSnapshotValidator
         foreach (var x in snapshot.Categories)
         {
             Require(categoryIds.Add(x.Id) && x.Id != Guid.Empty, "une catégorie a un identifiant manquant ou en double");
-            RequireText(x.Name, 80, "le nom d'une catégorie");
+            RequireText(x.Name, InputLimits.MaxCategoryNameLength, "le nom d'une catégorie");
             Require(x.Color is not null && ColorPattern().IsMatch(x.Color), $"la couleur de la catégorie « {x.Name} » n'est pas valide");
             Require(x.BudgetMinor is null or (> 0 and <= MaxAmountMinor), $"le budget de la catégorie « {x.Name} » n'est pas valide");
         }
@@ -40,7 +39,7 @@ internal static partial class BackupSnapshotValidator
         {
             RequireAmount(x.AmountMinor, "le montant d'une dépense");
             RequireCurrency(x.CurrencyCode);
-            RequireText(x.Description, 240, "la description d'une dépense", allowEmpty: true);
+            RequireText(x.Description, InputLimits.MaxDescriptionLength, "la description d'une dépense", allowEmpty: true);
             RequireDate(x.OccurredOn, "la date d'une dépense");
             Require(categoryIds.Contains(x.CategoryId), $"la dépense « {x.Description} » renvoie à une catégorie absente de la sauvegarde");
         }
@@ -48,7 +47,7 @@ internal static partial class BackupSnapshotValidator
         RequireUnique(snapshot.Subscriptions.Select(x => x.Id), "un abonnement");
         foreach (var x in snapshot.Subscriptions)
         {
-            RequireText(x.Name, 120, "le nom d'un abonnement");
+            RequireText(x.Name, InputLimits.MaxNameLength, "le nom d'un abonnement");
             RequireAmount(x.AmountMinor, $"le montant de l'abonnement « {x.Name} »");
             RequireCurrency(x.CurrencyCode);
             RequireInterval(x.BillingIntervalMonths, x.Name);
@@ -61,14 +60,14 @@ internal static partial class BackupSnapshotValidator
         {
             RequireAmount(x.AmountMinor, "le montant d'un revenu");
             RequireCurrency(x.CurrencyCode);
-            RequireText(x.Description, 240, "la description d'un revenu", allowEmpty: true);
+            RequireText(x.Description, InputLimits.MaxDescriptionLength, "la description d'un revenu", allowEmpty: true);
             RequireDate(x.OccurredOn, "la date d'un revenu");
         }
 
         RequireUnique(recurringIncomes.Select(x => x.Id), "un revenu récurrent");
         foreach (var x in recurringIncomes)
         {
-            RequireText(x.Name, 120, "le nom d'un revenu récurrent");
+            RequireText(x.Name, InputLimits.MaxNameLength, "le nom d'un revenu récurrent");
             RequireAmount(x.AmountMinor, $"le montant du revenu récurrent « {x.Name} »");
             RequireCurrency(x.CurrencyCode);
             RequireInterval(x.IntervalMonths, x.Name);
@@ -79,7 +78,7 @@ internal static partial class BackupSnapshotValidator
         RequireUnique(goals.Select(x => x.Id), "un objectif d'épargne");
         foreach (var x in goals)
         {
-            RequireText(x.Name, 120, "le nom d'un objectif d'épargne");
+            RequireText(x.Name, InputLimits.MaxNameLength, "le nom d'un objectif d'épargne");
             Require(x.TargetAmountMinor is > 0 and <= MaxAmountMinor, $"le montant cible de l'objectif « {x.Name} » n'est pas valide");
             Require(x.SavedAmountMinor is >= 0 and <= MaxAmountMinor, $"le montant épargné de l'objectif « {x.Name} » n'est pas valide");
             if (x.TargetDate is { } targetDate) RequireDate(targetDate, $"la date cible de l'objectif « {x.Name} »");

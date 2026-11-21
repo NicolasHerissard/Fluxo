@@ -103,7 +103,7 @@
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Note" Style="{StaticResource SectionTitle}" FontSize="19" SemanticProperties.HeadingLevel="Level2" />
                     <Border Style="{StaticResource InputField}">
-                        <Entry x:Name="NoteEntry" Placeholder="Facultatif · ex. Courses de la semaine" Text="{Binding Description}" Style="{StaticResource InputEntry}" ReturnType="Done" />
+                        <Entry x:Name="NoteEntry" MaxLength="240" Placeholder="Facultatif · ex. Courses de la semaine" Text="{Binding Description}" Style="{StaticResource InputEntry}" ReturnType="Done" />
                     </Border>
                 </VerticalStackLayout>
             </VerticalStackLayout>

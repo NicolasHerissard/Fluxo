@@ -37,11 +37,14 @@ public class AmountParserTests
     [Fact]
     public void TryParse_RejectsAmountsThatWouldOverflowTheCentCount()
     {
-        Assert.True(AmountParser.TryParse("92233720368547758", out var largest));
-        Assert.Equal(9_223_372_036_854_775_800, largest);
+        Assert.True(AmountParser.TryParse("100000000000", out var largest));
+        Assert.Equal(InputLimits.MaxAmountMinor, largest);
+        Assert.True(AmountParser.TryParse("-100000000000", out var smallest));
+        Assert.Equal(-InputLimits.MaxAmountMinor, smallest);
 
+        Assert.False(AmountParser.TryParse("100000000000,01", out _));
+        Assert.False(AmountParser.TryParse("-100000000000,01", out _));
         Assert.False(AmountParser.TryParse("92233720368547759", out _));
-        Assert.False(AmountParser.TryParse("-92233720368547759", out _));
         Assert.False(AmountParser.TryParse("79228162514264337593543950335", out _));
     }
 
