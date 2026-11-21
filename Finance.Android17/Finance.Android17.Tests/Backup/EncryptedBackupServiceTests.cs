@@ -66,7 +66,7 @@ public sealed class EncryptedBackupServiceTests : IDisposable
 
         var file = Assert.Single(_host.Files.Shared);
         Assert.Equal("mes-finances-20261020-0930.mfbackup", file.FileName);
-        Assert.Equal("Sauvegarde chiffrée Mes Finances", file.Title);
+        Assert.Equal("Sauvegarde chiffrée Fluxo", file.Title);
         Assert.Equal("MFBAK01", Encoding.ASCII.GetString(file.Content, 0, 7));
         Assert.DoesNotContain("Pain", Encoding.UTF8.GetString(file.Content));
     }
@@ -166,7 +166,7 @@ public sealed class EncryptedBackupServiceTests : IDisposable
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => Backup.ImportEncryptedAsync(GoldenPassword));
 
-        Assert.Equal("Ce fichier n’est pas une sauvegarde Mes Finances valide.", error.Message);
+        Assert.Equal("Ce fichier n’est pas une sauvegarde Fluxo valide.", error.Message);
     }
 
     [Fact]

@@ -1,9 +1,9 @@
 # Finance.Android17.Maui
 
-**Application .NET MAUI** « Mes Finances » : interface XAML, fins adaptateurs vers la plateforme et ressources. C'est la racine de composition de la solution et le seul projet exécutable (`OutputType` `Exe`, `SingleProject`). Il ne contient ni règle métier ni persistance : tout ce qui ne dépend pas de la plateforme est dans `Application`, `Infrastructure` et `Presentation`.
+**Application .NET MAUI** « Fluxo » : interface XAML, fins adaptateurs vers la plateforme et ressources. C'est la racine de composition de la solution et le seul projet exécutable (`OutputType` `Exe`, `SingleProject`). Il ne contient ni règle métier ni persistance : tout ce qui ne dépend pas de la plateforme est dans `Application`, `Infrastructure` et `Presentation`.
 
 - Cibles : `net10.0-android` (cible réelle, minimum API 21) et `net10.0-windows10.0.19041.0` (`WindowsPackageType=None`). Les dossiers `Platforms/iOS` et `Platforms/MacCatalyst` sont des restes de template, non ciblés par le `.csproj`.
-- Identité : `ApplicationTitle` « Mes Finances », `ApplicationId` `fr.nicol.finance.android17`, `ApplicationDisplayVersion` `2.0.0`, `ApplicationVersion` `8` (à garder synchronisés avec `README.md`).
+- Identité : `ApplicationTitle` « Fluxo », `ApplicationId` `fr.nicol.finance.android17`, `ApplicationDisplayVersion` `2.0.0`, `ApplicationVersion` `8` (à garder synchronisés avec `README.md`).
 - `MauiXamlInflator=SourceGen` : le XAML est compilé en C#, les pages utilisent `x:DataType` (bindings compilés).
 - Références : `Finance.Android17.Application` (ports), `Finance.Android17.Infrastructure` (`AddInfrastructure`) et `Finance.Android17.Presentation` (les ViewModels des pages et `AddPresentation`). NuGet : `Microsoft.Maui.Controls`, `Microsoft.Extensions.Logging.Debug`, et `Xamarin.Google.MLKit.TextRecognition` (Android uniquement).
 - Debug Android : assemblies embarquées dans l'APK, sans Fast Deployment ni shared runtime. Release Android : `android-arm64`, APK, pas de trimming ni d'AOT.

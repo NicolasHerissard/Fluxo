@@ -11,6 +11,7 @@ public partial class ExpensesPage : ContentPage
     {
         InitializeComponent(); BindingContext = _viewModel = viewModel; _services = services;
         _viewModel.EditRequested += OnEditRequested;
+        _viewModel.ConfirmDeleteAsync = (title, message) => DisplayAlertAsync(title, message, "Supprimer", "Annuler");
     }
     protected override bool OnBackButtonPressed()
     {

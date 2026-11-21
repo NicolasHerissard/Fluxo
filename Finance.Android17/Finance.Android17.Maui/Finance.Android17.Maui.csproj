@@ -26,7 +26,7 @@
 		<MauiXamlInflator>SourceGen</MauiXamlInflator>
 
 		<!-- Display name -->
-		<ApplicationTitle>Mes Finances</ApplicationTitle>
+		<ApplicationTitle>Fluxo</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>fr.nicol.finance.android17</ApplicationId>

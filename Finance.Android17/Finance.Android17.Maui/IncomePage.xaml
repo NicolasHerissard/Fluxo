@@ -37,7 +37,7 @@
                                 <Label Text="{Binding ForecastBalance}" Style="{StaticResource StrongLabel}" />
                             </VerticalStackLayout>
                         </Grid>
-                        <Label Text="{Binding ExpectedIncome, StringFormat='Encore attendu d’ici la fin du mois : {0}'}" Style="{StaticResource MutedLabel}" FontSize="12" />
+                        <Label Text="{Binding ExpectedIncome, StringFormat='Encore attendu d’ici la fin du mois : {0}'}" Style="{StaticResource MutedLabel}" FontSize="14" />
                         <Label Text="Reste ce mois-ci = revenus − dépenses du mois. Fin de mois = solde estimé au dernier jour, avec revenus récurrents et abonnements à venir." Style="{StaticResource CaptionLabel}" TextColor="{AppThemeBinding Light={StaticResource TextFaintLight}, Dark={StaticResource TextFaintDark}}" />
                     </VerticalStackLayout>
                 </Border>
@@ -48,8 +48,8 @@
                 <Border IsVisible="{Binding IsIncomeFormVisible}" Style="{StaticResource Card}">
                     <VerticalStackLayout Spacing="12">
                         <Label Text="{Binding IncomeFormTitle}" Style="{StaticResource StrongLabel}" />
-                        <Border Style="{StaticResource InputField}"><Entry Text="{Binding IncomeDescription}" Placeholder="Origine du revenu (ex. Salaire)" Style="{StaticResource InputEntry}" SemanticProperties.Description="Origine du revenu" /></Border>
-                        <Border Style="{StaticResource InputField}"><Entry Text="{Binding IncomeAmount}" Placeholder="Montant" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant du revenu" /></Border>
+                        <VerticalStackLayout Spacing="4"><Label Text="Origine du revenu" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Text="{Binding IncomeDescription}" Placeholder="Origine du revenu (ex. Salaire)" Style="{StaticResource InputEntry}" SemanticProperties.Description="Origine du revenu" /></Border></VerticalStackLayout>
+                        <VerticalStackLayout Spacing="4"><Label Text="Montant" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Text="{Binding IncomeAmount}" Placeholder="Montant" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant du revenu" /></Border></VerticalStackLayout>
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding CanChooseRepeat}">
                             <VerticalStackLayout Spacing="2">
                                 <Label Text="Se répète" Style="{StaticResource StrongLabel}" />
@@ -128,10 +128,10 @@
                     <Border IsVisible="{Binding IsGoalFormVisible}" Style="{StaticResource Card}">
                         <VerticalStackLayout Spacing="12">
                             <Label Text="{Binding GoalFormTitle}" Style="{StaticResource StrongLabel}" />
-                            <Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalName}" Placeholder="Nom de l’objectif" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de l’objectif" /></Border>
+                            <VerticalStackLayout Spacing="4"><Label Text="Nom de l’objectif" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalName}" Placeholder="Nom de l’objectif" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de l’objectif" /></Border></VerticalStackLayout>
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                                <Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalTargetAmount}" Placeholder="Montant cible" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant cible" /></Border>
-                                <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Text="{Binding GoalSavedAmount}" Placeholder="Déjà épargné" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant déjà épargné" /></Border>
+                                <VerticalStackLayout Spacing="4"><Label Text="Montant cible" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalTargetAmount}" Placeholder="Montant cible" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant cible" /></Border></VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" Spacing="4"><Label Text="Déjà épargné" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Text="{Binding GoalSavedAmount}" Placeholder="Déjà épargné" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Montant déjà épargné" /></Border></VerticalStackLayout>
                             </Grid>
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="Ajouter une date cible" Style="{StaticResource BodyLabel}" VerticalOptions="Center" />
@@ -164,14 +164,14 @@
                                         <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,0,6,0">
                                             <ProgressBar Progress="{Binding Progress}" ProgressColor="{AppThemeBinding Light={StaticResource VioletInkLight}, Dark={StaticResource VioletInkDark}}"
                                                          BackgroundColor="{AppThemeBinding Light={StaticResource TrackLight}, Dark={StaticResource TrackDark}}" VerticalOptions="Center" HeightRequest="8" />
-                                            <Label Grid.Column="1" Text="{Binding ProgressText}" Style="{StaticResource StrongLabel}" FontSize="13" />
+                                            <Label Grid.Column="1" Text="{Binding ProgressText}" Style="{StaticResource StrongLabel}" FontSize="14" />
                                         </Grid>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>
-                    <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
+                    <Label Text="{Binding StatusText}" Style="{StaticResource StatusLabel}">
                         <Label.Triggers>
                             <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
                                 <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />
@@ -181,7 +181,7 @@
                 </VerticalStackLayout>
 
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
-                <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
+                <Label Text="{Binding StatusText}" Style="{StaticResource StatusLabel}">
                     <Label.Triggers>
                         <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
                             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />

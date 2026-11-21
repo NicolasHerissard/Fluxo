@@ -24,7 +24,7 @@ public partial class IncomeViewModel(
     public ObservableCollection<RecurringIncomeRow> RecurringIncomes { get; } = [];
 
     /// <summary>Objectifs d'épargne de la page : liste et formulaire propres, annulation de suppression partagée avec cette page.</summary>
-    public SavingsGoalsViewModel Goals => _goals ??= new(goalRepository, settings, clock, OfferUndo, LoadAsync);
+    public SavingsGoalsViewModel Goals => _goals ??= new(goalRepository, settings, clock, OfferUndo, LoadAsync) { ConfirmDeleteAsync = (title, message) => ConfirmDeleteAsync?.Invoke(title, message) ?? Task.FromResult(true) };
     public IReadOnlyList<string> Frequencies { get; } = BillingFrequency.Options;
 
     [ObservableProperty] private string currentBalance = "0,00 €";
@@ -132,6 +132,7 @@ public partial class IncomeViewModel(
     [RelayCommand]
     private async Task DeleteIncomeAsync(IncomeRow row)
     {
+        if (!await ConfirmDeletionAsync("Supprimer ce revenu ?", $"« {row.Description} » ({row.Amount}) sera supprimé. Vous pourrez annuler juste après.")) return;
         await incomeRepository.DeleteAsync(row.Id);
         if (_editingIncomeId == row.Id) CancelIncomeEdit();
         OfferUndo("Revenu supprimé", () => incomeRepository.RestoreAsync(row.Id));
@@ -172,6 +173,7 @@ public partial class IncomeViewModel(
     [RelayCommand]
     private async Task DeleteRecurringIncomeAsync(RecurringIncomeRow row)
     {
+        if (!await ConfirmDeletionAsync("Supprimer ce revenu récurrent ?", $"« {row.Name} » sera supprimé. Vous pourrez annuler juste après.")) return;
         await recurringIncomeRepository.DeleteAsync(row.Id);
         if (_editingRecurringIncomeId == row.Id) CancelIncomeEdit();
         OfferUndo("Revenu récurrent supprimé", () => recurringIncomeRepository.RestoreAsync(row.Id));

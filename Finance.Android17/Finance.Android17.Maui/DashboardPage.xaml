@@ -43,7 +43,7 @@
                                         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource ExpenseSoftLight}, Dark={StaticResource ExpenseSoftDark}}" />
                                     </DataTrigger>
                                 </Border.Triggers>
-                                <Label Text="{Binding Comparison}" Style="{StaticResource PrimaryText}" FontSize="12">
+                                <Label Text="{Binding Comparison}" Style="{StaticResource PrimaryText}" FontSize="14">
                                     <Label.Triggers>
                                         <DataTrigger TargetType="Label" Binding="{Binding ComparisonIsGood}" Value="True">
                                             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource SuccessInkLight}, Dark={StaticResource SuccessInkDark}}" />
@@ -100,7 +100,7 @@
                                             <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource WarningSoftLight}, Dark={StaticResource WarningSoftDark}}" />
                                         </DataTrigger>
                                     </Border.Triggers>
-                                    <Label Text="{Binding ForecastBadge}" FontFamily="OpenSansSemibold" FontSize="11"
+                                    <Label Text="{Binding ForecastBadge}" FontFamily="OpenSansSemibold" FontSize="14"
                                            TextColor="{AppThemeBinding Light={StaticResource SuccessInkLight}, Dark={StaticResource SuccessInkDark}}">
                                         <Label.Triggers>
                                             <DataTrigger TargetType="Label" Binding="{Binding ForecastIsHealthy}" Value="False">

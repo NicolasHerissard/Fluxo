@@ -63,10 +63,10 @@
                 <Border Style="{StaticResource Card}">
                     <VerticalStackLayout Spacing="10">
                         <Label Text="Modifier le code PIN" Style="{StaticResource StrongLabel}" />
-                        <Border Style="{StaticResource InputField}"><Entry Placeholder="Code PIN actuel" Text="{Binding CurrentPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Code PIN actuel" /></Border>
+                        <VerticalStackLayout Spacing="4"><Label Text="Code PIN actuel" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Placeholder="Code PIN actuel" Text="{Binding CurrentPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Code PIN actuel" /></Border></VerticalStackLayout>
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                            <Border Style="{StaticResource InputField}"><Entry Placeholder="Nouveau PIN" Text="{Binding NewPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nouveau code PIN" /></Border>
-                            <Border Grid.Column="1" Style="{StaticResource InputField}"><Entry Placeholder="Confirmation" Text="{Binding ConfirmPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Confirmation du nouveau code PIN" /></Border>
+                            <VerticalStackLayout Spacing="4"><Label Text="Nouveau PIN" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Placeholder="Nouveau PIN" Text="{Binding NewPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nouveau code PIN" /></Border></VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="4"><Label Text="Confirmation du PIN" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Placeholder="Confirmation" Text="{Binding ConfirmPin}" IsPassword="True" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Confirmation du nouveau code PIN" /></Border></VerticalStackLayout>
                         </Grid>
                         <Button Text="Changer le code PIN" Command="{Binding ChangePinCommand}" Style="{StaticResource SecondaryButton}" />
                     </VerticalStackLayout>
@@ -202,7 +202,7 @@
                 </Border>
 
                 <Button Text="Verrouiller maintenant" Clicked="OnLockClicked" Style="{StaticResource PrimaryButton}" Margin="0,10,0,0" />
-                <Label Text="{Binding StatusMessage}" Style="{StaticResource StatusLabel}">
+                <Label Text="{Binding StatusText}" Style="{StaticResource StatusLabel}">
                     <Label.Triggers>
                         <DataTrigger TargetType="Label" Binding="{Binding StatusIsError}" Value="True">
                             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ExpenseInkLight}, Dark={StaticResource ExpenseInkDark}}" />

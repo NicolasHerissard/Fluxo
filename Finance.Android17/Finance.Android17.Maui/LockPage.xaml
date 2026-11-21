@@ -22,7 +22,7 @@
                 </Border>
                 <local:IconButton Grid.Column="1" Icon="{Binding PinVisibilityIcon}" ButtonStyle="Filled" Command="{Binding TogglePinVisibilityCommand}" Description="Afficher ou masquer le code PIN" />
             </Grid>
-            <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" />
+            <Label Text="{Binding ErrorMessage, Converter={StaticResource ErrorPrefixConverter}}" Style="{StaticResource ErrorLabel}" />
             <Button Text="Continuer" Command="{Binding SubmitPinCommand}" Style="{StaticResource PrimaryButton}" />
             <Button Text="Utiliser la biométrie" Command="{Binding UseBiometricsCommand}" IsVisible="{Binding CanUseBiometrics}" Style="{StaticResource SecondaryButton}" />
             <Button Text="Repartir d’une base neuve" Clicked="OnStartOverClicked" IsVisible="{Binding CanStartOver}" Style="{StaticResource DangerButton}" SemanticProperties.Hint="Met de côté la base illisible puis démarre avec une base vide" />

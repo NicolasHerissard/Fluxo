@@ -10,6 +10,7 @@ public partial class IncomePage : ContentPage
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+        _viewModel.ConfirmDeleteAsync = (title, message) => DisplayAlertAsync(title, message, "Supprimer", "Annuler");
     }
 
     protected override void OnAppearing()

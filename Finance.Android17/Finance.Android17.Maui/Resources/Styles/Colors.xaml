@@ -39,10 +39,10 @@
     <Color x:Key="TextPrimaryDark">#E8EAFB</Color>
     <Color x:Key="TextSecondaryLight">#645F8C</Color>
     <Color x:Key="TextSecondaryDark">#8D93B8</Color>
-    <Color x:Key="TextFaintLight">#7A769F</Color>
-    <Color x:Key="TextFaintDark">#7B82A8</Color>
-    <Color x:Key="PlaceholderLight">#7A769F</Color>
-    <Color x:Key="PlaceholderDark">#6D7396</Color>
+    <Color x:Key="TextFaintLight">#625E86</Color>
+    <Color x:Key="TextFaintDark">#8D93B8</Color>
+    <Color x:Key="PlaceholderLight">#67638B</Color>
+    <Color x:Key="PlaceholderDark">#868CB1</Color>
 
     <!-- Accent principal -->
     <Color x:Key="PrimaryLight">#4338CA</Color>

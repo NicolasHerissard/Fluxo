@@ -56,7 +56,7 @@ public sealed class DailyCheckScheduler(ISettingsService settings, TimeProvider 
 public sealed class AlertPublisher(ISettingsService settings) : IAlertPublisher
 {
     /// <summary>Sur l'écran verrouillé, ni le titre ni le montant d'une alerte ne s'affichent.</summary>
-    internal const string PublicTitle = "Mes Finances";
+    internal const string PublicTitle = "Fluxo";
 
     internal const string PublicText = "Une alerte est à consulter.";
 

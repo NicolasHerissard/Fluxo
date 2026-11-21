@@ -9,6 +9,7 @@ public partial class CategoriesSettingsPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _viewModel = viewModel;
+        _viewModel.ConfirmDeleteAsync = (title, message) => DisplayAlertAsync(title, message, "Supprimer", "Annuler");
     }
     protected override void OnAppearing() { base.OnAppearing(); _ = _viewModel.LoadAsync(); }
     private async void OnBackClicked(object? sender, EventArgs e) => await Navigation.PopModalAsync();

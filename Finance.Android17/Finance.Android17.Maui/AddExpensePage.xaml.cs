@@ -54,7 +54,8 @@ public partial class AddExpensePage : ContentPage
 #if ANDROID
             var imagePath = await CameraCapture.CapturePhotoAsync();
             if (imagePath is null) return;
-            await _viewModel.ApplyReceiptAsync(imagePath);
+            try { await _viewModel.ApplyReceiptAsync(imagePath); }
+            finally { try { System.IO.File.Delete(imagePath); } catch (IOException) { } }
 #else
             var photo = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions { Title = "Choisir une photo de ticket" });
             if (photo is null) return;

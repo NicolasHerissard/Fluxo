@@ -94,6 +94,7 @@ public sealed partial class SavingsGoalsViewModel(
     [RelayCommand]
     private async Task DeleteGoalAsync(SavingsGoalRow row)
     {
+        if (!await ConfirmDeletionAsync("Supprimer cet objectif ?", $"« {row.Name} » sera supprimé. Vous pourrez annuler juste après.")) return;
         await goalRepository.DeleteAsync(row.Id);
         if (_editingGoalId == row.Id) CancelGoalEdit();
         offerUndo("Objectif supprimé", () => goalRepository.RestoreAsync(row.Id));

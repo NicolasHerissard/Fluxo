@@ -49,7 +49,7 @@
                         <Border Style="{StaticResource InputField}"><Picker ItemsSource="{Binding Frequencies}" SelectedItem="{Binding SelectedFrequency}" SemanticProperties.Description="Fréquence de prélèvement" /></Border>
                         <Label Text="Prochaine échéance" Style="{StaticResource FieldLabel}" />
                         <Border Style="{StaticResource InputField}"><DatePicker Date="{Binding NextBillingDate}" SemanticProperties.Description="Prochaine échéance" /></Border>
-                        <Label Text="{Binding ErrorMessage}" Style="{StaticResource ErrorLabel}" HorizontalTextAlignment="Start" />
+                        <Label Text="{Binding ErrorMessage, Converter={StaticResource ErrorPrefixConverter}}" Style="{StaticResource ErrorLabel}" HorizontalTextAlignment="Start" />
                         <Button Text="{Binding SaveButtonText}" Command="{Binding AddCommand}" Style="{StaticResource PrimaryButton}" />
                         <Button Text="Annuler la modification" Command="{Binding CancelEditCommand}" IsVisible="{Binding IsEditing}" Style="{StaticResource TextButton}" />
                     </VerticalStackLayout>

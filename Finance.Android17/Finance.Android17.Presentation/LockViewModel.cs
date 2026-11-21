@@ -80,7 +80,7 @@ public partial class LockViewModel(StartupService startup, IAppLockService appLo
         IsBusy = true;
         try
         {
-            if (await biometrics.AuthenticateAsync("Déverrouiller Mes Finances"))
+            if (await biometrics.AuthenticateAsync("Déverrouiller Fluxo"))
             {
                 await startup.PrepareAsync();
                 Unlocked?.Invoke(this, EventArgs.Empty);

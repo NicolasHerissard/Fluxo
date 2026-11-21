@@ -210,6 +210,33 @@ public sealed class ExpensesViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Delete_AsksForConfirmation_AndKeepsTheExpenseWhenDeclined()
+    {
+        var vm = await LoadedAsync();
+        string? asked = null;
+        vm.ConfirmDeleteAsync = (title, _) => { asked = title; return Task.FromResult(false); };
+        var pain = vm.Expenses.Single(x => x.Description == "Pain");
+
+        await vm.DeleteCommand.ExecuteAsync(pain);
+
+        Assert.Equal("Supprimer cette transaction ?", asked);
+        Assert.Contains("Pain", Descriptions(vm));
+        Assert.False(vm.IsUndoVisible);
+    }
+
+    [Fact]
+    public async Task Delete_DeletesWhenConfirmed()
+    {
+        var vm = await LoadedAsync();
+        vm.ConfirmDeleteAsync = (_, _) => Task.FromResult(true);
+
+        await vm.DeleteCommand.ExecuteAsync(vm.Expenses.Single(x => x.Description == "Pain"));
+
+        Assert.DoesNotContain("Pain", Descriptions(vm));
+        Assert.True(vm.IsUndoVisible);
+    }
+
+    [Fact]
     public async Task Delete_ThenUndo_RestoresTheExpense()
     {
         var vm = await LoadedAsync();
