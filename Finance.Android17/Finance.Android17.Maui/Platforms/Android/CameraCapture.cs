@@ -9,16 +9,24 @@ namespace Finance.Android17.Maui;
 
 internal static class CameraCapture
 {
-    public static Task<string?> CapturePhotoAsync()
+    public static async Task<string?> CapturePhotoAsync()
     {
+        // L'application déclare la permission CAMERA : Android refuse alors de lancer l'appareil photo (SecurityException,
+        // fermeture de l'app) tant qu'elle n'a pas été accordée à l'exécution.
+        var status = await Microsoft.Maui.ApplicationModel.Permissions.CheckStatusAsync<Microsoft.Maui.ApplicationModel.Permissions.Camera>();
+        if (status != Microsoft.Maui.ApplicationModel.PermissionStatus.Granted)
+            status = await Microsoft.Maui.ApplicationModel.Permissions.RequestAsync<Microsoft.Maui.ApplicationModel.Permissions.Camera>();
+        if (status != Microsoft.Maui.ApplicationModel.PermissionStatus.Granted)
+            throw new InvalidOperationException("Autorisez l’appareil photo pour Fluxo dans les réglages d’Android pour scanner un ticket.");
+
         var activity = Platform.CurrentActivity;
         if (activity is not FragmentActivity fragmentActivity)
-            return Task.FromResult<string?>(null);
+            return null;
 
         var completion = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var fragment = new CameraCaptureFragment(completion);
         fragmentActivity.SupportFragmentManager.BeginTransaction().Add(fragment, CameraCaptureFragment.FragmentTag).Commit();
-        return completion.Task;
+        return await completion.Task;
     }
 }
 
@@ -31,6 +39,9 @@ internal sealed class CameraCaptureFragment : AndroidX.Fragment.App.Fragment
     private string? _path;
 
     public CameraCaptureFragment(TaskCompletionSource<string?> completion) => _completion = completion;
+
+    // Requis par Android pour recréer le fragment si l'application est recréée pendant la prise de photo.
+    public CameraCaptureFragment() : this(new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously)) { }
 
     public override void OnCreate(Android.OS.Bundle? savedInstanceState)
     {
@@ -45,7 +56,12 @@ internal sealed class CameraCaptureFragment : AndroidX.Fragment.App.Fragment
         var intent = new Intent(MediaStore.ActionImageCapture);
         intent.PutExtra(MediaStore.ExtraOutput, uri);
         intent.AddFlags(ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
-        StartActivityForResult(intent, RequestCode);
+        try { StartActivityForResult(intent, RequestCode); }
+        catch (Exception ex)
+        {
+            _completion.TrySetException(new InvalidOperationException("Impossible d’ouvrir l’appareil photo : " + ex.Message));
+            ParentFragmentManager.BeginTransaction().Remove(this).CommitAllowingStateLoss();
+        }
     }
 
     public override void OnActivityResult(int requestCode, int resultCode, Intent? data)
