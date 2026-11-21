@@ -24,6 +24,13 @@ public class SubscriptionCostsTests
     public void Annual_IsTwelveMonths() =>
         Assert.Equal(12 * 1_599, SubscriptionCosts.AnnualMinor([Samples.Subscription(1_599, Due)]));
 
+    [Theory]
+    [InlineData(5_999, 12, 5_999)]
+    [InlineData(10_000, 3, 40_000)]
+    [InlineData(1_000, 1, 12_000)]
+    public void Annual_DoesNotLoseCentsToMonthlyRounding(long amountMinor, int intervalMonths, long expected) =>
+        Assert.Equal(expected, SubscriptionCosts.AnnualMinor([Samples.Subscription(amountMinor, Due, intervalMonths)]));
+
     [Fact]
     public void Costs_AreZero_WithoutSubscriptions()
     {
