@@ -47,7 +47,7 @@ Cherche le total en partant de la fin du ticket (libellés « total ttc », « t
 - **Solde actuel** = solde initial + **tous** les revenus − **toutes** les dépenses, y compris celles datées après aujourd'hui. C'est le comportement historique, conservé tel quel et couvert par un test.
 - **Prévision de fin de mois** = solde actuel + revenus récurrents − abonnements dont l'échéance tombe après aujourd'hui et au plus tard le dernier jour du mois.
 - **Comparaison** : la période courante (semaine du lundi, mois, année, jusqu'à aujourd'hui) est comparée à la période précédente **entière**.
-- Les totaux additionnent les montants sans convertir les devises : si la devise des réglages change, des montants de devises différentes se mélangent.
+- Les totaux additionnent les montants sans convertir les devises : c'est pourquoi `SettingsViewModel` refuse de changer la devise dès qu'une dépense, un revenu ou un abonnement existe (il faut d'abord tout supprimer).
 
 ## Règles de modification
 
