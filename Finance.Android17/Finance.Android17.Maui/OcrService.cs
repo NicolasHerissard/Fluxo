@@ -28,7 +28,7 @@ internal static class AndroidOcrService
     public static async Task<OcrTextResult?> RecognizeAsync(string imagePath, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var image = InputImage.FromFilePath(Android.App.Application.Context, Android.Net.Uri.Parse(imagePath)!);
+        var image = InputImage.FromFilePath(Android.App.Application.Context, Android.Net.Uri.FromFile(new Java.IO.File(imagePath))!);
         using var recognizer = TextRecognition.GetClient(new TextRecognizerOptions.Builder().Build());
         var result = await AwaitTextAsync(recognizer.Process(image), cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();

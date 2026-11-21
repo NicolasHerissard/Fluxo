@@ -29,7 +29,7 @@
                                    ClearButtonVisibility="Never" SemanticProperties.Description="Montant de la transaction" />
                             <Label Grid.Column="2" Text="{Binding CurrencySymbol}" Style="{StaticResource SectionTitle}" FontSize="28" VerticalOptions="Center" HorizontalOptions="Start" Margin="8,0,0,0" />
                         </Grid>
-                        <Button Text="Scanner un ticket" Clicked="OnScanReceiptClicked" Style="{StaticResource TextButton}" IsVisible="False" />
+                        <Button Text="Scanner un ticket" Clicked="OnScanReceiptClicked" Style="{StaticResource TextButton}" />
                     </VerticalStackLayout>
                 </Border>
 
