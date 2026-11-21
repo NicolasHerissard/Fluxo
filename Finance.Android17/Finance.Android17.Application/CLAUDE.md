@@ -55,6 +55,6 @@ Cherche le total en partant de la fin du ticket (libellés « total ttc », « t
 - Ajouter une opération de stockage : l'ajouter au port de l'agrégat concerné (dossier correspondant), l'implémenter dans `Infrastructure/Persistence`, puis l'appeler depuis un ViewModel ou un service d'ici. Pas de façade de pass-through : un consommateur dépend directement des ports dont il a besoin.
 - Rien de lié à MAUI, à Android ou à EF Core.
 - Montants en `long` (centimes), dates sans heure (`.Date`), `CancellationToken` sur les opérations asynchrones.
-- `FinanceBackupSnapshot` fait partie du format de fichier `.mfbackup` : ne pas renommer ses propriétés. Les données ajoutées après la version 1 sont facultatives pour relire les anciens fichiers. Un changement de contenu = nouveau `FormatVersion` et adaptation de `IFinanceDataStore.RestoreSnapshotAsync` (formats 1 et 2 actuellement).
+- `FinanceBackupSnapshot` fait partie du format de fichier `.mfbackup` : ne pas renommer ses propriétés. Les données ajoutées après la version 1 (dont `Settings`) sont facultatives pour relire les anciens fichiers. Un changement de contenu = nouveau `FormatVersion` et adaptation de `IFinanceDataStore.RestoreSnapshotAsync` (formats 1 et 2 actuellement).
 - Les valeurs de `ThemeOptions` et `AfterSaveOptions` sont persistées dans les préférences existantes : ne jamais en changer le texte.
 - Conserver la séparation `IOcrService` (natif) / `ReceiptParser` (pur).

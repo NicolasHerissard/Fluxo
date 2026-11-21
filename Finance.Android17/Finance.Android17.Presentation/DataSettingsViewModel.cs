@@ -4,7 +4,7 @@ using Finance.Android17.Application;
 
 namespace Finance.Android17.Presentation;
 
-/// <summary>Page « Mes données » : solde de départ, export CSV, sauvegarde chiffrée, restauration et remise à zéro.</summary>
+/// <summary>Page « Mes données » : solde de départ, export CSV, export et import complets chiffrés, remise à zéro.</summary>
 public partial class DataSettingsViewModel(
     IFinanceDataStore dataStore,
     IExportService export,
@@ -12,7 +12,9 @@ public partial class DataSettingsViewModel(
     IAppLockService appLock,
     IFinancialProfileRepository profileRepository,
     ISubscriptionRepository subscriptionRepository,
-    SubscriptionReminderScheduler reminders) : StatusViewModelBase
+    SubscriptionReminderScheduler reminders,
+    ISettingsService settings,
+    IDailyCheckScheduler dailyCheck) : StatusViewModelBase
 {
     [ObservableProperty] private string initialBalance = string.Empty;
     [ObservableProperty] private string backupPassword = string.Empty;
@@ -49,11 +51,11 @@ public partial class DataSettingsViewModel(
         {
             IsBusy = true;
             await backup.ExportEncryptedAsync(BackupPassword);
-            StatusMessage = "Sauvegarde chiffrée prête à être partagée.";
+            StatusMessage = "Export complet prêt à être partagé.";
         }
         catch (Exception ex)
         {
-            ShowError(Describe(ex, "Sauvegarde impossible."));
+            ShowError(Describe(ex, "Export impossible."));
         }
         finally { IsBusy = false; }
     }
@@ -64,12 +66,14 @@ public partial class DataSettingsViewModel(
         {
             IsBusy = true;
             if (!await backup.ImportEncryptedAsync(BackupPassword)) return;
-            StatusMessage = "Sauvegarde restaurée.";
+            StatusMessage = "Données et réglages importés.";
             await RefreshRemindersAsync();
+            // L'autorisation de notifier se demande au premier plan, comme à l'activation du réglage.
+            if (settings.BackgroundAlertsEnabled) await dailyCheck.EnsureScheduledAsync();
         }
         catch (Exception ex)
         {
-            ShowError(Describe(ex, "Restauration impossible."));
+            ShowError(Describe(ex, "Import impossible."));
         }
         finally { IsBusy = false; }
     }

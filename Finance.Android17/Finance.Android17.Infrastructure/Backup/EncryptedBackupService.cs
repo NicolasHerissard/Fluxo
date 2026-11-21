@@ -3,13 +3,13 @@ using Finance.Android17.Application;
 
 namespace Finance.Android17.Infrastructure;
 
-/// <summary>Sauvegarde chiffrée : instantané JSON de la base, chiffré par <see cref="BackupCodec"/>, partagé comme fichier.</summary>
-internal sealed class EncryptedBackupService(IFinanceDataStore data, IFileExchange files, TimeProvider clock) : IDataBackupService
+/// <summary>Sauvegarde chiffrée : instantané JSON de la base et des réglages, chiffré par <see cref="BackupCodec"/>, partagé comme fichier.</summary>
+internal sealed class EncryptedBackupService(IFinanceDataStore data, ISettingsService settings, IFileExchange files, TimeProvider clock) : IDataBackupService
 {
     public async Task ExportEncryptedAsync(string password, CancellationToken cancellationToken = default)
     {
         ValidatePassword(password);
-        var snapshot = await data.CreateSnapshotAsync(cancellationToken).ConfigureAwait(false);
+        var snapshot = (await data.CreateSnapshotAsync(cancellationToken).ConfigureAwait(false)) with { Settings = SettingsBackupMapper.Capture(settings) };
         var payload = BackupCodec.Encrypt(JsonSerializer.SerializeToUtf8Bytes(snapshot), password);
         var fileName = $"mes-finances-{clock.GetLocalNow():yyyyMMdd-HHmm}.mfbackup";
         await files.ShareAsync(fileName, payload, "Sauvegarde chiffrée Fluxo", cancellationToken).ConfigureAwait(false);
@@ -24,6 +24,9 @@ internal sealed class EncryptedBackupService(IFinanceDataStore data, IFileExchan
         var plain = BackupCodec.Decrypt(payload, password);
         var snapshot = Deserialize(plain);
         await data.RestoreSnapshotAsync(snapshot, cancellationToken).ConfigureAwait(false);
+        // Les réglages ne sont repris qu'une fois les données restaurées ; une sauvegarde plus ancienne n'en contient pas.
+        if (snapshot.Settings is { } saved)
+            SettingsBackupMapper.Apply(saved, settings, snapshot.Categories.Select(x => x.Id).ToHashSet());
         return true;
     }
 

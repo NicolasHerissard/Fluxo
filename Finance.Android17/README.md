@@ -39,7 +39,7 @@ API 36 est la cible Android prise en charge par le SDK .NET 10 installé. Androi
 - masquage des montants, thème clair/sombre/système et verrouillage automatique ;
 - déverrouillage biométrique facultatif ;
 - export CSV via la feuille de partage native.
-- sauvegarde chiffrée de format 2, avec restauration des sauvegardes de format 1.
+- export et import complets chiffrés (`.mfbackup`, format 2) : transactions, catégories, abonnements, revenus, revenus récurrents, objectifs, solde initial et réglages ; les sauvegardes de format 1 restent importables.
 
 ## Commandes utiles
 
