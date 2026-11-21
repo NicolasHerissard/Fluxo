@@ -14,7 +14,8 @@ public partial class SettingsViewModel(
     IAppLockService appLock,
     ISubscriptionRepository subscriptionRepository,
     SubscriptionReminderScheduler reminders,
-    IDailyCheckScheduler dailyCheck) : StatusViewModelBase
+    IDailyCheckScheduler dailyCheck,
+    IFinanceDataStore dataStore) : StatusViewModelBase
 {
     private bool _loading;
     public ObservableCollection<CategoryItem> Categories { get; } = [];
@@ -109,7 +110,27 @@ public partial class SettingsViewModel(
         if (value) _ = dailyCheck.EnsureScheduledAsync();
     }
 
-    partial void OnSelectedCurrencyChanged(string value) { if (!_loading && !string.IsNullOrWhiteSpace(value)) settings.CurrencyCode = value; }
+    partial void OnSelectedCurrencyChanged(string value) { if (!_loading && !string.IsNullOrWhiteSpace(value)) _ = ChangeCurrencyAsync(value); }
+
+    /// <summary>Les totaux additionnent les montants sans conversion : changer de devise une fois des données saisies les mélangerait. Le changement n'est donc possible que sur une base vide.</summary>
+    private async Task ChangeCurrencyAsync(string currency)
+    {
+        if (currency == settings.CurrencyCode) return;
+        try
+        {
+            var snapshot = await dataStore.CreateSnapshotAsync();
+            var hasData = snapshot.Expenses.Count > 0 || snapshot.Subscriptions.Count > 0 || snapshot.Incomes?.Count > 0 || snapshot.RecurringIncomes?.Count > 0;
+            if (!hasData) { settings.CurrencyCode = currency; return; }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            ShowError(Describe(ex, "Changement de devise impossible."));
+        }
+        _loading = true;
+        try { SelectedCurrency = settings.CurrencyCode; }
+        finally { _loading = false; }
+        ShowError("La devise ne peut plus changer une fois des données saisies : leurs montants seraient mélangés. Supprimez d'abord les données (Réglages > Données).");
+    }
     partial void OnDefaultCategoryChanged(CategoryItem? value) { if (!_loading) settings.DefaultCategoryId = value?.Id.ToString() ?? string.Empty; }
     partial void OnRememberLastCategoryChanged(bool value) { if (!_loading) settings.RememberLastCategory = value; }
     partial void OnSelectedAfterSaveBehaviorChanged(string value) { if (!_loading && !string.IsNullOrWhiteSpace(value)) settings.AfterSaveBehavior = value; }

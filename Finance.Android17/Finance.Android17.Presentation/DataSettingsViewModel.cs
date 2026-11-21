@@ -32,16 +32,30 @@ public partial class DataSettingsViewModel(
             ShowError("Indiquez un solde initial valide.");
             return;
         }
-        await profileRepository.SetInitialBalanceAsync(amount);
-        InitialBalance = MoneyFormatter.PlainAmount(amount);
-        StatusMessage = "Solde initial enregistré.";
+        try
+        {
+            await profileRepository.SetInitialBalanceAsync(amount);
+            InitialBalance = MoneyFormatter.PlainAmount(amount);
+            StatusMessage = "Solde initial enregistré.";
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            ShowError(Describe(ex, "Enregistrement impossible."));
+        }
     }
 
     [RelayCommand]
     private async Task ExportAsync()
     {
-        await export.ExportExpensesCsvAsync();
-        StatusMessage = "Export CSV prêt à être partagé.";
+        try
+        {
+            await export.ExportExpensesCsvAsync();
+            StatusMessage = "Export CSV prêt à être partagé.";
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            ShowError(Describe(ex, "Export impossible."));
+        }
     }
 
     [RelayCommand]

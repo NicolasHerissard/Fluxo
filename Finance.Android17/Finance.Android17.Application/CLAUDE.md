@@ -19,7 +19,7 @@ Un seul espace de noms, `Finance.Android17.Application`, pour tout le projet : l
 | `Notifications/` | `NotificationBuilder` (règle pure : découvert probable, budget mensuel et budgets de catégorie à 80 % / 100 %, prélèvements des 7 prochains jours → `AppNotification`, triées par gravité) ; `NotificationService` (charge, puis mémorise dans `ISettingsService.SeenNotifications` les clés d'alertes déjà vues → `NotificationFeed`, pour le point de la cloche) ; port `IAlertPublisher` (montrer des alertes comme notifications du système). |
 | `Dashboard/` | `DashboardService` (charge puis calcule) ; `DashboardCalculator` → `DashboardReport` (dont le flux de trésorerie `Cashflow`) ; `CashflowCalculator` (revenus et dépenses des 6 derniers mois → `MonthlyFlow`) ; `PeriodRange` (semaine du lundi, mois, année + période précédente entière), `PeriodComparison`, `BudgetStatus` (alerte à 80 % puis 100 %). |
 | `Operations/` | `OperationsFeed` : revenus et dépenses mêlés, du plus récent au plus ancien. |
-| `Money/` | `AmountParser` : lecture d'un montant saisi (virgule ou point, arrondi `AwayFromZero`, refuse ce qui dépasserait un `long` en centimes). |
+| `Money/` | `AmountParser` : lecture d'un montant saisi (virgule ou point, arrondi `AwayFromZero`, refuse ce qui dépasse `InputLimits.MaxAmountMinor`) ; `InputLimits` : plafond des montants et longueurs maximales des textes, partagés avec le validateur de sauvegarde et les `MaxLength` des pages. |
 | `Recurring/` | `Recurrence` (échéances manquées), `DueOperationsPlanner` (plan des dépenses/revenus à créer), `DueOperationsService` (selon les réglages), `IDueOperationsStore`. |
 | `Reminders/` | `ReminderPlanner` (quand sonner, quoi afficher) → `ReminderPlan` ; `SubscriptionReminderScheduler` (`showNotice: false` supprime la notification immédiate du jour, utilisé en arrière-plan) ; port `IReminderService`. |
 | `Security/` | `PinPolicy` (4 à 8 chiffres) ; ports `IAppLockService`, `IBiometricService`, `ISecretStore` (clé de la base). |
@@ -47,7 +47,7 @@ Cherche le total en partant de la fin du ticket (libellés « total ttc », « t
 - **Solde actuel** = solde initial + **tous** les revenus − **toutes** les dépenses, y compris celles datées après aujourd'hui. C'est le comportement historique, conservé tel quel et couvert par un test.
 - **Prévision de fin de mois** = solde actuel + revenus récurrents − abonnements dont l'échéance tombe après aujourd'hui et au plus tard le dernier jour du mois.
 - **Comparaison** : la période courante (semaine du lundi, mois, année, jusqu'à aujourd'hui) est comparée à la période précédente **entière**.
-- Les totaux additionnent les montants sans convertir les devises : si la devise des réglages change, des montants de devises différentes se mélangent.
+- Les totaux additionnent les montants sans convertir les devises : c'est pourquoi `SettingsViewModel` refuse de changer la devise dès qu'une dépense, un revenu ou un abonnement existe (il faut d'abord tout supprimer).
 
 ## Règles de modification
 

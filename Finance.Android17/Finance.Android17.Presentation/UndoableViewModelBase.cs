@@ -55,7 +55,15 @@ public abstract partial class UndoableViewModelBase : StatusViewModelBase
     {
         if (!_undoStack.TryPop(out var undo)) return;
         ShowLatestUndo();
-        await undo.Restore();
+        try
+        {
+            await undo.Restore();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            ShowError(Describe(ex, "Annulation impossible."));
+            return;
+        }
         await ReloadAfterUndoAsync();
     }
 }

@@ -6,7 +6,7 @@ namespace Finance.Android17.Application;
 /// <summary>Lecture d'un montant saisi (« 12,5 », « 12.50 », « -3 ») : renvoie des centimes, arrondis à l'entier supérieur en valeur absolue.</summary>
 public static class AmountParser
 {
-    private static readonly decimal MaxMajorUnits = long.MaxValue / MinorUnits.PerMajor;
+    private static readonly decimal MaxMajorUnits = InputLimits.MaxAmountMinor / MinorUnits.PerMajor;
 
     public static bool TryParse(string? text, out long minor)
     {

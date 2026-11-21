@@ -21,7 +21,7 @@
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12">
                     <Label Text="Créer ou modifier une catégorie" Style="{StaticResource StrongLabel}" />
-                    <VerticalStackLayout Spacing="4"><Label Text="Nom de la catégorie" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Placeholder="Nom de la catégorie" Text="{Binding NewCategoryName}" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de la catégorie" /></Border></VerticalStackLayout>
+                    <VerticalStackLayout Spacing="4"><Label Text="Nom de la catégorie" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry MaxLength="80" Placeholder="Nom de la catégorie" Text="{Binding NewCategoryName}" Style="{StaticResource InputEntry}" SemanticProperties.Description="Nom de la catégorie" /></Border></VerticalStackLayout>
                     <VerticalStackLayout Spacing="4"><Label Text="Budget mensuel (facultatif)" Style="{StaticResource FieldLabel}" /><Border Style="{StaticResource InputField}"><Entry Placeholder="Budget mensuel facultatif" Text="{Binding CategoryBudget}" Keyboard="Numeric" Style="{StaticResource InputEntry}" SemanticProperties.Description="Budget mensuel de la catégorie" /></Border></VerticalStackLayout>
 
                     <Grid ColumnDefinitions="64,*" ColumnSpacing="12">
