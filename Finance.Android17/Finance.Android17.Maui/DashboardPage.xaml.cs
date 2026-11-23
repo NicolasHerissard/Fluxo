@@ -11,6 +11,14 @@ public partial class DashboardPage : ContentPage
     protected override void OnAppearing() { base.OnAppearing(); _ = _viewModel.LoadAsync(); }
     private async void OnAddClicked(object? sender, EventArgs e) => await Navigation.PushModalAsync(new NavigationPage(_services.GetRequiredService<AddExpensePage>()));
 
+    private async void OnScanClicked(object? sender, EventArgs e)
+    {
+        var page = _services.GetRequiredService<AddExpensePage>();
+        page.PrepareForScan();
+        await Navigation.PushModalAsync(new NavigationPage(page));
+        await page.ScanReceiptAsync();
+    }
+
     private async void OnSeeAllExpensesClicked(object? sender, EventArgs e) => await Shell.Current.GoToAsync("//expenses");
 
     private async void OnRecentExpenseTapped(object? sender, TappedEventArgs e)

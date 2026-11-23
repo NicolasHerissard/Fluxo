@@ -5,6 +5,7 @@ namespace Finance.Android17.Maui;
 public partial class AddExpensePage : ContentPage
 {
     private readonly AddExpenseViewModel _viewModel;
+    private bool _scanRequested;
     public AddExpensePage(AddExpenseViewModel viewModel)
     {
         InitializeComponent();
@@ -17,6 +18,7 @@ public partial class AddExpensePage : ContentPage
         await _viewModel.LoadAsync();
         SystemBarAppearance.Apply();
         await Task.Delay(150);
+        if (_scanRequested) return;
         FocusAmount();
     }
 
@@ -47,7 +49,12 @@ public partial class AddExpensePage : ContentPage
 
     private async void OnSaved(object? sender, EventArgs e) => await Navigation.PopModalAsync();
     private async void OnCancelClicked(object? sender, EventArgs e) => await Navigation.PopModalAsync();
-    private async void OnScanReceiptClicked(object? sender, EventArgs e)
+    private async void OnScanReceiptClicked(object? sender, EventArgs e) => await ScanReceiptAsync();
+
+    /// <summary>À appeler avant d'afficher la page quand le scan démarre aussitôt : évite d'ouvrir le clavier sous l'appareil photo.</summary>
+    public void PrepareForScan() => _scanRequested = true;
+
+    public async Task ScanReceiptAsync()
     {
         try
         {
