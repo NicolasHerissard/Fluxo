@@ -258,6 +258,6 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <local:IconButton Grid.Row="1" Icon="plus" ButtonStyle="Fab" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,20,24" Description="Ajouter une transaction" Clicked="OnAddClicked" />
+        <local:AddMenu Grid.Row="1" AddRequested="OnAddClicked" ScanRequested="OnScanClicked" />
     </Grid>
 </ContentPage>

@@ -79,7 +79,7 @@
                 <Label Text="{Binding EmptySubtitle}" Style="{StaticResource MutedLabel}" HorizontalTextAlignment="Center" />
             </VerticalStackLayout>
 
-            <local:IconButton Icon="plus" ButtonStyle="Fab" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,0,16" Description="Ajouter une transaction" Clicked="OnAddClicked" />
+            <local:AddMenu FabMargin="0,0,0,16" AddRequested="OnAddClicked" ScanRequested="OnScanClicked" />
         </Grid>
 
         <Border Grid.Row="3" IsVisible="{Binding IsUndoVisible}" Style="{StaticResource Toast}" Margin="20,0,20,12">
